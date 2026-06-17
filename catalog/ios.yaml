@@ -65,3 +65,45 @@ entries:
      capability: "iOS-specific Frida wrapper: bypass-jb / bypass-ssl / dump IPA / trace",
      when_to_use: "A ready-made set of jailbreak/SSL-bypass + dump scripts on iOS",
      source: https://github.com/noobpk/frida-ios-hook, platform: [ios]}
+
+  # ── batch-added from collection shortlist (core, bundled:false) ──
+  - {id: ios-reverse-engineering-claude-skill, name: "iOS RE Claude Skill", type: skill, domain: ios, bundled: false, status: active,
+     capability: "Claude skill to extract/analyze IPA/.app/Mach-O: dump ObjC/Swift headers, find URLSession/Alamofire/AFNetworking/GraphQL endpoints, secret scanning, ATS/pinning/jailbreak/anti-debug checks, radare2/rizin/Ghidra decompile.",
+     when_to_use: "You have an IPA or .app/Mach-O and need to enumerate its HTTP endpoints, dump class headers, scan for embedded secrets, or audit its ATS/cert-pinning/jailbreak-detection from a Claude-driven workflow.",
+     source: https://github.com/incogbyte/iOS-reverse-engineering-claude-skill, install: "git clone https://github.com/incogbyte/iOS-reverse-engineering-claude-skill"}
+  - {id: flexdecrypt, name: "flexdecrypt", type: tool, domain: ios, bundled: false, status: active,
+     capability: "On-device Mach-O decryptor that strips Apple FairPlay (cryptid) encryption from installed App Store binaries, producing a decrypted dump for static analysis.",
+     when_to_use: "App Store IPA binary is FairPlay-encrypted (cryptid=1) and class-dump/Ghidra show garbage; run on a jailbroken device to get the decrypted Mach-O.",
+     source: https://github.com/JohnCoates/flexdecrypt, install: "git clone https://github.com/JohnCoates/flexdecrypt"}
+  - {id: ipatool, name: "ipatool", type: tool, domain: ios, bundled: false, status: active,
+     capability: "Cross-platform Go CLI to authenticate with an Apple ID, search the App Store, and download IPA files for a target app/version.",
+     when_to_use: "You need to obtain the IPA of an App Store app for analysis (no jailbroken extraction needed) by downloading it directly with your Apple ID.",
+     source: https://github.com/majd/ipatool, install: "brew install ipatool"}
+  - {id: class-dump, name: "class-dump", type: tool, domain: ios, bundled: false, status: active,
+     capability: "Generates Objective-C class, category, and protocol declarations from the runtime metadata in a Mach-O binary.",
+     when_to_use: "You have a decrypted Mach-O/iOS binary and want a readable ObjC class/method header map to find selectors, properties, and entry points before deeper RE.",
+     source: https://github.com/nygard/class-dump, install: "brew install class-dump"}
+  - {id: swiftdump, name: "SwiftDump", type: tool, domain: ios, bundled: false, status: active,
+     capability: "Dumps Swift class/struct/enum/protocol metadata and field layouts from a Mach-O binary (the Swift counterpart to class-dump).",
+     when_to_use: "Target iOS binary is Swift (class-dump yields little) and you need Swift type/method metadata to map the app's structure.",
+     source: https://github.com/neil-wu/SwiftDump, install: "git clone https://github.com/neil-wu/SwiftDump"}
+  - {id: optool, name: "optool", type: tool, domain: ios, bundled: false, status: active,
+     capability: "CLI to insert/remove Mach-O load commands, strip code signatures, resign, and remove ASLR (PIE) flags.",
+     when_to_use: "You need to patch a Mach-O to add a load command (e.g. inject a Frida/tweak dylib), strip its signature, or disable PIE/ASLR for static patching.",
+     source: https://github.com/alexzielenski/optool, install: "git clone https://github.com/alexzielenski/optool"}
+  - {id: insert-dylib, name: "insert_dylib", type: tool, domain: ios, bundled: false, status: active,
+     capability: "CLI that adds an LC_LOAD_DYLIB load command to a Mach-O so a chosen dylib loads at launch (dylib injection).",
+     when_to_use: "You want to side-load a custom/Frida/cycript dylib into an iOS app binary by injecting an LC_LOAD_DYLIB into its Mach-O header.",
+     source: https://github.com/tyilo/insert_dylib, install: "git clone https://github.com/tyilo/insert_dylib"}
+  - {id: r2frida, name: "r2frida", type: tool, domain: ios, bundled: false, status: active,
+     capability: "Bridges radare2 static disassembly with Frida runtime memory access for live introspection, memory search, and hooking of running iOS/Android processes.",
+     when_to_use: "You want to drive Frida memory reads/writes and hooks from inside a radare2 session against a live process (search runtime memory, resolve symbols, patch at runtime).",
+     source: https://github.com/nowsecure/r2frida, install: "r2pm -ci r2frida"}
+  - {id: keychain-dumper, name: "Keychain-Dumper", type: tool, domain: ios, bundled: false, status: active,
+     capability: "Dumps all iOS keychain entries (generic/internet passwords, keys, certificates, identities) on a jailbroken device.",
+     when_to_use: "You need to extract stored credentials/tokens/keys an iOS app saved in the keychain, on a jailbroken device.",
+     source: https://github.com/ptoomey3/Keychain-Dumper, install: "git clone https://github.com/ptoomey3/Keychain-Dumper"}
+  - {id: libimobiledevice, name: "libimobiledevice", type: tool, domain: ios, bundled: false, status: active,
+     capability: "Cross-platform library plus CLIs (ideviceinstaller, idevicesyslog, ifuse, idevicebackup2) speaking native iOS lockdown/usbmux protocols without a jailbreak.",
+     when_to_use: "You need to install/list apps, pull device syslog, mount the filesystem, or back up an iOS device over USB from Linux/macOS without jailbreaking.",
+     source: https://github.com/libimobiledevice/libimobiledevice, install: "brew install libimobiledevice"}

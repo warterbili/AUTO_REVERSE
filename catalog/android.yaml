@@ -112,3 +112,93 @@ entries:
      capability: "The industry's strongest commercial Android decompiler, resilient against heavy obfuscation / packers",
      when_to_use: "For heavily obfuscated samples that jadx/GDA can't handle (paid license)",
      source: https://www.pnfsoftware.com/}
+
+  # ── batch-added from collection shortlist (core, bundled:false) ──
+  - {id: fart-unpacker, name: "FART", type: tool, domain: android, bundled: false, status: active,
+     capability: "ART-level automated unpacking and active-invocation dumping framework (modified ROM) that forces method compilation and dumps real DEX/methods from hardened apps.",
+     when_to_use: "jadx shows only a packer stub and frida-dexdump fails because the shell uses on-demand/method-level extraction; use FART's active-call dumping at the ART layer to recover the real bytecode.",
+     source: https://github.com/hanbinglengyue/FART, install: "git clone https://github.com/hanbinglengyue/FART"}
+  - {id: hbctool, name: "hbctool", type: tool, domain: android, bundled: false, status: active,
+     capability: "Disassembles and reassembles Hermes bytecode (index.android.bundle) for React Native apps using the Hermes engine, enabling patch-and-repack.",
+     when_to_use: "A React Native app ships a Hermes-compiled index.android.bundle (not plain JS) and you need to disassemble, edit, and reassemble its bytecode.",
+     source: https://github.com/bongtrop/hbctool, install: "pip install hbctool"}
+  - {id: magisk, name: "Magisk", type: tool, domain: android, bundled: false, status: active,
+     capability: "Systemless root and Zygisk module framework; foundation for RE workstations enabling root, module injection, and DenyList root hiding on real devices.",
+     when_to_use: "You need root on a real Android device for RE (run frida-server, load Zygisk/LSPosed modules) while hiding root from app detection.",
+     source: https://github.com/topjohnwu/Magisk, install: "git clone https://github.com/topjohnwu/Magisk"}
+  - {id: lsposed, name: "LSPosed", type: platform, domain: android, bundled: false, status: active,
+     capability: "Zygisk-based Xposed framework for ART method hooking; runtime base for RE/bypass modules (root hiding, anti-detection, arbitrary Java method hooks).",
+     when_to_use: "You want persistent Java-layer method hooks via an Xposed module (e.g. SSL-unpinning, anti-detection, behavior patching) on a Magisk-rooted device without rewriting the APK.",
+     source: https://github.com/LSPosed/LSPosed, install: "git clone https://github.com/LSPosed/LSPosed"}
+  - {id: frida-tools, name: "frida-tools / frida-server", type: tool, domain: android, bundled: false, status: active,
+     capability: "Frida CLI suite (frida, frida-trace, frida-ps, frida-discover) plus the on-device frida-server build used to spawn/attach to Android/iOS processes for instrumentation.",
+     when_to_use: "You need the baseline Frida tooling to attach/spawn a process, run frida-trace, or list processes before writing hook scripts.",
+     source: https://github.com/frida/frida-tools, install: "pip install frida-tools"}
+  - {id: sekiro, name: "Sekiro", type: tool, domain: android, bundled: false, status: active,
+     capability: "Long-connection + code-injection framework that exposes Android private APIs as RPC, letting a server invoke in-app .so/crypto functions across a device fleet for data collection.",
+     when_to_use: "You want to call an app's native signing/encryption function as a remote RPC (RPC over the device rather than reimplementing the algorithm) for scaled data collection or群控.",
+     source: https://github.com/virjar/sekiro, install: "git clone https://github.com/virjar/sekiro"}
+  - {id: r0ysue-androidsecuritystudy, name: "r0ysue AndroidSecurityStudy", type: script, domain: android, bundled: false, status: active,
+     capability: "Chinese-community Android security learning repo: hands-on scripts and notes for unpacking, Frida hooking, unidbg emulation, and so/native reverse engineering.",
+     when_to_use: "You want reference scripts/walkthroughs for a specific Android RE technique (脱壳, Frida pattern, unidbg setup, so analysis) rather than a runnable single tool.",
+     source: https://github.com/r0ysue/AndroidSecurityStudy, install: "git clone https://github.com/r0ysue/AndroidSecurityStudy"}
+  - {id: snapchat-ssl-unpinning, name: "snapchat-ssl-unpinning", type: script, domain: android, bundled: false, status: active,
+     capability: "Frida scripts and research notes to bypass Snapchat's SSL pinning on its LLVM-obfuscated client, enabling MITM capture of its HTTPS traffic.",
+     when_to_use: "You are MITM-ing the Snapchat Android app and the default unpinning scripts fail against its obfuscated custom pinning; use these target-specific Frida hooks.",
+     source: https://github.com/pyrosec/snapchat-ssl-unpinning, install: "git clone https://github.com/pyrosec/snapchat-ssl-unpinning"}
+  - {id: zygisk-il2cppdumper, name: "Zygisk-Il2CppDumper", type: tool, domain: android, bundled: false, status: active,
+     capability: "Zygisk module that dumps il2cpp metadata and method/type info at runtime from memory, defeating packed/encrypted global-metadata.dat and stripped headers in Unity IL2CPP games.",
+     when_to_use: "A Unity IL2CPP Android game has encrypted/packed global-metadata.dat so static Il2CppDumper fails; load this Zygisk module to dump the il2cpp structures from process memory at runtime.",
+     source: https://github.com/Perfare/Zygisk-Il2CppDumper, install: "git clone https://github.com/Perfare/Zygisk-Il2CppDumper"}
+  - {id: wallbreaker, name: "Wallbreaker", type: tool, domain: android, bundled: false, status: active,
+     capability: "Frida/objection plugin that enumerates loaded Java classes, dumps an object's runtime field values, and restores/reconstructs class structures from live memory; supports search_class/search_method/object inspection.",
+     when_to_use: "You have a running Android process and need to enumerate or dump in-memory Java classes/objects (e.g. find an obfuscated signing class, read a decrypted field at runtime, list classes matching a keyword) rather than static-decompile; works as an objection/Frida plugin.",
+     source: https://github.com/hluwa/Wallbreaker, install: "git clone https://github.com/hluwa/Wallbreaker"}
+  - {id: r0capture, name: "r0capture", type: script, domain: android, bundled: false, status: active,
+     capability: "Single Frida script that universally hooks all SSL/TLS read/write at the socket layer (Java + native, OkHttp/Conscrypt/BoringSSL) to capture plaintext HTTPS without configuring a proxy or installing a CA cert; can dump to pcap.",
+     when_to_use: "You need to capture an Android app's HTTPS traffic but it pins certs / ignores system proxy / has no system-proxy support, and you want a no-proxy spawn-or-attach Frida capture that writes pcap. Trigger: 'app won't go through Charles/Burp', certificate pinning, socket-level capture.",
+     source: https://github.com/r0ysue/r0capture, install: "git clone https://github.com/r0ysue/r0capture"}
+  - {id: r0tracer, name: "r0tracer", type: script, domain: android, bundled: false, status: active,
+     capability: "Frida-based Java-layer tracer: by-class/by-method wildcard hooking that auto-prints arguments, return values, call stacks and overloads for matched Java methods at runtime.",
+     when_to_use: "You know roughly which Java class/package handles signing or crypto and want to trace all its methods' args/returns/callstacks live (regex/wildcard) to find where a parameter is computed, without writing per-method hooks by hand.",
+     source: https://github.com/r0ysue/r0tracer, install: "git clone https://github.com/r0ysue/r0tracer"}
+  - {id: apktoolplus, name: "ApkToolPlus", type: tool, domain: android, bundled: false, status: active,
+     capability: "GUI APK analysis suite bundling decompile, dex/smali viewing, signature inspection, resource extraction and batch APK info parsing in one cross-platform tool.",
+     when_to_use: "You want an all-in-one desktop GUI to quickly inspect/decompile an APK (manifest, dex, resources, signature) without wiring up separate CLI tools; good first-pass triage of an unknown apk.",
+     source: https://github.com/CYRUS-STUDIO/ApkToolPlus, install: "git clone https://github.com/CYRUS-STUDIO/ApkToolPlus"}
+  - {id: frida-stalker-ollvm, name: "frida_stalker (OLLVM trace)", type: script, domain: android, bundled: false, status: active,
+     capability: "Frida Stalker scripts for native code: instruction- and register-level tracing, call/arg analysis and callstack capture to deobfuscate OLLVM control-flow-flattened functions in .so libraries.",
+     when_to_use: "You hit an OLLVM-protected native function in a .so (flattened control flow, opaque predicates) and need a runtime instruction/register trace via Frida Stalker to recover the real execution path/algorithm. Trigger: OLLVM, control-flow flattening, native algo trace.",
+     source: https://github.com/CYRUS-STUDIO/frida_stalker, install: "git clone https://github.com/CYRUS-STUDIO/frida_stalker"}
+  - {id: cyrus-frida-ssl-pinning-bypass, name: "frida-ssl-pinning-bypass (CYRUS)", type: script, domain: android, bundled: false, status: active,
+     capability: "Frida script bypassing both Java-layer (OkHttp CertificatePinner, TrustManager, NetworkSecurityConfig) and native-layer (BoringSSL/Conscrypt) certificate pinning to enable proxy-based HTTPS interception.",
+     when_to_use: "Proxy-based capture (Charles/Burp/mitmproxy) fails because of cert pinning at the Java AND native layer; you want one Frida unpinning script covering both so traffic flows through your proxy. Trigger: SSL pinning bypass, OkHttp CertificatePinner, native pinning.",
+     source: https://github.com/CYRUS-STUDIO/frida-ssl-pinning-bypass, install: "git clone https://github.com/CYRUS-STUDIO/frida-ssl-pinning-bypass"}
+  - {id: douyin-tiktok-sixgod-signs, name: "Douyin/TikTok Six-God Signature Algorithms", type: script, domain: android, bundled: false, status: active,
+     capability: "Reference collection reproducing ByteDance 'six-god' native signature algorithms — X-Ladon, X-Argus, X-Gorgon, X-Khronos, X-Medusa, X-Helios — plus device-registration logic for Douyin/TikTok APIs.",
+     when_to_use: "Target is a Douyin/TikTok API request carrying X-Argus / X-Gorgon / X-Ladon / X-Khronos / X-Medusa / X-Helios headers and you must regenerate these signatures or do device registration. Trigger: any of those X- headers on douyin.com / tiktok.",
+     source: https://github.com/xgxkxaxl/X-Ladon-X-Argus-X-Gorgon-X-Khronos-X-Medusa-X-Helios, install: "git clone https://github.com/xgxkxaxl/X-Ladon-X-Argus-X-Gorgon-X-Khronos-X-Medusa-X-Helios"}
+  - {id: taobao-reverse-documents, name: "Taobao/Alibaba Reverse Documents", type: script, domain: android, bundled: false, status: active,
+     capability: "Curated documents and notes on reversing Alibaba/Taobao/Xianyu apps, focused on libsgmain.so and the mtop request-signing scheme (x-sign / sign).",
+     when_to_use: "Target is an Alibaba-ecosystem app (Taobao/Tmall/Xianyu) whose mtop API requests are signed by libsgmain.so / SecurityGuard (x-sign, wua, sign params) and you need reference material on that signing pipeline.",
+     source: https://github.com/bytesFighting/taobao-reverse-documents, install: "git clone https://github.com/bytesFighting/taobao-reverse-documents"}
+  - {id: lamda, name: "lamda (firerpa)", type: platform, domain: android, bundled: false, status: active,
+     capability: "Android RPA/automation framework with gRPC API: programmatic UI control, app/file/process management, network/cert config, Frida integration, and anti-detection device control for RE and anti-bot research.",
+     when_to_use: "You need programmatic remote control of a real/rooted Android device (UI automation, app management, injecting Frida, scripting interactions) for large-scale RE or anti-bot data collection, scriptable via Python/gRPC. Trigger: Android RPA, device farm automation, agent-driven phone control.",
+     source: https://github.com/firerpa/lamda, install: "pip install lamda"}
+  - {id: hooker-android, name: "hooker (CreditTone)", type: tool, domain: android, bundled: false, status: active,
+     capability: "Frida-based Android RE toolkit: automatic hook-script generation, memory roaming/inspection, one-click SOCKS5 proxying, and JustTrustMe/BoringSSL SSL unpinning.",
+     when_to_use: "You want a batteries-included Frida toolkit to auto-generate hooks for a target class/method, roam process memory, force traffic through SOCKS5, and unpin SSL — instead of hand-writing each piece. Trigger: quick Frida hook scaffolding + proxy + unpinning combo.",
+     source: https://github.com/CreditTone/hooker, install: "git clone https://github.com/CreditTone/hooker"}
+  - {id: credittone-android-re-skill, name: "android-reverse-engineering-skill (CreditTone)", type: skill, domain: android, bundled: false, status: active,
+     capability: "Codex/Claude-adapted skill that decompiles APK/XAPK/JAR/AAR with jadx + Fernflower/Vineflower and maps manifest, packages, network layer (Retrofit/OkHttp) and call chains for static recon.",
+     when_to_use: "You want an agent skill to do static-first Android recon: decompile package, extract API endpoints, trace UI-to-network call chains before reaching for Frida/capture/JNI. Trigger: 'decompile APK and find the endpoints' as an automated skill.",
+     source: https://github.com/CreditTone/android-reverse-engineering-skill, install: "git clone https://github.com/CreditTone/android-reverse-engineering-skill"}
+  - {id: ai-mobile-reverse-skills, name: "ai-mobile-reverse-skills", type: skill, domain: android, bundled: false, status: active,
+     capability: "6-phase mobile-security orchestration skill (APK recon, traffic/code alignment, SO/JNI deep dive, crypto+vuln analysis, validation, report) that drives JADX/Burp/Yakit/IDA/Ghidra via MCP.",
+     when_to_use: "You want an end-to-end agent that orchestrates a full mobile RE/security audit across multiple MCP tools (JADX/IDA/Ghidra/Burp/Yakit) and produces a structured multi-phase report, not a single decompile step. Trigger: full mobile pentest pipeline orchestration.",
+     source: https://github.com/Fausto-404/ai-mobile-reverse-skills, install: "git clone https://github.com/Fausto-404/ai-mobile-reverse-skills"}
+  - {id: incogbyte-android-re-claude-skill, name: "android-reverse-engineering-claude-skill (incogbyte)", type: skill, domain: android, bundled: false, status: active,
+     capability: "Claude Code skill automating Android app reverse engineering (decompile, static analysis, RE workflow) authored by a mobile-security researcher.",
+     when_to_use: "You want a ready-made Claude Code skill packaging an Android RE workflow; use as an alternative/reference skill when setting up automated APK analysis in Claude Code.",
+     source: https://github.com/incogbyte/android-reverse-engineering-claude-skill, install: "git clone https://github.com/incogbyte/android-reverse-engineering-claude-skill"}

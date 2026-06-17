@@ -33,3 +33,13 @@ entries:
      capability: "Rust Hermes disassembler + assembler (HBC 89–96 round-trip patch)",
      when_to_use: "When you need to modify Hermes bytecode and repack (a replacement for the stalled hbctool)",
      source: https://github.com/Pilfer/hermes_rs}
+
+  # ── batch-added from collection shortlist (core, bundled:false) ──
+  - {id: repoaudit, name: "RepoAudit", type: agent, domain: framework, bundled: false, status: active,
+     capability: "Autonomous LLM agent for repository-level security auditing with cross-function dataflow/taint reasoning to discover vulnerabilities across an entire codebase.",
+     when_to_use: "You need to audit a whole source repository for vulnerabilities with an LLM agent that reasons about cross-function dataflow/taint (not single-file review). Trigger: 'find security bugs across this repo', repo-level vuln discovery with source available.",
+     source: https://github.com/PurCL/RepoAudit, install: "git clone https://github.com/PurCL/RepoAudit"}
+  - {id: sekiro-2, name: "SEKIRO", type: platform, domain: framework, bundled: false, status: active,
+     capability: "Distributed RPC / service-publishing platform that exposes handlers running inside a browser, app, or Frida process as a centrally-callable HTTP API (JSRPC), with multi-language client support and a request queue.",
+     when_to_use: "You want to call an algorithm that only runs inside a live environment (browser JS, Android app via Frida, hooked function) over HTTP — i.e. JSRPC to generate signatures/decrypt on demand without porting the algorithm. Trigger: JSRPC, expose in-app/in-browser signing function as an API.",
+     source: https://github.com/yint-tech/sekiro-open, install: "git clone https://github.com/yint-tech/sekiro-open"}

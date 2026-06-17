@@ -80,3 +80,169 @@ entries:
      capability: "LLVM-based open-source C decompiler (MIT)",
      when_to_use: "When you want fully open-source MIT C decompiler output (limited official maintenance)",
      source: https://github.com/avast/retdec}
+
+  # ── batch-added from collection shortlist (core, bundled:false) ──
+  - {id: trailofbits-skills, name: "Trail of Bits Skills", type: skill, domain: native, bundled: false, status: active,
+     capability: "Trail of Bits Claude Code skills for security audit: c-review, static-analysis (CodeQL/Semgrep/SARIF), differential-review, semgrep-rule-creator, variant-analysis, supply-chain-risk-auditor, constant-time-analysis, zeroize-audit, dwarf-expert.",
+     when_to_use: "You're auditing C/native or supply-chain code and want vetted audit skills: write Semgrep/CodeQL rules, run differential/variant analysis, check constant-time crypto or secret zeroization, or do SARIF static analysis.",
+     source: https://github.com/trailofbits/skills, install: "git clone https://github.com/trailofbits/skills"}
+  - {id: raptor-secagent, name: "Raptor", type: agent, domain: native, bundled: false, status: active,
+     capability: "CLAUDE.md-based autonomous offensive/defensive security agent: Semgrep/CodeQL + Z3 reasoning, 4-stage exploitability validation, AFL++ fuzzing and crash analysis, SBOM/SCA, PoC and patch generation.",
+     when_to_use: "You want an autonomous agent that finds a bug with Semgrep/CodeQL, proves exploitability with Z3 and a 4-stage pipeline, fuzzes with AFL++, then generates a PoC and patch — full vuln-to-exploit-to-fix loop on native code.",
+     source: https://github.com/gadievron/raptor, install: "git clone https://github.com/gadievron/raptor"}
+  - {id: ctf-skills-ljagiello, name: "ctf-skills", type: skill, domain: native, bundled: false, status: active,
+     capability: "Agent Skills pack for CTF: ctf-web, ctf-pwn (ROP/heap/kernel), ctf-crypto, ctf-reverse (custom VMs, WASM, anti-debug, Frida), ctf-forensics, ctf-osint, ctf-malware, ctf-misc, ctf-ai-ml.",
+     when_to_use: "You're solving a CTF challenge and want a category-routed skill pack — pwn ROP/heap/kernel, crypto, reverse (VM/WASM/anti-debug), web, forensics, OSINT, or ML — to pull the right playbook per challenge.",
+     source: https://github.com/ljagiello/ctf-skills, install: "git clone https://github.com/ljagiello/ctf-skills"}
+  - {id: reverse-skill-router, name: "reverse-skill", type: skill, domain: framework, bundled: false, status: active,
+     capability: "AI skill-router pack for RE/pentest/CTF: APK RE+Frida, IDA Pro/radare2 workflows, JS web RE, firmware OWASP FSTM, bindiff, exploit dev, EDR bypass, nmap/nuclei/sqlmap recon, patch-diff N-day, with MCP integration.",
+     when_to_use: "You want a broad skill-router covering many RE/pentest domains (APK+Frida, IDA/r2, JS web RE, firmware, bindiff, EDR bypass, recon, N-day patch-diff) and need the agent to dispatch to the right sub-skill per task.",
+     source: https://github.com/zhaoxuya520/reverse-skill, install: "git clone https://github.com/zhaoxuya520/reverse-skill"}
+  - {id: ghidra-cli-akiselev, name: "ghidra-cli", type: skill, domain: native, bundled: false, status: active,
+     capability: "Rust CLI + Claude skill bridging persistently to Ghidra's JVM over TCP for sub-second decompile/disasm, xrefs/call graphs, struct/type editing, binary patching, crypto-string search and batch ops.",
+     when_to_use: "You want fast (sub-second) repeated Ghidra decompile/xref/type-edit/patch calls from a persistent JVM bridge instead of slow per-call analyzeHeadless launches — high-throughput Ghidra scripting from CLI/agent.",
+     source: https://github.com/akiselev/ghidra-cli, install: "git clone https://github.com/akiselev/ghidra-cli"}
+  - {id: malware-analysis-skills, name: "malware-analysis-claude-skills", type: skill, domain: native, bundled: false, status: active,
+     capability: "5-skill malware analysis toolkit with orchestrator: malware-triage, dynamic-analysis (C2 capture), specialized-file-analyzer (.NET/Office/PDF/ELF), detection-engineer (Sigma/Suricata/YARA), report-writer; runs offline on REMnux/FlareVM.",
+     when_to_use: "You're analyzing a malware sample on REMnux/FlareVM and want orchestrated skills: triage, dynamic run with C2 capture, parse a malicious Office/PDF/.NET/ELF file, then author Sigma/Suricata/YARA detections and a report.",
+     source: https://github.com/gl0bal01/malware-analysis-claude-skills, install: "git clone https://github.com/gl0bal01/malware-analysis-claude-skills"}
+  - {id: frida-core, name: "Frida", type: tool, domain: native, bundled: false, status: active,
+     capability: "Dynamic instrumentation toolkit (Gadget/Server, JS API) for hooking Java and native code, patching, tracing and memory access across Android, iOS, Windows, Linux and macOS — the core engine under most hooking/unpacking/bypass workflows.",
+     when_to_use: "You need the underlying dynamic instrumentation engine itself — install frida/frida-tools and frida-server to hook, trace, patch or bypass on any platform; the base dependency for nearly all runtime RE skills here.",
+     source: https://github.com/frida/frida, install: "pip install frida-tools"}
+  - {id: rizin, name: "Rizin", type: tool, domain: native, bundled: false, status: active,
+     capability: "Community fork of radare2 focused on usability and a cleaner C API; reverse-engineering framework for disasm, analysis, debugging and patching, and the engine behind the Cutter GUI.",
+     when_to_use: "You want a radare2-style CLI/framework with a cleaner API and saner defaults for native disassembly/analysis/patching, or you're scripting the backend that Cutter sits on — choose over r2 when you prefer the rizin ecosystem.",
+     source: https://github.com/rizinorg/rizin, install: "git clone https://github.com/rizinorg/rizin"}
+  - {id: flare-floss, name: "FLOSS", type: tool, domain: native, bundled: false, status: active,
+     capability: "FLARE Obfuscated String Solver: emulates with vivisect to extract and decode static, stack, tight, and decoded strings from PE/ELF/.so binaries, recovering XOR/RC4-style obfuscated URLs, keys, C2.",
+     when_to_use: "You have a malware sample / packed PE / native .so where `strings` shows nothing useful and suspect URLs/keys/C2 are XOR-encoded, stack-built, or decoded at runtime; need automated deobfuscated string extraction before IDA/Ghidra.",
+     source: https://github.com/mandiant/flare-floss, install: "pip install flare-floss"}
+  - {id: qiling, name: "Qiling", type: platform, domain: native, bundled: false, status: active,
+     capability: "Cross-platform binary emulation/sandbox framework on top of Unicorn; loads and runs Windows/Linux/macOS/UEFI/MBR and ARM/MIPS firmware with hookable syscalls, OS APIs and memory for unpacking and dynamic analysis.",
+     when_to_use: "You need to run/instrument a binary or firmware blob without the native OS (e.g. emulate a Windows packer to dump OEP, sandbox a shellcode/.so, hook syscalls of an unrunnable arch) and want higher-level OS emulation than raw Unicorn.",
+     source: https://github.com/qilingframework/qiling, install: "pip install qiling"}
+  - {id: unicorn-engine, name: "Unicorn Engine", type: tool, domain: native, bundled: false, status: active,
+     capability: "Lightweight multi-arch CPU emulator (x86/ARM/ARM64/MIPS/PPC/SPARC/RISC-V) based on QEMU; executes raw code with register/memory hooks, the engine under emulation-based unpackers, fuzzers and signature reproducers.",
+     when_to_use: "You need to emulate a specific function or shellcode region at the CPU level (no OS) to reproduce an algorithm or trace execution—e.g. run an isolated decryption/sign routine extracted from a binary; building blocks for custom emulation tooling.",
+     source: https://github.com/unicorn-engine/unicorn, install: "pip install unicorn"}
+  - {id: capstone, name: "Capstone", type: tool, domain: native, bundled: false, status: active,
+     capability: "Multi-architecture disassembly framework (x86/ARM/ARM64/MIPS/PPC/SPARC/SystemZ/RISC-V) with detailed instruction decoding; the disassembler backbone of countless RE/analysis tools and Python/C bindings.",
+     when_to_use: "You need to programmatically disassemble bytes from a buffer/dump (parse opcodes, operands, groups) inside a custom script or tool—e.g. decode a self-modifying region, build a CFG, or feed an emulator.",
+     source: https://github.com/capstone-engine/capstone, install: "pip install capstone"}
+  - {id: diaphora, name: "Diaphora", type: tool, domain: native, bundled: false, status: active,
+     capability: "Advanced free program-diffing plugin for IDA; diffs CFGs/assembly/pseudocode between two IDBs, ports symbols/comments and surfaces patched functions to pinpoint vulnerabilities.",
+     when_to_use: "You have two versions of a binary (pre/post patch, or stripped vs symbolized) in IDA and need to find what changed or port names—e.g. 1-day patch-diffing a Windows update or matching symbols from an old build.",
+     source: https://github.com/joxeankoret/diaphora, install: "git clone https://github.com/joxeankoret/diaphora"}
+  - {id: ghidriff, name: "ghidriff", type: tool, domain: native, bundled: false, status: active,
+     capability: "Command-line Ghidra-powered binary diffing engine; headless, scriptable, emits markdown/JSON diffs of functions/symbols for patch analysis at scale (CI-friendly).",
+     when_to_use: "You want patch-diffing of two binaries without the IDA/Diaphora license, or need to automate diffs in a pipeline—e.g. batch-diff Patch Tuesday DLLs and get a markdown report of changed functions.",
+     source: https://github.com/clearbluejar/ghidriff, install: "pip install ghidriff"}
+  - {id: ghidrathon, name: "Ghidrathon", type: tool, domain: native, bundled: false, status: active,
+     capability: "FLARE Ghidra extension adding modern Python 3 scripting (replaces Jython), enabling capa/angr/unicorn/pip-installed libs to run inside Ghidra's scripting environment.",
+     when_to_use: "You're scripting Ghidra and need real Python 3 with pip packages (e.g. run capa, angr, or numpy against the current program) instead of Ghidra's stock Jython 2.",
+     source: https://github.com/mandiant/Ghidrathon, install: "git clone https://github.com/mandiant/Ghidrathon"}
+  - {id: unipacker, name: "unipacker", type: tool, domain: windows, bundled: false, status: active,
+     capability: "Automatic platform-independent emulation-based unpacker for Windows PE; uses Unicorn to run packed samples (UPX, ASPack, PEtite, FSG, MEW, MPRESS, YODA) and dumps a rebuilt binary at OEP with fixed imports.",
+     when_to_use: "You have a packed Windows .exe (UPX/ASPack/etc.) and want an automatic unpacked dump at the original entry point without manual OEP-finding in a debugger.",
+     source: https://github.com/unipacker/unipacker, install: "pip install unipacker"}
+  - {id: pwndbg, name: "pwndbg", type: tool, domain: native, bundled: false, status: active,
+     capability: "GDB plugin for low-level debugging and exploit dev: heap (glibc) inspection, telescope, context/registers view, disasm, ROP, and IDA/Ghidra sync for native Linux RE.",
+     when_to_use: "You're debugging an ELF/native target in GDB (CTF pwn, heap analysis, exploit dev) and want enhanced context, heap chunk inspection, and telescoped stack/memory views.",
+     source: https://github.com/pwndbg/pwndbg, install: "git clone https://github.com/pwndbg/pwndbg"}
+  - {id: tiktok-x-ladon-x-argus, name: "TikTok X-Ladon/X-Argus signatures", type: script, domain: native, bundled: false, status: active,
+     capability: "Reference implementations of TikTok mobile app-side signing: X-Ladon, X-Argus, X-Gorgon, X-Khronos, X-Log and TTEncrypt05, combining protobuf, SM3, SIMON cipher and AES.",
+     when_to_use: "Target is the TikTok/Douyin mobile API and requests carry X-Argus / X-Ladon / X-Gorgon / X-Khronos headers (or TTEncrypt05 bodies) that you must reproduce to sign native-app requests.",
+     source: https://github.com/yijinpong/tiktok-x-ladon-x-argus, install: "git clone https://github.com/yijinpong/tiktok-x-ladon-x-argus"}
+  - {id: pentestgpt, name: "PentestGPT", type: agent, domain: native, bundled: false, status: active,
+     capability: "LLM-powered automated penetration-testing agent (USENIX Security 2024) with task-tree reasoning, session persistence and multi-model backends (OpenAI/Anthropic/Gemini/Ollama).",
+     when_to_use: "You want an interactive LLM copilot to guide an end-to-end pentest (recon -> exploit -> privesc) on a box/CTF, maintaining state across steps rather than running a single tool.",
+     source: https://github.com/GreyDGL/PentestGPT, install: "pip install pentestgpt"}
+  - {id: hackingbuddygpt, name: "hackingBuddyGPT", type: agent, domain: native, bundled: false, status: active,
+     capability: "LLM-driven assistant that autonomously connects over SSH and iterates Linux privilege-escalation / security assessment commands; research-grade ethical-hacking agent.",
+     when_to_use: "You have SSH access to a target Linux host and want an autonomous LLM agent to attempt privilege escalation / assessment by issuing and adapting shell commands.",
+     source: https://github.com/ipa-lab/hackingBuddyGPT, install: "pip install hackingbuddygpt"}
+  - {id: cai-cybersecurity-ai, name: "CAI (Cybersecurity AI)", type: agent, domain: native, bundled: false, status: active,
+     capability: "MIT-licensed bug-bounty-ready offensive+defensive AI agent framework with Agents/Tools/Handoffs/Patterns/HITL/tracing primitives for building security automation.",
+     when_to_use: "You want a programmable agentic framework to build/run custom offensive or defensive security workflows (bug bounty recon, multi-agent handoffs) with human-in-the-loop control and tracing.",
+     source: https://github.com/aliasrobotics/cai, install: "pip install cai-framework"}
+  - {id: vulnhuntr, name: "vulnhuntr", type: tool, domain: web, bundled: false, status: active,
+     capability: "LLM + static analysis that traces remote-user-input-to-sink call chains (LFI/RCE/SSRF/XSS/IDOR/SQLi) across Python codebases to surface complex multi-step 0-day vulns.",
+     when_to_use: "You have a Python web/app codebase and want automated discovery of input-to-dangerous-sink vulnerability chains beyond what grep/regex SAST finds.",
+     source: https://github.com/protectai/vulnhuntr, install: "pip install vulnhuntr"}
+  - {id: pentagi, name: "PentAGI", type: agent, domain: native, bundled: false, status: active,
+     capability: "Fully autonomous multi-agent penetration-testing system, Dockerized, with a built-in MCP registry for plugging in external tools; orchestrates recon-to-exploit workflows.",
+     when_to_use: "You want a self-hosted, fully autonomous multi-agent pentest platform (vs an interactive copilot) that can integrate external tools via MCP and run in containers.",
+     source: https://github.com/vxcontrol/pentagi, install: "git clone https://github.com/vxcontrol/pentagi"}
+  - {id: llm4decompile, name: "LLM4Decompile", type: tool, domain: native, bundled: false, status: active,
+     capability: "Open LLM family (1.3B-33B) trained to decompile x86_64 binaries to C and to refine/clean Ghidra pseudocode into readable source.",
+     when_to_use: "You have raw x86_64 assembly or messy Ghidra pseudocode and want an LLM to produce readable, recompilable-ish C to speed up understanding a function.",
+     source: https://github.com/albertan017/LLM4Decompile, install: "pip install llm4decompile"}
+  - {id: reverser-ai, name: "reverser_ai", type: tool, domain: native, bundled: false, status: active,
+     capability: "Local-LLM reverse-engineering assistant (runs on consumer hardware) that auto-suggests meaningful function names from Binary Ninja/decompiler output, fully offline.",
+     when_to_use: "You're triaging many stripped functions in Binary Ninja and want offline, local-LLM auto-naming suggestions without sending code to a cloud API.",
+     source: https://github.com/mrphrazer/reverser_ai, install: "pip install reverser_ai"}
+  - {id: ghidrassist, name: "GhidrAssist", type: tool, domain: native, bundled: false, status: active,
+     capability: "LLM extension for Ghidra adding AI function explanation/renaming and an MCP client so the model can drive tool-based analysis actions inside Ghidra.",
+     when_to_use: "You work in Ghidra and want inline LLM explain/rename plus an MCP-driven agent loop over the decompiler, rather than copy-pasting pseudocode to an external chat.",
+     source: https://github.com/symgraph/GhidrAssist, install: "git clone https://github.com/symgraph/GhidrAssist"}
+  - {id: oss-fuzz-gen, name: "OSS-Fuzz-Gen", type: tool, domain: native, bundled: false, status: active,
+     capability: "Google framework that uses LLMs to auto-generate and auto-fix fuzz harnesses for C/C++/Java/Python and benchmark them against OSS-Fuzz; has found 30+ new bugs.",
+     when_to_use: "You want LLM-assisted automatic fuzz-target generation for a C/C++/Java/Python library (improve coverage, find new crashes) integrated with the OSS-Fuzz workflow.",
+     source: https://github.com/google/oss-fuzz-gen, install: "git clone https://github.com/google/oss-fuzz-gen"}
+  - {id: awesome-ai-hacking-agents, name: "Awesome AI Hacking Agents", type: platform, domain: framework, bundled: false, status: active,
+     capability: "Curated catalog (88+ open-source) of AI/agentic hacking, pentest and vuln-research projects including MCP servers; a discovery index, not a runnable tool.",
+     when_to_use: "You need to discover existing AI/agentic offensive-security tools or MCP servers for a task and want a curated starting list rather than a specific capability.",
+     source: https://github.com/EvanThomasLuke/Awesome-AI-Hacking-Agents}
+  - {id: awesome-mcp-servers, name: "Awesome MCP Servers", type: platform, domain: framework, bundled: false, status: active,
+     capability: "The largest curated index of Model Context Protocol servers across every category; primary source for mining MCP integrations.",
+     when_to_use: "You need to find an existing MCP server for a given integration/capability (RE, scanning, data source) and want the broadest curated index to search.",
+     source: https://github.com/punkpeye/awesome-mcp-servers}
+  - {id: awesome-ai-reverse, name: "Awesome AI Reverse", type: platform, domain: framework, bundled: false, status: active,
+     capability: "Curated index of AI-driven RE tooling: MCP servers, Cursor/Claude skills, IDE plugins for JS/binary/Android/traffic reverse engineering.",
+     when_to_use: "You need to discover an MCP server, Claude/Cursor skill, or IDE plugin for an AI-assisted RE task and want a meta-index to browse; not a runnable tool itself.",
+     source: https://github.com/darbra/awesome-ai-reverse}
+  - {id: scapy, name: "Scapy", type: tool, domain: native, bundled: false, status: active,
+     capability: "Python packet manipulation library: forge/decode multi-protocol packets, send/sr/sr1/srp on the wire, live sniff() with BPF filters, read/write pcap.",
+     when_to_use: "Task requires crafting or decoding raw network packets, injecting custom frames, live sniffing with BPF, or programmatic pcap parsing/rewrite from Python.",
+     source: https://github.com/secdev/scapy, install: "pip install scapy"}
+  - {id: bettercap, name: "bettercap", type: tool, domain: native, bundled: false, status: active,
+     capability: "Go MITM/recon Swiss-army knife for 802.11 WiFi, BLE, HID, CAN-bus, IPv4/IPv6; ARP/DNS spoofing, monitor-mode capture, credential sniffing, scriptable REST/JS API.",
+     when_to_use: "You need active MITM, ARP/DNS spoofing, WiFi monitor-mode capture, or BLE/CAN recon on a live network; or a scriptable capture framework to wrap.",
+     source: https://github.com/bettercap/bettercap, install: "go install github.com/bettercap/bettercap@latest"}
+  - {id: aircrack-ng, name: "aircrack-ng / airodump-ng", type: tool, domain: native, bundled: false, status: active,
+     capability: "WiFi auditing suite: airmon-ng enables monitor mode, airodump-ng captures raw 802.11 frames and WPA handshakes (pcap/csv/kismet/netxml), aircrack-ng cracks WEP/WPA keys.",
+     when_to_use: "Task needs interface-level 802.11 monitor-mode capture, grabbing WPA/WPA2 handshakes, or cracking captured WiFi keys.",
+     source: https://github.com/aircrack-ng/aircrack-ng, install: "git clone https://github.com/aircrack-ng/aircrack-ng"}
+  - {id: douyin-algorithm, name: "Douyin Six-God Algorithm", type: script, domain: native, bundled: false, status: active,
+     capability: "C++ implementation of Douyin native signatures: X-Ladon, X-Argus, X-Gorgon, X-Khronos, X-Helios, X-Medusa (the 'six gods').",
+     when_to_use: "Target is douyin/TikTok native API requiring X-Ladon/X-Argus/X-Gorgon/X-Khronos/X-Helios/X-Medusa headers and you need a reference C++ implementation of these signatures.",
+     source: https://github.com/huaerxiela/douyin-algorithm, install: "git clone https://github.com/huaerxiela/douyin-algorithm"}
+  - {id: p4nda-reverse-skills, name: "P4nda0s reverse-skills", type: skill, domain: native, bundled: false, status: active,
+     capability: "Reverse engineering Claude Code skill pack (Chinese-authored) covering common RE workflows.",
+     when_to_use: "You want a ready-made Claude Code RE skill bundle for general reverse-engineering tasks; well-known Chinese RE skill pack.",
+     source: https://github.com/P4nda0s/reverse-skills, install: "git clone https://github.com/P4nda0s/reverse-skills"}
+  - {id: iothackbot, name: "IoT HackBot", type: skill, domain: native, bundled: false, status: active,
+     capability: "Claude Skills plus custom tooling for hybrid IoT pentesting (firmware/hardware/network).",
+     when_to_use: "Task is IoT device pentest — firmware extraction, hardware/network attack surface — and you want a Claude skill harness purpose-built for IoT.",
+     source: https://github.com/BrownFineSecurity/iothackbot, install: "git clone https://github.com/BrownFineSecurity/iothackbot"}
+  - {id: secskills, name: "DaoYiSec SecSkills", type: skill, domain: framework, bundled: false, status: active,
+     capability: "Curated collection of cybersecurity Claude Skills and MCP servers for pentest, vuln scanning, code audit, CTF, RE, and security research.",
+     when_to_use: "You need to find a security-focused Claude Skill or MCP for pentest/CTF/code-audit/RE and want a curated index to pull from.",
+     source: https://github.com/DaoYiSec/SecSkills, install: "git clone https://github.com/DaoYiSec/SecSkills"}
+  - {id: wpegpt-analyzer, name: "WPeGPT Analyzer", type: skill, domain: native, bundled: false, status: active,
+     capability: "Portable RE skill driving IDA + WPeGPT plugin for automated PE/ELF analysis in light/full/vuln modes with generated reports.",
+     when_to_use: "You have a PE/ELF binary and IDA available and want an agent skill to auto-run IDA analysis (light triage, full decompile, or vuln hunt) and produce a report.",
+     source: https://github.com/WPeace-HcH/WPeGPT-Analyzer, install: "git clone https://github.com/WPeace-HcH/WPeGPT-Analyzer"}
+  - {id: kali-pentest, name: "Kali Pentest Skill", type: skill, domain: framework, bundled: false, status: active,
+     capability: "Kali Linux pentest skill for AI agents: 200+ CLI tools, 15 scenario playbooks, autonomous attack-path planning with human approval gates.",
+     when_to_use: "You want an agent to drive Kali CLI tooling through scenario playbooks for a full pentest with approval gates; routes general Kali-based offensive tasks.",
+     source: https://github.com/x-glacier/kali-pentest, install: "git clone https://github.com/x-glacier/kali-pentest"}
+  - {id: pownie, name: "Pownie", type: skill, domain: framework, bundled: false, status: active,
+     capability: "Claude Code plugin (skills + hooks + memory) tuned as an autonomous offsec/CTF agent harness.",
+     when_to_use: "You want a Claude Code harness with hooks and persistent memory specialized for autonomous pentest/CTF workflows.",
+     source: https://github.com/d0gesec/pownie, install: "git clone https://github.com/d0gesec/pownie"}
+  - {id: cybersec-toolkit, name: "Cybersec Toolkit", type: skill, domain: framework, bundled: false, status: active,
+     capability: "One-command installer for 580+ security tools (Linux/Termux) plus authorization-gated MCP and 870+ Claude Code skills for CTF/pentest/bug-bounty/DFIR/red-blue team.",
+     when_to_use: "You need to bulk-install a large security toolset and a broad skill+MCP suite for CTF/pentest/bug-bounty/DFIR on Linux or Termux.",
+     source: https://github.com/26zl/cybersec-toolkit, install: "git clone https://github.com/26zl/cybersec-toolkit"}

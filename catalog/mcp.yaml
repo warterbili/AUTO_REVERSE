@@ -65,3 +65,225 @@ entries:
      capability: "RE/malware/firmware: 3 agents + 4 skills (anti-reversing / binary patterns / memory forensics / protocol reversing) orchestrating desktop binary tools",
      when_to_use: "When desktop-binary / malware analysis needs a ready-made agent workflow (includes ethical gating)",
      source: https://github.com/wshobson/agents}
+
+  # ── batch-added from collection shortlist (core, bundled:false) ──
+  - {id: ghidra-mcp-lauriewired, name: "GhidraMCP", type: mcp, domain: native, bundled: false, status: active,
+     capability: "Flagship Ghidra MCP server: LLM-driven decompilation of functions, symbol/variable renaming, comment annotation, xref queries and listing over a running Ghidra instance.",
+     when_to_use: "You have a native binary/.so/.exe open (or to open) in Ghidra and want the agent to decompile functions, rename symbols, and walk xrefs autonomously via MCP; the canonical Ghidra MCP reference impl.",
+     source: https://github.com/LaurieWired/GhidraMCP, install: "git clone https://github.com/LaurieWired/GhidraMCP"}
+  - {id: binary-ninja-headless-mcp, name: "Binary Ninja Headless MCP", type: mcp, domain: native, bundled: false, status: commercial,
+     capability: "Headless (no-GUI) Binary Ninja MCP server exposing ~180 tools: disassembly, HLIL/MLIL IL access, binary patching, type editing and xref traversal for AI agents.",
+     when_to_use: "You have a Binary Ninja license and want to drive headless BN from an agent for IL-level analysis/patching/type work on native binaries without the GUI.",
+     source: https://github.com/mrphrazer/binary-ninja-headless-mcp, install: "git clone https://github.com/mrphrazer/binary-ninja-headless-mcp"}
+  - {id: jadx-mcp-server-zinja, name: "JADX MCP Server (zinja-coder)", type: mcp, domain: android, bundled: false, status: active,
+     capability: "Python MCP server plus JADX-AI plugin: APK decompilation, AndroidManifest parsing, class/method inspection and LLM-assisted vulnerability hunting.",
+     when_to_use: "You need an agent to decompile an APK with JADX and inspect classes/methods/manifest over MCP, or hunt Android vulns; pair with the JADX-AI plugin.",
+     source: https://github.com/zinja-coder/jadx-mcp-server, install: "git clone https://github.com/zinja-coder/jadx-mcp-server"}
+  - {id: jadx-mcp-plugin-mhl, name: "Jadx-MCP-Plugin (Mobile Hacking Lab)", type: mcp, domain: android, bundled: false, status: active,
+     capability: "JADX MCP plugin exposing the live JADX decompiler instance to MCP clients for real-time Android reverse engineering.",
+     when_to_use: "You already run JADX-GUI and want to attach an MCP client to the live decompiler session for interactive Android RE (alternative to zinja-coder's server).",
+     source: https://github.com/mobilehackinglab/Jadx-MCP-Plugin, install: "git clone https://github.com/mobilehackinglab/Jadx-MCP-Plugin"}
+  - {id: x64dbg-mcp-bromoket, name: "x64dbg MCP", type: mcp, domain: windows, bundled: false, status: active,
+     capability: "MCP server for the x64dbg debugger exposing ~152 tools for dynamic Windows debugging: breakpoints, stepping, memory/register read-write, module enumeration driven by an LLM.",
+     when_to_use: "You're dynamically debugging a Windows PE in x64dbg and want an agent to set breakpoints, step, and read/write memory and registers over MCP.",
+     source: https://github.com/bromoket/x64dbg_mcp, install: "git clone https://github.com/bromoket/x64dbg_mcp"}
+  - {id: arkana-malware-mcp, name: "Arkana", type: mcp, domain: native, bundled: false, status: active,
+     capability: "All-in-one malware-analysis MCP lab with ~290 tools: decompilation, symbolic execution, debugging, YARA/capa/FLOSS, emulation (Qiling/Speakeasy), .NET deobfuscation and a web dashboard.",
+     when_to_use: "You want a single agent-driven lab to triage a malware sample end-to-end (decompile + capa/FLOSS/YARA + emulate via Qiling/Speakeasy + .NET deobf) instead of wiring tools individually.",
+     source: https://github.com/JameZUK/Arkana, install: "git clone https://github.com/JameZUK/Arkana"}
+  - {id: remnux-mcp-server, name: "REMnux MCP Server", type: mcp, domain: native, bundled: false, status: active,
+     capability: "MCP server over the REMnux malware-analysis distro: auto-suggests appropriate tools, fetches their help, and runs full analysis tool-chains for an LLM.",
+     when_to_use: "You run the REMnux distro and want an agent to pick and chain its malware-analysis tools automatically on a sample.",
+     source: https://github.com/REMnux/remnux-mcp-server, install: "git clone https://github.com/REMnux/remnux-mcp-server"}
+  - {id: mcp-for-security-cyproxio, name: "MCP for Security", type: mcp, domain: web, bundled: false, status: active,
+     capability: "Collection of MCP servers wrapping Nmap, Masscan, SQLMap, FFUF and more for AI-driven pentest workflows including active network recon and live host/port scanning.",
+     when_to_use: "You need an agent to run network/web pentest tooling (Nmap host discovery, Masscan high-rate scans, SQLMap, FFUF) over MCP for authorized recon and scanning.",
+     source: https://github.com/cyproxio/mcp-for-security, install: "git clone https://github.com/cyproxio/mcp-for-security"}
+  - {id: mcp-security-hub-fuzzinglabs, name: "MCP Security Hub", type: mcp, domain: web, bundled: false, status: active,
+     capability: "Collection of ~38 offensive-security MCP servers spanning recon, fuzzing, binary analysis, threat intel, OSINT and network scanning (incl. Nmap).",
+     when_to_use: "You want a broad catalog of offensive-security MCP servers to bolt onto an assistant (recon + fuzzing + binary + OSINT) rather than picking one tool.",
+     source: https://github.com/FuzzingLabs/mcp-security-hub, install: "git clone https://github.com/FuzzingLabs/mcp-security-hub"}
+  - {id: hexstrike-ai, name: "HexStrike AI", type: mcp, domain: web, bundled: false, status: active,
+     capability: "AI-driven offensive/exploitation orchestration framework that wires many security tools into agent reasoning, exposed as an MCP-integrated tool server.",
+     when_to_use: "You want autonomous agent orchestration of a full offensive tool stack (recon to exploitation) rather than manually invoking individual tools.",
+     source: https://github.com/0x4m4/hexstrike-ai, install: "git clone https://github.com/0x4m4/hexstrike-ai"}
+  - {id: pentest-ai-0xsteph, name: "pentest-ai (0xSteph)", type: mcp, domain: web, bundled: false, status: active,
+     capability: "Offensive-security MCP server with 205 wrapped tools, 17 specialist agents and 60 SPA-aware OWASP Top 10 probes; CLI + MCP with bring-your-own LLM.",
+     when_to_use: "You're testing a modern SPA/web app and want SPA-aware OWASP Top 10 probes plus specialist agents driven via CLI or MCP with your own LLM.",
+     source: https://github.com/0xsteph/pentest-ai, install: "git clone https://github.com/0xsteph/pentest-ai"}
+  - {id: pentest-mcp-dmontgomery, name: "pentest-mcp (DMontgomery40)", type: mcp, domain: native, bundled: false, status: active,
+     capability: "Pentest MCP server with STDIO/HTTP/SSE transports wrapping nmap, gobuster/dirbuster, nikto, John the Ripper, hashcat and wordlist building.",
+     when_to_use: "You want an agent to run nmap scanning, dir busting (gobuster), nikto and cracking (John/hashcat) over a choice of STDIO/HTTP/SSE MCP transports.",
+     source: https://github.com/DMontgomery40/pentest-mcp, install: "git clone https://github.com/DMontgomery40/pentest-mcp"}
+  - {id: metasploit-mcp-gh05tcrew, name: "MetasploitMCP", type: mcp, domain: native, bundled: false, status: active,
+     capability: "MCP server bridging LLMs to the Metasploit Framework for dynamic exploit selection, payload configuration and session control.",
+     when_to_use: "You want an agent to drive Metasploit (pick modules, configure payloads, manage sessions) over MCP for authorized exploitation.",
+     source: https://github.com/GH05TCREW/MetasploitMCP, install: "git clone https://github.com/GH05TCREW/MetasploitMCP"}
+  - {id: burp-mcp-portswigger, name: "Burp Suite MCP Server (official)", type: mcp, domain: web, bundled: false, status: active,
+     capability: "Official Burp Suite extension over MCP (SSE at 127.0.0.1:9876 + stdio proxy JAR): query proxy history, inspect full raw HTTP request/response, and drive programmatic interception.",
+     when_to_use: "You have Burp Suite running and want an agent to read captured proxy traffic (full raw HTTP) and programmatically intercept/replay requests for web/API analysis.",
+     source: https://github.com/PortSwigger/mcp-server, install: "git clone https://github.com/PortSwigger/mcp-server"}
+  - {id: burpmcp-ultra, name: "BurpMCP-Ultra", type: mcp, domain: web, bundled: false, status: commercial,
+     capability: "Comprehensive Burp Suite Pro MCP server (137 tools): real-time dashboard, custom scan checks, inline fuzzer, race-condition testing, auth diffing, and 30+ sensitive-data pattern scanning over captured proxy traffic.",
+     when_to_use: "You have Burp Suite Professional and want an agent for race-condition tests, auth diffing, inline fuzzing, and secret/PII scanning across captured flows beyond the official Burp MCP.",
+     source: https://github.com/Cy-S3c/BurpMCP-Ultra, install: "git clone https://github.com/Cy-S3c/BurpMCP-Ultra"}
+  - {id: nuclei-mcp-addcontent, name: "Nuclei MCP", type: mcp, domain: web, bundled: false, status: active,
+     capability: "Go MCP server for the Nuclei scanner enabling context-aware, targeted template-based vulnerability scanning driven by an LLM.",
+     when_to_use: "You want an agent to run Nuclei template-based vuln scans against a target with context-aware template selection over MCP.",
+     source: https://github.com/addcontent/nuclei-mcp, install: "git clone https://github.com/addcontent/nuclei-mcp"}
+  - {id: mcp-shodan-burtthecoder, name: "MCP Shodan", type: mcp, domain: web, bundled: false, status: active,
+     capability: "MCP server for the Shodan API plus CVEDB: IP recon, DNS lookups, exposed-device search and CVE/CPE vulnerability intelligence.",
+     when_to_use: "You need an agent to do passive recon via Shodan (IP/device search, DNS) and pull CVE/CPE intel for a target's attack surface.",
+     source: https://github.com/BurtTheCoder/mcp-shodan, install: "git clone https://github.com/BurtTheCoder/mcp-shodan"}
+  - {id: osint-mcp-server-badchars, name: "OSINT MCP Server", type: mcp, domain: web, bundled: false, status: active,
+     capability: "OSINT MCP server with 37 tools across 12 sources (Shodan, VirusTotal, Censys, SecurityTrails, WHOIS, certificate transparency, BGP, Wayback) for attack-surface mapping.",
+     when_to_use: "You want one agent to fan out OSINT across Shodan/VirusTotal/Censys/SecurityTrails/WHOIS/cert-transparency/Wayback to map a target's external attack surface.",
+     source: https://github.com/badchars/osint-mcp-server, install: "git clone https://github.com/badchars/osint-mcp-server"}
+  - {id: atomic-red-team-mcp, name: "Atomic Red Team MCP", type: mcp, domain: native, bundled: false, status: active,
+     capability: "MCP server exposing Atomic Red Team adversary-emulation tests (mapped to MITRE ATT&CK) to AI assistants.",
+     when_to_use: "You want an agent to run Atomic Red Team ATT&CK-mapped adversary-emulation tests for detection validation/purple-teaming.",
+     source: https://github.com/cyberbuff/atomic-red-team-mcp, install: "git clone https://github.com/cyberbuff/atomic-red-team-mcp"}
+  - {id: cobaltstrike-mcp-server, name: "Cobalt Strike MCP Server", type: mcp, domain: native, bundled: false, status: commercial,
+     capability: "Official Cobalt Strike MCP server that auto-exposes its REST API endpoints as MCP tools for LLM-driven C2 interaction.",
+     when_to_use: "You operate a licensed Cobalt Strike team server and want an agent to drive C2 (listeners/beacons/tasks) via its REST API over MCP.",
+     source: https://github.com/Cobalt-Strike/cobaltstrike-mcp-server, install: "git clone https://github.com/Cobalt-Strike/cobaltstrike-mcp-server"}
+  - {id: sliver-c2-mcp-schwarztim, name: "Sliver C2 MCP", type: mcp, domain: native, bundled: false, status: active,
+     capability: "MCP server for the Sliver C2 framework: manage sessions, beacons, listeners and implants for authorized red-team operations.",
+     when_to_use: "You run a Sliver C2 server and want an agent to manage sessions/beacons/listeners/implants over MCP for authorized red-team ops.",
+     source: https://github.com/schwarztim/sec-sliver-c2-mcp, install: "git clone https://github.com/schwarztim/sec-sliver-c2-mcp"}
+  - {id: mcp-zap-server, name: "OWASP ZAP MCP Server", type: mcp, domain: web, bundled: false, status: active,
+     capability: "Self-hosted MCP wrapper around OWASP ZAP daemon: spider, passive/active scan, OpenAPI/import-driven API scans, alert retrieval and HTML/JSON report generation with production guardrails.",
+     when_to_use: "You have a web app target URL and want an AI agent to drive OWASP ZAP for authorized DAST: spider the site, run active/passive scans, import an OpenAPI spec, and pull scanner findings/reports.",
+     source: https://github.com/dtkmn/mcp-zap-server, install: "git clone https://github.com/dtkmn/mcp-zap-server"}
+  - {id: kali-mcp, name: "Kali Linux MCP", type: mcp, domain: native, bundled: false, status: active,
+     capability: "Dockerized Kali Linux exposed over MCP (SSE) giving an AI assistant controlled shell access to the full Kali pentest toolset (nmap, sqlmap, metasploit, gobuster, etc.).",
+     when_to_use: "You need an AI agent to run arbitrary Kali pentest CLI tools (nmap/sqlmap/gobuster/hydra) inside a sandboxed container during an authorized engagement, rather than wiring each tool individually.",
+     source: https://github.com/k3nn3dy-ai/kali-mcp, install: "git clone https://github.com/k3nn3dy-ai/kali-mcp"}
+  - {id: burp-mcp-server, name: "Burp Suite MCP Server", type: mcp, domain: web, bundled: false, status: active,
+     capability: "Burp MCP server + CLI + extension orchestrator: send raw HTTP requests, read proxy history, pull scanner findings, stage Repeater/Intruder jobs, and run HTTP race-condition attacks via AI.",
+     when_to_use: "You have Burp Suite proxying a web target and want an AI agent to query proxy history, replay/modify requests, drive Intruder/Repeater, or launch race-condition attacks programmatically.",
+     source: https://github.com/c0tton-fluff/burp-mcp-server, install: "git clone https://github.com/c0tton-fluff/burp-mcp-server"}
+  - {id: ddddocr-mcp-server, name: "ddddocr MCP Server", type: mcp, domain: web, bundled: false, status: active,
+     capability: "MCP server fronting ddddocr: text/captcha OCR, object detection, and slider-gap (滑块缺口) position matching for captcha solving directly inside an AI pipeline.",
+     when_to_use: "A target shows a text captcha or slider-puzzle (滑块验证) blocking an API/login flow and you need the AI to OCR the captcha or compute the slider gap offset to pass it.",
+     source: https://github.com/ymeng98/ddddocr-mcp-server, install: "git clone https://github.com/ymeng98/ddddocr-mcp-server"}
+  - {id: wireshark-mcp, name: "Wireshark MCP", type: mcp, domain: native, bundled: false, status: active,
+     capability: "Drop a .pcap and query it in plain English over 40+ tshark-backed tools: packet/field extraction, protocol deep-dives, statistics, credential scanning, threat-intel and live capture (dumpcap/capinfos/mergecap/editcap).",
+     when_to_use: "You have a .pcap/.pcapng and want an AI to answer questions about it (which protocols, extract fields, find credentials, follow streams) backed by real tshark output instead of parsing manually.",
+     source: https://github.com/bx33661/Wireshark-MCP, install: "git clone https://github.com/bx33661/Wireshark-MCP"}
+  - {id: sample-pcap-analyzer-mcp, name: "AWS PCAP Analyzer MCP", type: mcp, domain: native, bundled: false, status: active,
+     capability: "Wireshark/tshark-backed MCP with 31 tools across interface mgmt, live interface capture, TLS/SSL analysis, TCP analysis and performance metrics; runs stdio/SSE locally or HTTP/JSON-RPC via AgentCore Gateway.",
+     when_to_use: "You need an AI to do LIVE interface packet capture plus pcap forensics with TLS/SSL and TCP deep-dive analysis, especially in an AWS/AgentCore deployment context.",
+     source: https://github.com/aws-samples/sample-pcap-analyzer-mcp, install: "git clone https://github.com/aws-samples/sample-pcap-analyzer-mcp"}
+  - {id: suricata-mcp, name: "Suricata IDS/IPS MCP", type: mcp, domain: native, bundled: false, status: active,
+     capability: "MCP for Suricata EVE-JSON log analysis + Zeek NSM log correlation (36 tools): alert investigation, flow/protocol dissection, rule mgmt, C2-beaconing/DGA-entropy/exfiltration/lateral-movement detection, MISP+TheHive intel, PCAP replay.",
+     when_to_use: "You have Suricata EVE JSON alerts and/or Zeek conn/dns/http/tls logs and want an AI to investigate alerts, correlate flows, hunt C2 beaconing or DGA, and manage detection rules.",
+     source: https://github.com/solomonneas/suricata-mcp, install: "git clone https://github.com/solomonneas/suricata-mcp"}
+  - {id: mitmproxy-mcp-snapspecter, name: "mitmproxy MCP (snapspecter)", type: mcp, domain: web, bundled: false, status: active,
+     capability: "Wraps mitmproxy over MCP: start/stop proxy, inspect full req/resp cycles, filter by domain/method, intercept+modify flows, set global headers, plus curl-cffi stealth replay (Chrome/Safari TLS impersonation), CSRF/token extraction, fuzzing and OpenAPI generation.",
+     when_to_use: "You want an AI agent to run a LIVE mitmproxy, capture HTTPS flows, then replay requests with a real browser TLS fingerprint (curl-cffi impersonate) to bypass TLS-fingerprint anti-bot checks.",
+     source: https://github.com/snapspecter/mitmproxy-mcp, install: "git clone https://github.com/snapspecter/mitmproxy-mcp"}
+  - {id: mitmproxy-mcp-lucasoeth, name: "mitmproxy MCP (lucasoeth)", type: mcp, domain: web, bundled: false, status: active,
+     capability: "MCP to query already-captured mitmproxy sessions: list req/resp (method/URL/status/content), fetch full flow detail, extract JSON body fields via JSONPath, and analyze flows for bot-protection mechanisms / challenge extraction.",
+     when_to_use: "You already have a captured mitmproxy session and want an AI to list/inspect the flows, JSONPath-extract fields, and specifically identify bot-protection challenges in the traffic.",
+     source: https://github.com/lucasoeth/mitmproxy-mcp, install: "git clone https://github.com/lucasoeth/mitmproxy-mcp"}
+  - {id: yorishiro-proxy, name: "Yorishiro AI-native MITM Proxy", type: mcp, domain: web, bundled: false, status: active,
+     capability: "Go MITM proxy as MCP with protocol-typed tooling for HTTP/1.x, HTTPS, HTTP/2, gRPC, WebSocket, raw TCP, SOCKS5; per-protocol resend with header/body/JSON-patch overrides, real-time hold/modify/drop interception, macro workflows, export to JSONL/HAR/cURL.",
+     when_to_use: "You are reversing a gRPC or WebSocket (not just plain HTTP) API and need an AI to intercept, modify and resend those typed flows with variable-extraction macros.",
+     source: https://github.com/usk6666/yorishiro-proxy, install: "git clone https://github.com/usk6666/yorishiro-proxy"}
+  - {id: har-mcp, name: "HAR File MCP", type: mcp, domain: web, bundled: false, status: active,
+     capability: "MCP server to parse and query HAR (HTTP Archive) files for AI inspection of captured network traffic, with built-in redaction of sensitive auth headers.",
+     when_to_use: "You have a .har export from browser devtools or a proxy and want an AI to inspect the captured requests/responses without running a live proxy.",
+     source: https://github.com/tjamet/har-mcp, install: "git clone https://github.com/tjamet/har-mcp"}
+  - {id: playwright-min-network-mcp, name: "Playwright Min Network MCP", type: mcp, domain: web, bundled: false, status: active,
+     capability: "Minimal 3-tool MCP that captures, filters and analyzes browser network traffic via CDP during Playwright automation, letting an LLM query XHR/fetch flows in real time.",
+     when_to_use: "You are driving a page with Playwright and just need lightweight live capture/filter of its XHR/fetch requests to discover API endpoints, without a heavy proxy stack.",
+     source: https://github.com/bun913/playwright-min-network-mcp, install: "npm i playwright-min-network-mcp"}
+  - {id: playwright-mcp, name: "Microsoft Playwright MCP", type: mcp, domain: web, bundled: false, status: active,
+     capability: "Official Playwright browser-automation MCP; among its tools it lists network requests a page makes so an agent can capture/review HTTP(S) traffic during automation. Baseline browser-network-capture MCP.",
+     when_to_use: "You need a canonical, well-supported browser automation MCP that can also list a page's network requests for general web automation plus endpoint discovery.",
+     source: https://github.com/microsoft/playwright-mcp, install: "npm i @playwright/mcp"}
+  - {id: httptoolkit-mcp, name: "HTTP Toolkit MCP", type: mcp, domain: web, bundled: false, status: active,
+     capability: "MCP driving HTTP Toolkit to intercept/inspect/debug HTTP(S) via natural language: full req/resp headers+bodies, auto-launch intercepted Chrome/Firefox, attach to Docker containers, JVM processes and terminal sessions.",
+     when_to_use: "You want zero-config interception of an app's HTTPS traffic (auto-launched browser, Docker container, or JVM/terminal process) fed to an AI for endpoint/param extraction.",
+     source: https://github.com/fdciabdul/httptoolkit-mcp, install: "git clone https://github.com/fdciabdul/httptoolkit-mcp"}
+  - {id: chrome-devtools-mcp-benjaminr, name: "Chrome DevTools MCP (benjaminr)", type: mcp, domain: web, bundled: false, status: active,
+     capability: "Node MCP connecting to a live Chrome via Puppeteer/CDP exposing list_network_requests and get_network_request to capture and read XHR/fetch request+response detail in real time, plus DOM/console/perf tools.",
+     when_to_use: "You want an AI to attach to a live Chrome via CDP and read full XHR/fetch request+response details to discover REST endpoints, params and auth headers a web app uses.",
+     source: https://github.com/benjaminr/chrome-devtools-mcp, install: "git clone https://github.com/benjaminr/chrome-devtools-mcp"}
+  - {id: r0idamcp, name: "r0idamcp (IDA SSE MCP)", type: mcp, domain: native, bundled: false, status: active,
+     capability: "IDA Pro plugin exposing an SSE-protocol MCP server so an LLM can drive automated reverse engineering inside IDA.",
+     when_to_use: "You run IDA Pro and want LLM-driven automated RE over an SSE MCP transport (r0ysue's plugin) on a native binary/.so.",
+     source: https://github.com/r0ysue/r0idamcp, install: "git clone https://github.com/r0ysue/r0idamcp"}
+  - {id: ruishu-mcp, name: "瑞数 Ruishu MCP", type: mcp, domain: web, bundled: false, status: active,
+     capability: "MCP tool built for AI agents that cleans/normalizes Ruishu (瑞数) anti-bot traffic, actively maintained for the latest Ruishu versions.",
+     when_to_use: "Target site is protected by Ruishu 瑞数 (dynamic obfuscated JS, FSSBBIl1UgzbN7N80S cookies, 412 challenges) and you want an AI agent to purify/handle the protected traffic.",
+     source: https://github.com/xuange520/ruishu-mcp, install: "git clone https://github.com/xuange520/ruishu-mcp"}
+  - {id: ida-no-mcp, name: "IDA-NO-MCP", type: mcp, domain: native, bundled: false, status: active,
+     capability: "Streamlined, lightweight IDA Pro MCP server that avoids the verbose/laggy interaction model of mainstream IDA MCPs; popular high-star alternative.",
+     when_to_use: "You want a fast, low-overhead IDA Pro MCP for LLM-driven decompilation/xref/rename work and find the standard IDA MCP too verbose or laggy.",
+     source: https://github.com/P4nda0s/IDA-NO-MCP, install: "git clone https://github.com/P4nda0s/IDA-NO-MCP"}
+  - {id: stealth-browser-mcp, name: "Stealth Browser MCP", type: mcp, domain: web, bundled: false, status: active,
+     capability: "Browser-automation MCP focused on bypassing anti-bot systems; the AI writes network hooks and clones UIs via chat to evade bot detection. Leading anti-bot browser MCP.",
+     when_to_use: "Target deploys browser-fingerprint/bot detection (Cloudflare, DataDome, etc.) and you need a stealth headful browser MCP that evades detection while the AI hooks network calls.",
+     source: https://github.com/vibheksoni/stealth-browser-mcp, install: "git clone https://github.com/vibheksoni/stealth-browser-mcp"}
+  - {id: ida-mcp-rs, name: "ida-mcp-rs", type: mcp, domain: native, bundled: false, status: active,
+     capability: "Headless IDA Pro MCP server written in Rust, from a well-known macho/RE tooling author.",
+     when_to_use: "You want a fast headless (no GUI) IDA Pro MCP server in Rust for scripted/CI LLM-driven binary analysis.",
+     source: https://github.com/blacktop/ida-mcp-rs, install: "git clone https://github.com/blacktop/ida-mcp-rs"}
+  - {id: pyghidra-mcp, name: "pyghidra-mcp", type: mcp, domain: native, bundled: false, status: active,
+     capability: "Python command-line headless Ghidra MCP (PyGhidra) for scriptable LLM-driven decompilation, xrefs and analysis from a prolific Ghidra-scripting author.",
+     when_to_use: "You want a headless, scriptable Ghidra MCP (Python/PyGhidra) to let an LLM decompile and analyze native binaries/.so without the Ghidra GUI.",
+     source: https://github.com/clearbluejar/pyghidra-mcp, install: "pip install pyghidra-mcp"}
+  - {id: frida-analykit, name: "frida-analykit", type: mcp, domain: android, bundled: false, status: active,
+     capability: "Frida toolkit for Android RE with env/version management plus low-level agent helpers (memory scan, native call, Java hook primitives), exposed over MCP for LLM-driven instrumentation.",
+     when_to_use: "You want an MCP-driven Frida agent for Android with managed frida-server version/env switching and reusable low-level helper APIs (scan memory, call native, hook Java) instead of hand-writing each script.",
+     source: https://github.com/ZSA233/frida-analykit, install: "git clone https://github.com/ZSA233/frida-analykit"}
+  - {id: anansi-scraper, name: "Anansi", type: mcp, domain: web, bundled: false, status: active,
+     capability: "Self-healing scraper MCP for hostile sites: self-repairing CSS/XPath selectors, headless-browser fallback, and Chrome-grade TLS/JA3 fingerprint evasion for LLM-driven crawling.",
+     when_to_use: "Your scraper breaks on selector drift or gets blocked by TLS/anti-bot fingerprinting on a hostile site and you want an MCP that auto-repairs selectors and falls back to a real-browser/Chrome-TLS request.",
+     source: https://github.com/mdowis/anansi, install: "git clone https://github.com/mdowis/anansi"}
+  - {id: ghidra-headless-mcp, name: "ghidra-headless-mcp", type: mcp, domain: native, bundled: false, status: active,
+     capability: "Headless Ghidra MCP server (analyzeHeadless backend) exposing decompile, disassembly, xrefs and analysis to an LLM without the Ghidra GUI, authored by deobfuscation researcher mrphrazer.",
+     when_to_use: "You want to drive Ghidra decompilation/xrefs from an agent in a headless/CI setting (no GUI) over MCP — pick this over GUI-bridge Ghidra MCPs when running analyzeHeadless on a server.",
+     source: https://github.com/mrphrazer/ghidra-headless-mcp, install: "git clone https://github.com/mrphrazer/ghidra-headless-mcp"}
+  - {id: frida-mcp-zhizhuo, name: "frida-mcp (zhizhuodemao)", type: mcp, domain: android, bundled: false, status: active,
+     capability: "Frida dynamic-debugging MCP with configurable frida binary path/name/port and automatic frida-server lifecycle management for attach/spawn instrumentation.",
+     when_to_use: "You need an MCP wrapper around Frida that lets you point at a custom frida-server path/name/port and auto-manages the server — useful when device frida is renamed/relocated to evade detection.",
+     source: https://github.com/zhizhuodemao/frida-mcp, install: "git clone https://github.com/zhizhuodemao/frida-mcp"}
+  - {id: algokiller-plugin, name: "AlgoKiller", type: mcp, domain: native, bundled: false, status: active,
+     capability: "Claude Desktop plugin (skills + local MCP) driving a native ak_search engine to analyze GB-scale ARM64 execution traces and recover cipher algorithms (AES/DES/RC4/custom) from instruction patterns.",
+     when_to_use: "You have a huge ARM64 instruction trace and need to identify or recover the crypto algorithm (S-boxes, round structure, custom cipher) buried in it — route here for trace-driven algorithm recovery on native targets.",
+     source: https://github.com/icloudza/algokiller-plugin, install: "git clone https://github.com/icloudza/algokiller-plugin"}
+  - {id: reversecore-mcp, name: "Reversecore_MCP", type: mcp, domain: native, bundled: false, status: active,
+     capability: "Security-first MCP server orchestrating Ghidra, Radare2 and YARA together for automated static reverse engineering of native binaries.",
+     when_to_use: "You want one MCP that coordinates Ghidra + Radare2 + YARA in a single agent workflow for native binary static RE, rather than wiring each tool's MCP separately.",
+     source: https://github.com/sjkim1127/Reversecore_MCP, install: "git clone https://github.com/sjkim1127/Reversecore_MCP"}
+  - {id: mobile-app-testing-mcp, name: "mobile-app-testing-mcp", type: mcp, domain: android, bundled: false, status: active,
+     capability: "Mobile app security-testing MCP suite built on ADB, aapt and JADX providing full static-analysis (manifest, permissions, decompiled code, resources) over an agent interface.",
+     when_to_use: "You want an agent-driven Android static-analysis platform combining ADB + aapt + JADX (manifest/permissions/decompile) in one MCP for app security testing.",
+     source: https://github.com/Re13orn/mobile-app-testing-mcp, install: "git clone https://github.com/Re13orn/mobile-app-testing-mcp"}
+  - {id: frida-c2-mcp, name: "frida-c2-mcp", type: mcp, domain: android, bundled: false, status: active,
+     capability: "Agentic C2-style MCP server coordinating Frida instrumentation across rooted Android and jailbroken iOS devices from a single command-and-control interface.",
+     when_to_use: "You need to drive Frida hooks across multiple rooted Android / jailbroken iOS devices from one agentic C2-style MCP console — cross-platform mobile instrumentation orchestration.",
+     source: https://github.com/s4dp4nd4/frida-c2-mcp, install: "git clone https://github.com/s4dp4nd4/frida-c2-mcp"}
+  - {id: mcp-rquest, name: "mcp-rquest", type: mcp, domain: web, bundled: false, status: active,
+     capability: "MCP server issuing browser-like HTTP requests with accurate TLS/JA3/JA4 and HTTP2 fingerprints to bypass anti-bot, plus PDF/HTML to Markdown conversion of responses.",
+     when_to_use: "Target blocks plain requests/curl via JA3/JA4/TLS fingerprinting and you want an MCP that sends impersonated Chrome-grade fingerprinted HTTP requests (and converts the page to Markdown).",
+     source: https://github.com/xxxbrian/mcp-rquest, install: "git clone https://github.com/xxxbrian/mcp-rquest"}
+  - {id: djeb-mcp-server, name: "dJEB MCP Server", type: mcp, domain: android, bundled: false, status: commercial,
+     capability: "JEB Decompiler MCP server for Claude Desktop: AI-assisted APK reverse engineering with decompilation, batch renaming, cross-references and resource analysis.",
+     when_to_use: "You have a JEB Pro license and want to drive JEB's APK/DEX decompiler, xrefs and batch renaming from an agent over MCP — route here for JEB-backed Android RE specifically.",
+     source: https://github.com/dPhoeniixx/dJEB_mcp_server, install: "git clone https://github.com/dPhoeniixx/dJEB_mcp_server"}
+  - {id: nexuscore-mcp, name: "Nexuscore_MCP", type: mcp, domain: native, bundled: false, status: active,
+     capability: "AI-powered MCP server for dynamic malware analysis with Frida instrumentation, session/debugger management and 46+ security tools.",
+     when_to_use: "You're doing dynamic malware analysis and want an agent MCP that wraps Frida instrumentation plus a session debugger and 46+ bundled security tools in one server.",
+     source: https://github.com/sjkim1127/Nexuscore_MCP, install: "git clone https://github.com/sjkim1127/Nexuscore_MCP"}
+  - {id: mcp-stealth-chrome, name: "mcp-stealth-chrome", type: mcp, domain: web, bundled: false, status: active,
+     capability: "Stealth Chrome MCP with 100+ tools: one-call Cloudflare Turnstile bypass, TLS-fingerprinted HTTP (curl_cffi), and AI-vision reCAPTCHA solver, built on nodriver + FastMCP.",
+     when_to_use: "Target gates with Cloudflare Turnstile or reCAPTCHA and you want a single MCP that bypasses Turnstile, sends curl_cffi TLS-impersonated requests, and solves reCAPTCHA via AI vision (nodriver-based stealth browser).",
+     source: https://github.com/RobithYusuf/mcp-stealth-chrome, install: "git clone https://github.com/RobithYusuf/mcp-stealth-chrome"}
+  - {id: droid-re-chain, name: "droid-re-chain", type: mcp, domain: android, bundled: false, status: active,
+     capability: "Headless MCP server for AI-driven Android RE with 122 tools spanning ADB, NDK, il2cpp dumping, hooking, crash trapping, memory inspection, Frida and APK manipulation.",
+     when_to_use: "You want one headless MCP covering the full Android RE chain (ADB+NDK+il2cpp+Frida+memory+crash+APK edit) in 122 tools for an autonomous agent — broad all-in-one Android toolchain.",
+     source: https://github.com/c4x64/droid-re-chain, install: "git clone https://github.com/c4x64/droid-re-chain"}
