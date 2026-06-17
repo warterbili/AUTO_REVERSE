@@ -27,14 +27,42 @@ Stacked protections (orthogonal to the above — add them on when hit):
 
 ## Web
 
-```
-Any bot protection? (PerimeterX/Akamai/Cloudflare signatures)
-├─ Yes → prefer cdp-browser (real Chrome, no webdriver fingerprint); route specialized shells to the matching skill (e.g. px-reverse)
-└─ No → web-api-analyzer to capture a HAR is enough ↓
+`skill:` = bundled skill under `skills/web/`; `catalog:` = fillable entry in `catalog/web.yaml` (fetched on demand). Match top-down, first hit wins.
 
-Do requests carry signature/encrypted parameters?
-├─ Yes → cdp-browser injects a hook to locate the signing/encryption function → reconstruct the algorithm → reproduce
-└─ No → just compile the endpoint list + auth method
+```
+Step 0 — Transport layer (whenever the client is non-browser):
+├─ 403/blocked only on requests/httpx/urllib but a real browser works → TLS/JA3/JA4 or HTTP2 fingerprinting
+│     → impersonating client: catalog curl-cffi (Python) / tls-client-go (Go) / curl-impersonate
+└─ plain HTTP works ↓
+
+Step 1 — Identify the bot-protection vendor by fingerprint (first match wins):
+├─ _px3/_px2 cookie, px-cloud.net, collector POST            → skill: px-reverse  (pure-algo _pxN)
+├─ _abck / bm_sz / ak_bmsc / sbsd cookie, sensor_data POST   → skill: akamai-reverse
+│     └─ mobile app/API target → catalog: akamai-bmp-generator (working BMP sensor generator)
+├─ cf_clearance cookie, Turnstile widget, /cdn-cgi/challenge → catalog: flaresolverr (challenge proxy) | turnstile-solver | cloudflare-turnstile-solver-rs | cloudscraper
+├─ datadome cookie, dd= params, geo.captcha-delivery.com     → catalog: datadome-generator | datadome-encryption
+├─ HTTP 412 + $_ts.cd / $_ts.nsd (Ruishu / Rivers Security)  → skill: ruishu-reverse
+├─ X-Castle-Request-Token / x-castle-client-id / __cuid      → skill: castle-reverse
+├─ Geetest gt3/gt4 slider/click (gt.js, *.geetest.com)       → catalog: geekedtest-geetest-v4 | geetest-crack | geetest-v3-click-crack
+└─ none of the above ↓
+
+Step 2 — Captcha challenge present?
+├─ image / slider / text OCR (esp. Chinese captchas)  → catalog: ddddocr (+ ddddocr-captcha-server)
+├─ reCAPTCHA / hCaptcha / Turnstile widget            → catalog: nopecha-extension (multi-solver)
+└─ none ↓
+
+Step 3 — Do requests carry a signature / encrypted parameter (X-Bogus, sign, _signature, token…)?
+├─ No  → web-api-analyzer captures a HAR; compile the endpoint list + auth method. Done.
+└─ Yes → locate the signing function, then REPRODUCE it:
+   1. Locate : cdp-browser hooks the real Chrome (no webdriver fp) to find the signing fn.
+   2. Deobf : if the JS is obfuscated/packed → catalog webcrack (AST unbundle/deobfuscate) first.
+   3. Reproduce — pick by cost / stability:
+      ├─ algorithm tractable & stable           → pure-algo rewrite (Python/JS). Cheapest at scale.
+      ├─ too hard / drifts fast / needs live env → skill: jsrpc-universal (call the real fn over RPC; low-mid QPS)
+      └─ needs a fake browser env in Node        → skill: node-bridge-build (jsdom 补环境) → escalate to catalog: sdenv at the ceiling
+
+Browser automation (orthogonal — when you need a real session / anti-detect driver):
+└─ catalog: cdp-browser (bundled) → nodriver → botbrowser (strongest stealth, multi-target)
 ```
 
 ## Windows (roadmap, not yet implemented)
