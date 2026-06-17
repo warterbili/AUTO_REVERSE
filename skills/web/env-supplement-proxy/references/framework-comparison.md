@@ -109,3 +109,16 @@
 | node-crawler-env-utils | Proxy 监控 | N/A | **吐缺口** | 否 | 否 | 好 | 低（npm）|
 
 > 没有"全 ✅"的框架。**组合用**：node-crawler-env-utils/lasawang 吐缺口 + sdenv/NodeSandbox 过检测 + cdp-browser 取真值 + 撞天花板就换真浏览器。
+
+## 增补（2026-06 专项搜集，全部已入 catalog）
+
+完整清单见 `tmp/collection/proxy-auto-env.md`（86 条去重）。值得优先看的新发现：
+
+| 框架 | 亮点 | 何时选 |
+|---|---|---|
+| **happy1256/Youzi-Mask** | 模块化重写；`IS_PROXY`（一级监听看直接访问）+ `IS_RECURSION_PROXY`（递归监听看多层访问）双开关，正好对应本 skill 的递归 Proxy 法 | 想要现成的「递归代理 + 分级监听」开关，新且活跃（2026-06）；其前身 happy1256/youzi_js_env star 更高 |
+| **lwjjike/xbsJsEnv** | 小博士框架：自动拦截全局对象的 get/set/has/delete/enumerate/define/getOwnPropertyDescriptor + BOM/DOM 方法调用拦截 | 要「全属性访问拦截/吐环境」且持续维护（★58，2026-04） |
+| **RuoShui-0014/js-env** | 基于魔改 isolated-vm，自带**非标准 proxy + native 函数创建**；`rsvm.get/set` 读写属性**不触发访问器**（抗检测） | 目标会检测 Proxy/访问器痕迹时，用 isolated-vm 层的隐形代理（★108） |
+| ipylei/jsVmEnv、ConlinH/pyv8env | vm2/isolated-vm 沙箱 + 调用栈定位缺失环境；pyv8 给 Python 侧 | 偏 VM 沙箱路线 / 需要 Python 集成 |
+
+> 选型原则不变：**先吐缺口（Youzi-Mask/xbsJsEnv/node-crawler-env-utils）→ 抗检测时上 isolated-vm 系（RuoShui-0014/NodeSandbox）→ 取真值/撞顶换 cdp-browser**。

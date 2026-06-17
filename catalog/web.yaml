@@ -991,3 +991,209 @@ entries:
      capability: "Node.js crawler 补环境 utilities: environment patching/dumping (吐环境) and proxy helpers for running browser-derived JS outside a browser.",
      when_to_use: "Patching the missing browser environment (window/navigator/document) so scraped/obfuscated site JS runs under Node for 纯算 sign reproduction.",
      source: https://github.com/warterbili/node-crawler-env-utils, install: "git clone https://github.com/warterbili/node-crawler-env-utils"}
+
+  # ── batch-added: Proxy 自动补环境/吐环境 frameworks (collect-proxy-auto-env, bundled:false) ──
+  - {id: youzi-mask-env, name: "happy1256/Youzi-Mask", type: tool, domain: web, bundled: false, status: active,
+     capability: "Youzi-Mask 全新模块化补环境框架。README confirms a recursive-proxy toggle: IS_RECURSION_PROXY (递归代理监听开关，用于深入观察多层对象访问) plus a first-level IS_PROXY switch (一级 Proxy 监听 to observe which env fields the target code directly accesses). Aims to pass 瑞数6/Cloudflare/小红书 x_s/抖音 a_b. Newest active rewrite by this author.",
+     when_to_use: "Running obfuscated anti-bot/sign JS headless in Node; want a recursive-Proxy 补环境 framework that auto-intercepts and reveals which window/navigator/document fields the target code reads. Drive it with the env-supplement-proxy skill.",
+     source: https://github.com/happy1256/Youzi-Mask, install: "git clone https://github.com/happy1256/Youzi-Mask"}
+  - {id: youzi-js-env-env, name: "happy1256/youzi_js_env", type: tool, domain: web, bundled: false, status: active,
+     capability: "Predecessor of Youzi-Mask. js补环境框架，通杀某数/某书/某音/某多, '强大而简洁'. Proxy-based env interception framework; the higher-star earlier version of the same lineage.",
+     when_to_use: "Running obfuscated anti-bot/sign JS headless in Node; want a recursive-Proxy 补环境 framework that auto-intercepts and reveals which window/navigator/document fields the target code reads. Drive it with the env-supplement-proxy skill.",
+     source: https://github.com/happy1256/youzi_js_env, install: "git clone https://github.com/happy1256/youzi_js_env"}
+  - {id: xbsjsenv-env, name: "lwjjike/xbsJsEnv", type: tool, domain: web, bundled: false, status: active,
+     capability: "小博士(xbs) node 补环境框架. README: 自动拦截全局对象的属性访问/赋值/查询/删除/枚举/define/getOwnPropertyDescriptor, plus BOM/DOM method-call interception via explicit globalGetter/globalSetter handlers (not transparent recursive Proxy, but full property-access interception/logging). Actively maintained, mid-star.",
+     when_to_use: "Headless JS 补环境 where you want the framework to LOG accessed-but-undefined env paths (吐环境) and locate them by call stack, so you iteratively complete the environment. Pairs with env-supplement-proxy.",
+     source: https://github.com/lwjjike/xbsJsEnv, install: "git clone https://github.com/lwjjike/xbsJsEnv"}
+  - {id: js-env-env, name: "RuoShui-0014/js-env", type: tool, domain: web, bundled: false, status: active,
+     capability: "基于 isolated-vm 魔改虚拟机的 js 环境框架，封装了一套非 js 标准的代理(proxy)和 native 函数创建方法. Provides rsvm.get()/rsvm.set() to read/write properties 不触发访问器 (undetectable proxy access). Notable higher-star NEW entry combining custom proxy + isolated-vm DOM construction.",
+     when_to_use: "Want a VM/sandbox-based (vm2 / isolated-vm) 补环境 framework to host obfuscated site JS with controlled globals and a harder-to-detect proxy than plain ES6 Proxy.",
+     source: https://github.com/RuoShui-0014/js-env, install: "git clone https://github.com/RuoShui-0014/js-env"}
+  - {id: isolated-rsvm-env, name: "RuoShui-0014/isolated-rsvm", type: tool, domain: web, bundled: false, status: active,
+     capability: "Secure & isolated JS environments for nodejs — the underlying modified isolated-vm engine powering RuoShui-0014/js-env. Low-level sandbox component for 补环境.",
+     when_to_use: "Want a VM/sandbox-based (vm2 / isolated-vm) 补环境 framework to host obfuscated site JS with controlled globals and a harder-to-detect proxy than plain ES6 Proxy.",
+     source: https://github.com/RuoShui-0014/isolated-rsvm, install: "git clone https://github.com/RuoShui-0014/isolated-rsvm"}
+  - {id: env-js-env, name: "ly-rgb/env-js", type: tool, domain: web, bundled: false, status: active,
+     capability: "补浏览器环境框架. README: 'Proxy代理，可自动输出浏览器检测属性' — uses Proxy handlers to auto-emit/log accessed browser-detection properties for environment patching. Small personal framework.",
+     when_to_use: "Running obfuscated anti-bot/sign JS headless in Node; want a recursive-Proxy 补环境 framework that auto-intercepts and reveals which window/navigator/document fields the target code reads. Drive it with the env-supplement-proxy skill.",
+     source: https://github.com/ly-rgb/env-js, install: "git clone https://github.com/ly-rgb/env-js"}
+  - {id: customproxy-env, name: "kabaBZ/CustomProxy", type: tool, domain: web, bundled: false, status: active,
+     capability: "自用补环境Proxy. Personal Proxy-based 补环境 helper (CustomProxy.js) plus a '佬的补环境解析.md' analysis note. Low-star, exactly the personal-project category requested.",
+     when_to_use: "Running obfuscated anti-bot/sign JS headless in Node; want a recursive-Proxy 补环境 framework that auto-intercepts and reveals which window/navigator/document fields the target code reads. Drive it with the env-supplement-proxy skill.",
+     source: https://github.com/kabaBZ/CustomProxy, install: "git clone https://github.com/kabaBZ/CustomProxy"}
+  - {id: jsvmenv-env, name: "ipylei/jsVmEnv", type: tool, domain: web, bundled: false, status: active,
+     capability: "js补环境框架 with VMHelper + init files; sandbox execution via vm2 or isolated-vm. Screenshots show 监控访问；根据调用栈定位 (monitor property access and locate missing env via call stack) — classic 吐环境 logging workflow.",
+     when_to_use: "Headless JS 补环境 where you want the framework to LOG accessed-but-undefined env paths (吐环境) and locate them by call stack, so you iteratively complete the environment. Pairs with env-supplement-proxy.",
+     source: https://github.com/ipylei/jsVmEnv, install: "git clone https://github.com/ipylei/jsVmEnv"}
+  - {id: fixenv-env, name: "bgspiders/Fixenv", type: tool, domain: web, bundled: false, status: active,
+     capability: "模拟浏览器环境框架【Js补环境框架】. Personal browser-env simulation framework; low-star.",
+     when_to_use: "Running obfuscated anti-bot/sign JS headless in Node; want a recursive-Proxy 补环境 framework that auto-intercepts and reveals which window/navigator/document fields the target code reads. Drive it with the env-supplement-proxy skill.",
+     source: https://github.com/bgspiders/Fixenv, install: "git clone https://github.com/bgspiders/Fixenv"}
+  - {id: crawler-js-env-env, name: "6210qwe/crawler-js-env", type: tool, domain: web, bundled: false, status: active,
+     capability: "爬虫补环境框架完善 — a 完善/improved fork-style crawler 补环境 framework. Recently pushed, low-star personal project.",
+     when_to_use: "General browser-environment patching (补环境) framework for running obfuscated anti-bot/sign JS headless in Node.",
+     source: https://github.com/6210qwe/crawler-js-env, install: "git clone https://github.com/6210qwe/crawler-js-env"}
+  - {id: envbridge-env, name: "nothing-2333/EnvBridge", type: tool, domain: web, bundled: false, status: active,
+     capability: "规范代码的 web 逆向补环境框架，with baseEnv/supplementEnv directory structure. Author argues 'web端，补环境才是最终的答案'. README lacks explicit Proxy detail but it is a structured 补环境 framework; low-star.",
+     when_to_use: "General browser-environment patching (补环境) framework for running obfuscated anti-bot/sign JS headless in Node.",
+     source: https://github.com/nothing-2333/EnvBridge, install: "git clone https://github.com/nothing-2333/EnvBridge"}
+  - {id: all-vm2-vm-node-sandbox-env, name: "hybpjx/all_vm2_vm_node_sandbox", type: tool, domain: web, bundled: false, status: active,
+     capability: "志远(catvm-lineage)补环境框架 covering vm2 / vm / node sandbox variants. Educational Node sandbox 补环境 collection, mid-star.",
+     when_to_use: "Want a VM/sandbox-based (vm2 / isolated-vm) 补环境 framework to host obfuscated site JS with controlled globals and a harder-to-detect proxy than plain ES6 Proxy.",
+     source: https://github.com/hybpjx/all_vm2_vm_node_sandbox, install: "git clone https://github.com/hybpjx/all_vm2_vm_node_sandbox"}
+  - {id: reverse-env-env, name: "gongzhengwen/reverse-env", type: tool, domain: web, bundled: false, status: active,
+     capability: "Node.js 补环境框架 by prolific RE author gongzhengwen (who also mirrors catvm/sdenv/JsRpc). Personal Node 补环境 framework, low-star.",
+     when_to_use: "Running obfuscated anti-bot/sign JS headless in Node; want a recursive-Proxy 补环境 framework that auto-intercepts and reveals which window/navigator/document fields the target code reads. Drive it with the env-supplement-proxy skill.",
+     source: https://github.com/gongzhengwen/reverse-env, install: "git clone https://github.com/gongzhengwen/reverse-env"}
+  - {id: crawler-browser-env, name: "gongzhengwen/crawler_browser", type: tool, domain: web, bundled: false, status: slowed,
+     capability: "基于志远大佬补环境框架，用正向开发思维重写并持续更新. Reworked 补环境 framework with forward-engineering approach; low-star personal project.",
+     when_to_use: "General browser-environment patching (补环境) framework for running obfuscated anti-bot/sign JS headless in Node.",
+     source: https://github.com/gongzhengwen/crawler_browser, install: "git clone https://github.com/gongzhengwen/crawler_browser"}
+  - {id: catvm-env, name: "fanchangrui/catvm", type: tool, domain: web, bundled: false, status: slowed,
+     capability: "js逆向环境框架基础（持续补充）— the widely-referenced catvm 补环境 base framework (志远 lineage). High-star foundational educational env framework distinct from the already-known set.",
+     when_to_use: "Want a VM/sandbox-based (vm2 / isolated-vm) 补环境 framework to host obfuscated site JS with controlled globals and a harder-to-detect proxy than plain ES6 Proxy.",
+     source: https://github.com/fanchangrui/catvm, install: "git clone https://github.com/fanchangrui/catvm"}
+  - {id: catvm-env-2, name: "Big1moster/catvm", type: tool, domain: web, bundled: false, status: slowed,
+     capability: "志远补环境框架视频配套完结版 — completed/companion build of the catvm 补环境 course framework. High-star teaching reference.",
+     when_to_use: "Want a VM/sandbox-based (vm2 / isolated-vm) 补环境 framework to host obfuscated site JS with controlled globals and a harder-to-detect proxy than plain ES6 Proxy.",
+     source: https://github.com/Big1moster/catvm, install: "git clone https://github.com/Big1moster/catvm"}
+  - {id: hahavm-env, name: "yitiaohuangxianyu/HaHaVM", type: tool, domain: web, bundled: false, status: slowed,
+     capability: "一种补环境框架 (HaHaVM) — node VM-style browser-env patching framework. Mid-star, distinct project.",
+     when_to_use: "Want a VM/sandbox-based (vm2 / isolated-vm) 补环境 framework to host obfuscated site JS with controlled globals and a harder-to-detect proxy than plain ES6 Proxy.",
+     source: https://github.com/yitiaohuangxianyu/HaHaVM, install: "git clone https://github.com/yitiaohuangxianyu/HaHaVM"}
+  - {id: fix-broswer-enviroment-frame-env, name: "Sruiis/fix_broswer_enviroment_frame", type: tool, domain: web, bundled: false, status: slowed,
+     capability: "自用补环境框架 (fix browser environment frame). Personal browser-env patching framework, mid-star.",
+     when_to_use: "General browser-environment patching (补环境) framework for running obfuscated anti-bot/sign JS headless in Node.",
+     source: https://github.com/Sruiis/fix_broswer_enviroment_frame, install: "git clone https://github.com/Sruiis/fix_broswer_enviroment_frame"}
+  - {id: environmental-frame-env, name: "grandpaxizhilang/Environmental-frame", type: tool, domain: web, bundled: false, status: active,
+     capability: "补环境框架 (Environmental-frame). Standalone Chinese 补环境 framework, low-mid star.",
+     when_to_use: "General browser-environment patching (补环境) framework for running obfuscated anti-bot/sign JS headless in Node.",
+     source: https://github.com/grandpaxizhilang/Environmental-frame, install: "git clone https://github.com/grandpaxizhilang/Environmental-frame"}
+  - {id: auto-repair-js-environment-env, name: "wwj520/auto_repair_js_environment", type: tool, domain: web, bundled: false, status: slowed,
+     capability: "js补环境框架 named 'auto_repair_js_environment' — auto-repair-oriented browser-env patching. Low-star personal project; name signals automatic env-completion intent.",
+     when_to_use: "Want auto-repair-oriented browser-env completion (run -> detect missing -> stub -> repeat). Use as a base for the env-supplement-proxy AI loop.",
+     source: https://github.com/wwj520/auto_repair_js_environment, install: "git clone https://github.com/wwj520/auto_repair_js_environment"}
+  - {id: pyv8env-env, name: "ConlinH/pyv8env", type: tool, domain: web, bundled: false, status: active,
+     capability: "纯 python 补环境框架 — runs browser-env patching for sign/anti-bot JS from Python (PyV8/V8). Pure-Python alternative to the Node frameworks, mid-star, NEW relative to known set.",
+     when_to_use: "Want a VM/sandbox-based (vm2 / isolated-vm) 补环境 framework to host obfuscated site JS with controlled globals and a harder-to-detect proxy than plain ES6 Proxy.",
+     source: https://github.com/ConlinH/pyv8env, install: "git clone https://github.com/ConlinH/pyv8env"}
+  - {id: pyside6-v8-engine-env, name: "letme58/pyside6-v8-engine", type: tool, domain: web, bundled: false, status: active,
+     capability: "PySide6 V8 JS逆向执行框架 - 用于JS逆向补环境. Executes target JS inside an embedded Qt/V8 (real browser engine) to avoid hand-patching env. Recently active, low-star.",
+     when_to_use: "Want to proxy env/DOM queries to a REAL browser, or patch the JS in a network proxy to skip 补环境 entirely, when the headless env ceiling is hit.",
+     source: https://github.com/letme58/pyside6-v8-engine, install: "git clone https://github.com/letme58/pyside6-v8-engine"}
+  - {id: pqjs-env, name: "S-GGbond/PqJs", type: tool, domain: web, bundled: false, status: active,
+     capability: "'逆向不需要再补环境了'—uses Qt WebEngine (real browser) to directly run JS and return sign. The anti-补环境 / real-engine alternative; relevant as a competing approach. Active, mid-star.",
+     when_to_use: "Want to proxy env/DOM queries to a REAL browser, or patch the JS in a network proxy to skip 补环境 entirely, when the headless env ceiling is hit.",
+     source: https://github.com/S-GGbond/PqJs, install: "git clone https://github.com/S-GGbond/PqJs"}
+  - {id: node-crawler-env-utils-env, name: "PromiseAll/node-crawler-env-utils", type: tool, domain: web, bundled: false, status: active,
+     capability: "爬虫补环境，吐环境，代理工具 (env-patch + 吐环境 + proxy utilities). Distinct repo from the known warterbili/node-crawler-env-utils — utility toolkit for proxy-based env dumping. Low-star.",
+     when_to_use: "Headless JS 补环境 where you want the framework to LOG accessed-but-undefined env paths (吐环境) and locate them by call stack, so you iteratively complete the environment. Pairs with env-supplement-proxy.",
+     source: https://github.com/PromiseAll/node-crawler-env-utils, install: "git clone https://github.com/PromiseAll/node-crawler-env-utils"}
+  - {id: reverse-ai-engine-env, name: "70548887/reverse-ai-engine", type: tool, domain: web, bundled: false, status: active,
+     capability: "AI-driven automated reverse-engineering system for Web & App: JS reverse, APP reverse, signature-algorithm extraction, event-driven unattended task pipeline with a 5-tier memory layer and mitmproxy traffic capture. Markets itself as an auto reverse engine; README does not explicitly document a run->",
+     when_to_use: "Want auto-repair-oriented browser-env completion (run -> detect missing -> stub -> repeat). Use as a base for the env-supplement-proxy AI loop.",
+     source: https://github.com/70548887/reverse-ai-engine, install: "git clone https://github.com/70548887/reverse-ai-engine"}
+  - {id: mond-spider-agent-env, name: "Lyx3314844-03/mond-spider-agent", type: tool, domain: web, bundled: false, status: active,
+     capability: "Self-evolving AI crawler agent. Four native engines (Go/Python/Java/Rust); JS reverse (AST deobf, hook injection, signature tracing, WASM parse); six-stage evolution loop (plan/critique/execute/self-heal/evolve/reflect); LLM selector self-heal + code synthesis (FreeCodeSynthesis engine generates exe",
+     when_to_use: "Want auto-repair-oriented browser-env completion (run -> detect missing -> stub -> repeat). Use as a base for the env-supplement-proxy AI loop.",
+     source: https://github.com/Lyx3314844-03/mond-spider-agent, install: "git clone https://github.com/Lyx3314844-03/mond-spider-agent"}
+  - {id: js-reverse-evolver-env, name: "JiangtaoQu/js-reverse-evolver", type: tool, domain: web, bundled: false, status: active,
+     capability: "Self-evolving JS-reverse workflow MCP Server for JS deobfuscation/reverse with self-learning: input target URL -> genetic-algorithm evolution engine -> StagehandAdapter browser validation -> MemOSAdapter memory; successful obfuscation features written to knowledge/patterns.json, patterns hit >=3x pr",
+     when_to_use: "Want auto-repair-oriented browser-env completion (run -> detect missing -> stub -> repeat). Use as a base for the env-supplement-proxy AI loop.",
+     source: https://github.com/JiangtaoQu/js-reverse-evolver, install: "git clone https://github.com/JiangtaoQu/js-reverse-evolver"}
+  - {id: ai-js-debugger-env, name: "Valerian7/AI_JS_DEBUGGER", type: tool, domain: web, bundled: false, status: active,
+     capability: "AI-automated JS reverse-analysis tool built on Chrome DevTools Protocol (CDP). Flask + Socket.IO backend, web UI, CDP session mgmt, fixed-file + XHR breakpoints with automatic top-of-stack backtracking, hook scripts to capture crypto keys/ciphertext, and LLM integration via any OpenAI-compatible API",
+     when_to_use: "Want to proxy env/DOM queries to a REAL browser, or patch the JS in a network proxy to skip 补环境 entirely, when the headless env ceiling is hit.",
+     source: https://github.com/Valerian7/AI_JS_DEBUGGER, install: "git clone https://github.com/Valerian7/AI_JS_DEBUGGER"}
+  - {id: jshook-reverse-tool-env, name: "wuji66dde/jshook-reverse-tool", type: tool, domain: web, bundled: false, status: active,
+     capability: "AI-powered JavaScript reverse-engineering tool (companion/implementation to the author's jshook-skill). CDP-based AI-assisted hook + deobf reversing. Same family as jshook-skill; relevant AI-reverse tooling, not a verified env-stub auto-loop.",
+     when_to_use: "Want to proxy env/DOM queries to a REAL browser, or patch the JS in a network proxy to skip 补环境 entirely, when the headless env ceiling is hit.",
+     source: https://github.com/wuji66dde/jshook-reverse-tool, install: "git clone https://github.com/wuji66dde/jshook-reverse-tool"}
+  - {id: jsrpc-decrypt-env, name: "f4s1on/JSRPC_Decrypt", type: tool, domain: web, bundled: false, status: slowed,
+     capability: "Auto-decryption proxy framework: chains two mitmproxy instances that pattern-match encrypted request/response payloads and forward crypto operations to a Sekiro server connected to a real browser, transparently decrypting traffic without env-patching.",
+     when_to_use: "Want to proxy env/DOM queries to a REAL browser, or patch the JS in a network proxy to skip 补环境 entirely, when the headless env ceiling is hit.",
+     source: https://github.com/f4s1on/JSRPC_Decrypt, install: "git clone https://github.com/f4s1on/JSRPC_Decrypt"}
+  - {id: chromium-jsrpc-env, name: "Samge0/chromium-jsrpc", type: tool, domain: web, bundled: false, status: active,
+     capability: "Docker-based container bundling Chromium + JsRpc to run remote JS execution through a real browser for reverse engineering, with no certificate configuration needed. Containerized turnkey proxy-to-real-browser RPC.",
+     when_to_use: "Want to proxy env/DOM queries to a REAL browser, or patch the JS in a network proxy to skip 补环境 entirely, when the headless env ceiling is hit.",
+     source: https://github.com/Samge0/chromium-jsrpc, install: "git clone https://github.com/Samge0/chromium-jsrpc"}
+  - {id: cake-jsrpc-env, name: "our-cakes/cake_jsrpc", type: tool, domain: web, bundled: false, status: active,
+     capability: "WebSocket bidirectional RPC system (Java backend <-> browser JS) for calling page-side encryption/decryption functions dynamically, avoiding manually extracting and reversing the JS crypto logic.",
+     when_to_use: "Want to proxy env/DOM queries to a REAL browser, or patch the JS in a network proxy to skip 补环境 entirely, when the headless env ceiling is hit.",
+     source: https://github.com/our-cakes/cake_jsrpc, install: "git clone https://github.com/our-cakes/cake_jsrpc"}
+  - {id: jsrpc-env, name: "71n9/JSRPC", type: tool, domain: web, bundled: false, status: slowed,
+     capability: "JSRPC tool for real-time remote-calling JS in a real browser, explicitly to 'avoid the hassle of env-patching' (免去补环境的烦恼).",
+     when_to_use: "Want to proxy env/DOM queries to a REAL browser, or patch the JS in a network proxy to skip 补环境 entirely, when the headless env ceiling is hit.",
+     source: https://github.com/71n9/JSRPC, install: "git clone https://github.com/71n9/JSRPC"}
+  - {id: jsrpcex-env, name: "Y5neKO/JsRpcEX", type: tool, domain: web, bundled: false, status: active,
+     capability: "Convenience wrapper/enhancement for jxhczhl/JsRpc, providing Python tooling to talk to the JsRpc WebSocket interface and execute browser JS remotely.",
+     when_to_use: "Want to proxy env/DOM queries to a REAL browser, or patch the JS in a network proxy to skip 补环境 entirely, when the headless env ceiling is hit.",
+     source: https://github.com/Y5neKO/JsRpcEX, install: "git clone https://github.com/Y5neKO/JsRpcEX"}
+  - {id: js-rpc-env, name: "Leviathangk/js-rpc", type: tool, domain: web, bundled: false, status: active,
+     capability: "JSRPC communication framework for browser interaction in scraping: Go server, Python example client, plus JS injection files to remote-call real-browser functions.",
+     when_to_use: "Want to proxy env/DOM queries to a REAL browser, or patch the JS in a network proxy to skip 补环境 entirely, when the headless env ceiling is hit.",
+     source: https://github.com/Leviathangk/js-rpc, install: "git clone https://github.com/Leviathangk/js-rpc"}
+  - {id: xiaolanben-h-sign-env, name: "r1is/xiaolanben_h_sign", type: tool, domain: web, bundled: false, status: active,
+     capability: "Xiaolanben h_sign signature implemented two ways: via JSRPC remote-call to a real browser (Sekiro 'sign' action) AND via Node.js env-patching — a useful side-by-side of proxy-to-real-browser vs 补环境.",
+     when_to_use: "Want to proxy env/DOM queries to a REAL browser, or patch the JS in a network proxy to skip 补环境 entirely, when the headless env ceiling is hit.",
+     source: https://github.com/r1is/xiaolanben_h_sign, install: "git clone https://github.com/r1is/xiaolanben_h_sign"}
+  - {id: sekiro-lang-env, name: "langgithub/sekiro-lang", type: tool, domain: web, bundled: false, status: active,
+     capability: "Sekiro 'family pack' study repo collecting Sekiro variants across iOS/Android/Python/Xposed/Frida/Unidbg — documents the RPC-to-real-runtime principle including browser/JS targets.",
+     when_to_use: "Want to proxy env/DOM queries to a REAL browser, or patch the JS in a network proxy to skip 补环境 entirely, when the headless env ceiling is hit.",
+     source: https://github.com/langgithub/sekiro-lang, install: "git clone https://github.com/langgithub/sekiro-lang"}
+  - {id: sekiropython-env, name: "langgithub/SekiroPython", type: tool, domain: web, bundled: false, status: slowed,
+     capability: "Python member of the Sekiro family combined with Frida RPC to remote-call the real runtime over the network (decoupling from USB), part of the RPC-to-real-environment lineage.",
+     when_to_use: "Want to proxy env/DOM queries to a REAL browser, or patch the JS in a network proxy to skip 补环境 entirely, when the headless env ceiling is hit.",
+     source: https://github.com/langgithub/SekiroPython, install: "git clone https://github.com/langgithub/SekiroPython"}
+  - {id: py-jsrpc-env, name: "p1s1lver/py-JsRpc", type: tool, domain: web, bundled: false, status: active,
+     capability: "Python-language reimplementation of JsRpc — a Python server to inject a browser client and remote-call JS, avoiding the original Go dependency.",
+     when_to_use: "Want to proxy env/DOM queries to a REAL browser, or patch the JS in a network proxy to skip 补环境 entirely, when the headless env ceiling is hit.",
+     source: https://github.com/p1s1lver/py-JsRpc, install: "git clone https://github.com/p1s1lver/py-JsRpc"}
+  - {id: browser-environment-patch-env, name: "dengmingen/Browser-Environment-Patch", type: tool, domain: web, bundled: false, status: active,
+     capability: "Low-star Node.js 补环境 project that mocks window/document/navigator/location and a fabricated DOM so browser-only JS runs in Node — pure simulation, no proxy/real browser. NEW personal repo beyond the known set.",
+     when_to_use: "jsdom-based 补环境 framework for hosting site JS headlessly; alternative to node-bridge-build.",
+     source: https://github.com/dengmingen/Browser-Environment-Patch, install: "git clone https://github.com/dengmingen/Browser-Environment-Patch"}
+  - {id: node-sandbox-env, name: "Big1moster/node-sandbox", type: tool, domain: web, bundled: false, status: slowed,
+     capability: "node 补环境沙箱。Big1moster 版的 node-sandbox 补环境实现。NEW.",
+     when_to_use: "Want a VM/sandbox-based (vm2 / isolated-vm) 补环境 framework to host obfuscated site JS with controlled globals and a harder-to-detect proxy than plain ES6 Proxy.",
+     source: https://github.com/Big1moster/node-sandbox, install: "git clone https://github.com/Big1moster/node-sandbox"}
+  - {id: sdenv-jsdom-env, name: "pysunday/sdenv-jsdom", type: tool, domain: web, bundled: false, status: active,
+     capability: "补环境框架 sdenv 的专用 jsdom 版本。sdenv 生态新成员，用 jsdom 作底层 DOM 补全。NEW variant beyond base sdenv.",
+     when_to_use: "jsdom-based 补环境 framework for hosting site JS headlessly; alternative to node-bridge-build.",
+     source: https://github.com/pysunday/sdenv-jsdom, install: "git clone https://github.com/pysunday/sdenv-jsdom"}
+  - {id: sdenv-rs-interface-version-env, name: "lasawang/sdenv-rs-interface-version", type: tool, domain: web, bundled: false, status: active,
+     capability: "sdenv 的瑞数逆向接口版本，提供 Node API / Python SDK / GUI 封装补环境调用。NEW wrapper around sdenv.",
+     when_to_use: "jsdom-based 补环境 framework for hosting site JS headlessly; alternative to node-bridge-build.",
+     source: https://github.com/lasawang/sdenv-rs-interface-version, install: "git clone https://github.com/lasawang/sdenv-rs-interface-version"}
+  - {id: jsvmenv-env-2, name: "Leviathangk/jsVmEnv", type: tool, domain: web, bundled: false, status: active,
+     capability: "js 补环境框架（jsVmEnv），Leviathangk 个人实现。NEW.",
+     when_to_use: "Want a VM/sandbox-based (vm2 / isolated-vm) 补环境 framework to host obfuscated site JS with controlled globals and a harder-to-detect proxy than plain ES6 Proxy.",
+     source: https://github.com/Leviathangk/jsVmEnv, install: "git clone https://github.com/Leviathangk/jsVmEnv"}
+  - {id: -complementary-environmental-framework-env, name: "Leviathangk/-Complementary-Environmental-Framework", type: tool, domain: web, bundled: false, status: slowed,
+     capability: "跟着志远大佬学做的补环境框架，学习型实现。Low-star personal NEW.",
+     when_to_use: "jsdom-based 补环境 framework for hosting site JS headlessly; alternative to node-bridge-build.",
+     source: https://github.com/Leviathangk/-Complementary-Environmental-Framework, install: "git clone https://github.com/Leviathangk/-Complementary-Environmental-Framework"}
+  - {id: catvm-env-3, name: "archerU/catvm", type: tool, domain: web, bundled: false, status: active,
+     capability: "js 补环境版本（catvm 的另一份独立实现/学习版）。Low-star NEW.",
+     when_to_use: "jsdom-based 补环境 framework for hosting site JS headlessly; alternative to node-bridge-build.",
+     source: https://github.com/archerU/catvm, install: "git clone https://github.com/archerU/catvm"}
+  - {id: sdenv-proj-env, name: "CrankyChili/sdenv_proj", type: tool, domain: web, bundled: false, status: active,
+     capability: "sdenv 结合瑞数 vmp 实战工程，使用 sdenv 补环境实跑瑞数的示例项目。NEW practical repo.",
+     when_to_use: "jsdom-based 补环境 framework for hosting site JS headlessly; alternative to node-bridge-build.",
+     source: https://github.com/CrankyChili/sdenv_proj, install: "git clone https://github.com/CrankyChili/sdenv_proj"}
+  - {id: ruishu6-wsfdc-env, name: "ctl456/ruishu6-wsfdc", type: tool, domain: web, bundled: false, status: active,
+     capability: "瑞数6 网上房地产补环境，获取 cookie 及后缀 XJlCTRRM 的补环境实战。NEW.",
+     when_to_use: "jsdom-based 补环境 framework for hosting site JS headlessly; alternative to node-bridge-build.",
+     source: https://github.com/ctl456/ruishu6-wsfdc, install: "git clone https://github.com/ctl456/ruishu6-wsfdc"}
+  - {id: rs-pass-all-env, name: "QingfengBetter/rs_pass_all", type: tool, domain: web, bundled: false, status: active,
+     capability: "瑞数加密通杀方案，宣称免去补环境通杀当前及未来版本（替代/对照补环境路线）。NEW, relevant as anti-pattern reference.",
+     when_to_use: "General browser-environment patching (补环境) framework for running obfuscated anti-bot/sign JS headless in Node.",
+     source: https://github.com/QingfengBetter/rs_pass_all, install: "git clone https://github.com/QingfengBetter/rs_pass_all"}
+  - {id: xiaohongshu-env, name: "G-catmint/xiaohongshu", type: tool, domain: web, bundled: false, status: active,
+     capability: "小红书 headers 加密参数解决方案，结合 JSVMP 纯算还原与全扣补环境手段。补环境实战案例。NEW.",
+     when_to_use: "jsdom-based 补环境 framework for hosting site JS headlessly; alternative to node-bridge-build.",
+     source: https://github.com/G-catmint/xiaohongshu, install: "git clone https://github.com/G-catmint/xiaohongshu"}
+  - {id: xcx-collect-env, name: "r1is/xcx_collect", type: tool, domain: web, bundled: false, status: slowed,
+     capability: "node 补环境实现小蓝本 h_sign 获取（小程序信息收集）。Low-star 补环境实战 NEW.",
+     when_to_use: "jsdom-based 补环境 framework for hosting site JS headlessly; alternative to node-bridge-build.",
+     source: https://github.com/r1is/xcx_collect, install: "git clone https://github.com/r1is/xcx_collect"}
