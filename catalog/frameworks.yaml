@@ -43,3 +43,37 @@ entries:
      capability: "Distributed RPC / service-publishing platform that exposes handlers running inside a browser, app, or Frida process as a centrally-callable HTTP API (JSRPC), with multi-language client support and a request queue.",
      when_to_use: "You want to call an algorithm that only runs inside a live environment (browser JS, Android app via Frida, hooked function) over HTTP — i.e. JSRPC to generate signatures/decrypt on demand without porting the algorithm. Trigger: JSRPC, expose in-app/in-browser signing function as an API.",
      source: https://github.com/yint-tech/sekiro-open, install: "git clone https://github.com/yint-tech/sekiro-open"}
+
+  # ── batch-added from collection shortlist (core, bundled:false) ──
+  - {id: ai-vuln-harness-daedalus, name: "ai-vuln-harness", type: agent, domain: framework, bundled: false, status: active,
+     capability: "Multi-agent 15-stage vuln-research pipeline (hunt, validate, dedupe, trace, PoC) following Project Glasswing / Cloudflare methodology.",
+     when_to_use: "Want a staged multi-agent vuln-research harness covering hunting through PoC generation; reference for the Glasswing/Cloudflare pipeline structure.",
+     source: https://github.com/daedalus/ai-vuln-harness, install: "git clone https://github.com/daedalus/ai-vuln-harness"}
+  - {id: vulnllm-r-ucsb, name: "VulnLLM-R", type: agent, domain: framework, bundled: false, status: active,
+     capability: "UCSB reasoning-focused LLM plus agent scaffold specialized for vulnerability detection in source code.",
+     when_to_use: "Need a reasoning-tuned LLM + agent scaffold purpose-built for source-code vulnerability detection research.",
+     source: https://github.com/ucsb-mlsec/VulnLLM-R, install: "git clone https://github.com/ucsb-mlsec/VulnLLM-R"}
+  - {id: vulnhalla-cyberark, name: "Vulnhalla", type: tool, domain: framework, bundled: false, status: active,
+     capability: "CyberArk LLM-assisted CodeQL triage agent that reviews static-analysis findings to reduce false positives and prioritize real vulns.",
+     when_to_use: "Drowning in CodeQL static-analysis alerts and want an LLM triage layer to cut false positives and rank exploitable findings.",
+     source: https://github.com/cyberark/Vulnhalla, install: "git clone https://github.com/cyberark/Vulnhalla"}
+  - {id: fuzz4all, name: "Fuzz4All", type: tool, domain: framework, bundled: false, status: active,
+     capability: "Universal LLM-driven fuzzer (ICSE) using autoprompting + an LLM fuzz loop to generate diverse inputs across many target languages/compilers/SMT solvers.",
+     when_to_use: "Fuzzing language tooling (compilers, interpreters, SMT/SAT solvers) and want LLM-generated diverse inputs instead of grammar-based mutation.",
+     source: https://github.com/fuzz4all/fuzz4all, install: "git clone https://github.com/fuzz4all/fuzz4all && pip install -r requirements.txt"}
+  - {id: nyuctf-agents-dcipher, name: "PentAGI / D-CIPHER (NYU CTF agents)", type: agent, domain: framework, bundled: false, status: active,
+     capability: "NYU multi-agent CTF/0-day coordination agents (D-CIPHER) plus the NYU CTF benchmark for evaluating LLM offensive-security capability.",
+     when_to_use: "Running or benchmarking coordinated multi-agent CTF solving against the NYU CTF dataset; study D-CIPHER agent coordination for offensive tasks.",
+     source: https://github.com/NYU-LLM-CTF/nyuctf_agents, install: "git clone https://github.com/NYU-LLM-CTF/nyuctf_agents && pip install -r requirements.txt"}
+  - {id: hackerai, name: "HackerAI", type: agent, domain: framework, bundled: false, status: active,
+     capability: "Open-source AI-driven offensive-security assistant/framework that drives pentest workflows (recon, enumeration, exploitation suggestions) via an LLM agent loop.",
+     when_to_use: "Reach for an autonomous AI pentest co-pilot to plan/execute offensive-security workflows end-to-end rather than a single point tool; authorized engagements/CTF where you want an LLM agent orchestrating recon and exploitation.",
+     source: https://github.com/hackerai-tech/hackerai, install: "git clone https://github.com/hackerai-tech/hackerai"}
+  - {id: cyber-autoagent-ng, name: "Cyber-AutoAgent (ng)", type: agent, domain: framework, bundled: false, status: active,
+     capability: "Autonomous cyber agent for end-to-end offensive tasks, reporting strong XBOW-benchmark scores; runs unattended attack/triage loops against a target scope.",
+     when_to_use: "Want a fully autonomous offensive agent benchmarked on XBOW-style web-exploitation tasks to chew through a target with minimal supervision; comparison baseline for autonomous-pentest agents.",
+     source: https://github.com/double16/cyber-autoagent-ng, install: "git clone https://github.com/double16/cyber-autoagent-ng"}
+  - {id: sekiro-samples, name: "sekiro-samples", type: script, domain: framework, bundled: false, status: active,
+     capability: "Official Sekiro RPC sample handlers (JS/Java/Android) showing how to register and invoke remote browser/device functions over the Sekiro long-connection framework.",
+     when_to_use: "Wiring up Sekiro JSRPC to call in-page JS encryption from your backend; need working handler templates for client registration and request/response routing.",
+     source: https://github.com/yint-tech/sekiro-samples, install: "git clone https://github.com/yint-tech/sekiro-samples"}

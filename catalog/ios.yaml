@@ -107,3 +107,49 @@ entries:
      capability: "Cross-platform library plus CLIs (ideviceinstaller, idevicesyslog, ifuse, idevicebackup2) speaking native iOS lockdown/usbmux protocols without a jailbreak.",
      when_to_use: "You need to install/list apps, pull device syslog, mount the filesystem, or back up an iOS device over USB from Linux/macOS without jailbreaking.",
      source: https://github.com/libimobiledevice/libimobiledevice, install: "brew install libimobiledevice"}
+
+  # ── batch-added from collection shortlist (core, bundled:false) ──
+  - {id: bfdecrypt, name: "bfdecrypt", type: tool, domain: ios, bundled: false, status: active,
+     capability: "Frida/dylib utility (BishopFox) that extracts decrypted app binaries (removes FairPlay encryption) on jailbroken iOS, producing a clean IPA.",
+     when_to_use: "When you have a jailbroken iOS device and need to dump a decrypted IPA of an App Store app (FairPlay-encrypted) before static analysis in IDA/Ghidra.",
+     source: https://github.com/BishopFox/bfdecrypt, install: "git clone https://github.com/BishopFox/bfdecrypt"}
+  - {id: dumpdecrypted, name: "dumpdecrypted", type: tool, domain: ios, bundled: false, status: archived,
+     capability: "Classic injectable dylib that dumps the decrypted Mach-O of an encrypted iPhone app from memory to disk via DYLD_INSERT_LIBRARIES.",
+     when_to_use: "When decrypting a FairPlay-protected iOS app binary on a jailbroken device the old-school way (DYLD_INSERT_LIBRARIES dylib injection) and you just need the decrypted Mach-O.",
+     source: https://github.com/stefanesser/dumpdecrypted, install: "git clone https://github.com/stefanesser/dumpdecrypted"}
+  - {id: r2flutch, name: "r2flutch", type: tool, domain: ios, bundled: false, status: active,
+     capability: "radare2 + Frida tool to decrypt and dump iOS app binaries and inspect them, integrating r2 analysis into the dump workflow.",
+     when_to_use: "When you want to decrypt/dump an iOS app and immediately analyze it in radare2, combining Frida-based decryption with r2 inspection in one tool.",
+     source: https://github.com/as0ler/r2flutch, install: "pip install r2flutch"}
+  - {id: orion-theos, name: "Orion (theos)", type: platform, domain: ios, bundled: false, status: active,
+     capability: "Swift DSL/framework for writing Objective-C method hooks and jailbreak tweaks ergonomically atop Theos, replacing Logos with type-safe Swift.",
+     when_to_use: "When building an iOS jailbreak tweak or runtime hook in Swift instead of Logos/Objective-C and you want compile-time-checked method swizzling via Theos.",
+     source: https://github.com/theos/orion, install: "git clone https://github.com/theos/orion"}
+  - {id: theos-jailed, name: "theos-jailed", type: platform, domain: ios, bundled: false, status: archived,
+     capability: "Theos module that builds jailed (no-jailbreak) tweaks by injecting your dylib into a resigned/repackaged IPA for sideloading.",
+     when_to_use: "When you need to run a Theos/Logos tweak on a non-jailbroken iOS device by injecting the dylib into a resigned IPA (jailed sideload) instead of installing on a jailbroken phone.",
+     source: https://github.com/kabiroberai/theos-jailed, install: "git clone https://github.com/kabiroberai/theos-jailed"}
+  - {id: fishhook, name: "fishhook", type: tool, domain: ios, bundled: false, status: active,
+     capability: "Facebook library to dynamically rebind (hook) C/libc symbol references in Mach-O binaries at runtime, similar to dyld interposing.",
+     when_to_use: "When you need to hook a C library symbol (e.g. open, SSL_write) in an iOS/macOS Mach-O at runtime from your own injected code rather than Objective-C method swizzling.",
+     source: https://github.com/facebook/fishhook, install: "git clone https://github.com/facebook/fishhook"}
+  - {id: passionfruit, name: "passionfruit", type: tool, domain: ios, bundled: false, status: active,
+     capability: "Frida-based iOS app analysis web dashboard (Chaitin): file/keychain browsing, class-dump, module list, runtime method hooking via a GUI.",
+     when_to_use: "When you want a point-and-click web UI over Frida to explore a jailbroken iOS app's files, keychain, classes and hooks instead of writing Frida scripts by hand.",
+     source: https://github.com/chaitin/passionfruit, install: "npm install -g passionfruit"}
+  - {id: flex-ios, name: "FLEX", type: tool, domain: ios, bundled: false, status: active,
+     capability: "In-app iOS debugging/exploration UI: inspect and modify view hierarchy, ivars, class hierarchy, SQLite/NSUserDefaults, and live network traffic at runtime.",
+     when_to_use: "When you can inject into an iOS app (jailbroken or Theos tweak) and want an on-device overlay to live-inspect view hierarchy, ivars, databases and network calls.",
+     source: https://github.com/FLEXTool/FLEX, install: "git clone https://github.com/FLEXTool/FLEX"}
+  - {id: ios-deploy, name: "ios-deploy", type: tool, domain: ios, bundled: false, status: active,
+     capability: "Command-line tool to install, launch, and debug (lldb) iOS apps on a device over USB without Xcode, scriptable for RE/test pipelines.",
+     when_to_use: "When you need to sideload/launch/lldb-debug an .app or IPA on a physical iPhone from the terminal (no Xcode GUI) as part of an automated RE or testing pipeline.",
+     source: https://github.com/ios-control/ios-deploy, install: "npm install -g ios-deploy"}
+  - {id: swordfish-awesome-ios-security, name: "awesome-ios-security", type: platform, domain: ios, bundled: false, status: active,
+     capability: "Actively maintained iOS app-security index: tools, books, courses, blog posts and Frida/jailbreak tooling.",
+     when_to_use: "Need iOS-specific app-security and reversing resources (jailbreak tooling, Frida-on-iOS, IPA analysis) or learning material; iOS discovery list, not a runnable tool.",
+     source: https://github.com/Swordfish-Security/awesome-ios-security}
+  - {id: riskified-ios-beacon, name: "riskified-ios-beacon", type: tool, domain: ios, bundled: false, status: active,
+     capability: "Official Riskified iOS mobile beacon SDK for merchants — the genuine vendor SDK that emits device/behavior beacon data for fraud scoring.",
+     when_to_use: "Use as ground-truth reference when reversing or replicating Riskified beacon traffic from an iOS app: the official SDK reveals init params, beacon fields and integration points; vendor source, not a bypass.",
+     source: https://github.com/Riskified/riskified-ios-beacon, install: "git clone https://github.com/Riskified/riskified-ios-beacon"}

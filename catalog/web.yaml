@@ -505,3 +505,485 @@ entries:
      capability: "Bundle of Claude Code web-RE skills: JS deobfuscation, webpack chunk unpacking, browser-env completion (window/navigator stubs), signature cracking, anti-debug defeat.",
      when_to_use: "Web API request carries a custom signature/token computed in bundled JS and you need to unpack webpack modules, complete the browser env to run the algo in Node, and bypass debugger traps.",
      source: https://github.com/gatsby-sec/web-reverse-skills, install: "git clone https://github.com/gatsby-sec/web-reverse-skills"}
+
+  # ── batch-added from collection shortlist (core, bundled:false) ──
+  - {id: awesome-skills-security, name: "awesome-skills-security", type: skill, domain: web, bundled: false, status: active,
+     capability: "SecLists-derived Claude Code skills (skills.sh installable): security-fuzzing (SQLi/cmd/LDAP), password lists, payload patterns (XSS/XXE/upload), usernames, webshells, llm-testing.",
+     when_to_use: "When you need ready-made fuzzing/payload wordlists (SQLi, cmd injection, XSS, XXE, upload bypass, webshells, default creds) packaged as installable Claude skills instead of raw SecLists files.",
+     source: https://github.com/Eyadkelleh/awesome-skills-security, install: "git clone https://github.com/Eyadkelleh/awesome-skills-security"}
+  - {id: securityfortech-hacking-skills, name: "hacking-skills (securityfortech)", type: skill, domain: web, bundled: false, status: active,
+     capability: "Bug-bounty/CTF skill pack: ~28 web skills (sqli, xss, ssrf, ssti, xxe, jwt, request-smuggling) + 7 mobile RE skills (insecure-storage, weak-crypto, anti-tamper bypass) + CI/CD attack + meta skills.",
+     when_to_use: "When working a bug-bounty/CTF target needing per-vuln web exploitation playbooks (SSRF, SSTI, JWT, request smuggling) or mobile-app insecure-storage/anti-tamper checks as discrete skills.",
+     source: https://github.com/securityfortech/hacking-skills, install: "git clone https://github.com/securityfortech/hacking-skills"}
+  - {id: akamai-sensor-dalphandev, name: "DalphanDev/akamai-sensor", type: script, domain: web, bundled: false, status: active,
+     capability: "Educational walkthrough scripts for reverse-engineering Akamai Bot Manager web sensor_data: deobfuscation steps and payload-structure notes.",
+     when_to_use: "Use as a study reference when reversing Akamai web sensor_data (_abck cookie, akam script) and you want a documented deobfuscation path; pair with the dedicated akamai-sensordata/akamai-reverse generators for production payloads.",
+     source: https://github.com/DalphanDev/akamai-sensor, install: "git clone https://github.com/DalphanDev/akamai-sensor"}
+  - {id: perimeterx-node-express, name: "PerimeterX/perimeterx-node-express", type: tool, domain: web, bundled: false, status: active,
+     capability: "Official PerimeterX (HUMAN) server-side enforcer middleware for Node/Express: shows _px cookie decryption, risk-score validation, first-party sensor collection and block logic from the defender side.",
+     when_to_use: "Read when reversing PerimeterX to understand exactly how the backend validates _px2/_px3 cookies and what server-side checks a forged payload must satisfy; defender-side ground truth complementing px-reverse.",
+     source: https://github.com/PerimeterX/perimeterx-node-express, install: "npm install perimeterx-node-express"}
+  - {id: bypass-datadome-ellisfan, name: "ellisfan/bypass-datadome", type: script, domain: web, bundled: false, status: active,
+     capability: "Python + Go example for bypassing DataDome: parses tags.js, builds the payload and generates the datadome cookie.",
+     when_to_use: "Use as a worked example when generating a DataDome cookie from tags.js / interstitial challenge; cross-check against datadome-generator and datadome-vm when this older sample's payload shape drifts from the live script.",
+     source: https://github.com/ellisfan/bypass-datadome, install: "git clone https://github.com/ellisfan/bypass-datadome"}
+  - {id: cf-clearance-vvanglro, name: "vvanglro/cf-clearance", type: tool, domain: web, bundled: false, status: active,
+     capability: "Playwright-driven solver that obtains the cf_clearance cookie by passing Cloudflare's JS/5-second interstitial challenge in a real browser context.",
+     when_to_use: "Use when you hit a Cloudflare JS-challenge / 'Checking your browser' interstitial and need a usable cf_clearance cookie via Playwright; for managed/headless service alternatives see flaresolverr or cf-clearance-scraper.",
+     source: https://github.com/vvanglro/cf-clearance, install: "pip install cf-clearance"}
+  - {id: incapsula-session-wrapper, name: "yoghurtbot/incapsula-session-wrapper", type: tool, domain: web, bundled: false, status: active,
+     capability: "Session wrapper for browsing Imperva/Incapsula-protected sites; handles the ___utmvc cookie / reese84 flow and pairs with an accompanying utmvc deobfuscation blog series.",
+     when_to_use: "Use when a target sets Incapsula ___utmvc / reese84 and you need a documented session-establishment example; combine with incapsula-reese84 and sdenv for the sensor payload generation itself.",
+     source: https://github.com/yoghurtbot/incapsula-session-wrapper, install: "git clone https://github.com/yoghurtbot/incapsula-session-wrapper"}
+  - {id: scrapy-impersonate, name: "jxlil/scrapy-impersonate", type: tool, domain: web, bundled: false, status: active,
+     capability: "Scrapy download handler backed by curl_cffi that impersonates real-browser TLS/JA3 fingerprints and HTTP/2 behavior for requests issued by a Scrapy spider.",
+     when_to_use: "Use when a Scrapy crawl is blocked by TLS-fingerprint (JA3/JA4) checks and you need browser-impersonated requests inside the Scrapy pipeline; the Scrapy-native counterpart to curl-cffi / curl-impersonate.",
+     source: https://github.com/jxlil/scrapy-impersonate, install: "pip install scrapy-impersonate"}
+  - {id: fingerprint-suite, name: "apify/fingerprint-suite", type: tool, domain: web, bundled: false, status: active,
+     capability: "JS toolkit (fingerprint-generator + fingerprint-injector + header-generator) that produces statistically realistic browser fingerprints and consistent HTTP headers and injects them into Playwright/Puppeteer sessions.",
+     when_to_use: "Use when automation is flagged for inconsistent/missing browser fingerprints or header ordering; generate and inject coherent navigator/header/TLS-aligned fingerprints into headless Playwright/Puppeteer to reduce anti-bot detection.",
+     source: https://github.com/apify/fingerprint-suite, install: "npm install fingerprint-generator fingerprint-injector header-generator"}
+  - {id: browsers-benchmark, name: "techinz/browsers-benchmark", type: script, domain: web, bundled: false, status: active,
+     capability: "Reproducible benchmark scoring browser-automation engines (Playwright, nodriver, camoufox, patchright, etc.) against Cloudflare, DataDome, reCAPTCHA, Kasada, Imperva, Akamai and PerimeterX detectors.",
+     when_to_use: "Consult as routing data when choosing which stealth browser/automation stack to use against a specific anti-bot vendor; gives empirical pass/fail rates per engine per detector instead of guessing.",
+     source: https://github.com/techinz/browsers-benchmark, install: "git clone https://github.com/techinz/browsers-benchmark"}
+  - {id: funcaptcha-audio-solver, name: "useragents/Funcaptcha-Audio-Solver", type: script, domain: web, bundled: false, status: active,
+     capability: "Requests-based Arkose Labs FunCaptcha solver that fetches the audio-challenge track and uses speech recognition to derive the answer (no browser).",
+     when_to_use: "Use when facing an Arkose Labs / FunCaptcha that offers an audio fallback and you want a no-browser speech-recognition solve path; for visual/image FunCaptcha or BDA token generation see unfuncaptcha-bda.",
+     source: https://github.com/useragents/Funcaptcha-Audio-Solver, install: "git clone https://github.com/useragents/Funcaptcha-Audio-Solver"}
+  - {id: spider-js-reverse-annyfee, name: "Annyfee/spider-js-reverse", type: script, domain: web, bundled: false, status: active,
+     capability: "Curated JS-reverse case studies with detailed write-ups covering env-patching (补环境), 扣JS extraction, webpack module recovery and 瑞数 (Ruishu)难点.",
+     when_to_use: "Use as a learning/reference corpus when you need concrete worked examples of browser-env patching, webpack-bundle deobfuscation or Ruishu-style challenges for a Chinese-site JS reversing task.",
+     source: https://github.com/Annyfee/spider-js-reverse, install: "git clone https://github.com/Annyfee/spider-js-reverse"}
+  - {id: js-reverse-luzhisheng, name: "luzhisheng/js_reverse", type: script, domain: web, bundled: false, status: active,
+     capability: "Broad Chinese crawler-RE collection spanning JS逆向, app逆向, packet capture, captcha cracking, encryption algorithms, browser automation and ML-assisted recognition.",
+     when_to_use: "Browse as a grab-bag reference of Chinese-ecosystem reversing techniques when you need example code across JS/app/captcha/encryption domains rather than a single targeted tool.",
+     source: https://github.com/luzhisheng/js_reverse, install: "git clone https://github.com/luzhisheng/js_reverse"}
+  - {id: geetest-v4-slide-crack, name: "ravizhan/geetest-v4-slide-crack", type: tool, domain: web, bundled: false, status: active,
+     capability: "Pure-Python Geetest v4 slider-captcha solver: YOLO gap detection plus humanized trajectory fitting to produce the slide distance/path.",
+     when_to_use: "Use when a site uses 极验四代 (Geetest v4) slider captcha and you need a no-browser Python solve for the gap distance and motion track; for v4 click/word-select use Geetest4_yolov8 instead.",
+     source: https://github.com/ravizhan/geetest-v4-slide-crack, install: "git clone https://github.com/ravizhan/geetest-v4-slide-crack"}
+  - {id: geetest4-yolov8, name: "YoTro/Geetest4_yolov8", type: tool, domain: web, bundled: false, status: active,
+     capability: "Geetest v4 word-click captcha solver: YOLOv8 character detection + TrOCR/PaddleOCR recognition + Hungarian-algorithm matching to order the click points.",
+     when_to_use: "Use when a site shows 极验四代 文字点选 (Geetest v4 text/icon-click) captcha and you need detected click coordinates in the required order; the click-type counterpart to geetest-v4-slide-crack.",
+     source: https://github.com/YoTro/Geetest4_yolov8, install: "git clone https://github.com/YoTro/Geetest4_yolov8"}
+  - {id: 163dun-crack, name: "163dun-crack", type: script, domain: web, bundled: false, status: active,
+     capability: "NetEase YiDun (易盾) click-select captcha solver: YOLOv3 + CNN recognition plus reversed YiDun JS encryption, ~70%+ success rate",
+     when_to_use: "Target shows NetEase YiDun (网易易盾) click/点选 captcha — dun.163.com, c.dun.163.com, fp/cb/get-token endpoints — and you need YOLO+CNN icon/text recognition with the YiDun JS crypto already reversed",
+     source: https://github.com/supervipcard/163dun-crack, install: "git clone https://github.com/supervipcard/163dun-crack"}
+  - {id: tencent-captcha-break-aiden, name: "TencentCaptchaBreak (aiden2048)", type: script, domain: web, bundled: false, status: active,
+     capability: "Pure-protocol/pure-algo restoration of Tencent slider/防水墙 (TDC) encrypted params: collect, vData, eks/ekl, hand-decompiled jsvmp",
+     when_to_use: "Reversing Tencent captcha / 防水墙 traffic (captcha.gtimg.com / turing.captcha.qcloud.com) where you must regenerate collect/vData/eks/ekl params from jsvmp without a browser",
+     source: https://github.com/aiden2048/TencentCaptchaBreak, install: "git clone https://github.com/aiden2048/TencentCaptchaBreak"}
+  - {id: dingxiang-captcha-break, name: "DingxiangCaptchaBreak", type: script, domain: web, bundled: false, status: active,
+     capability: "Dingxiang (顶象) captcha pure-protocol algo restoration for sense/slider/click/icon/puzzle: ak, appKey, greenseer, ac, token params, high-concurrency",
+     when_to_use: "Target uses Dingxiang (顶象) captcha — cap.dingxiang-inc.com, params ak/appKey/greenseer/ac/token across 无感/滑块/点选/图标/拼图 modes — and you need the encrypted params reproduced protocol-only",
+     source: https://github.com/decodecaptcha/DingxiangCaptchaBreak, install: "git clone https://github.com/decodecaptcha/DingxiangCaptchaBreak"}
+  - {id: shumei-server, name: "ShuMeiServer", type: script, domain: web, bundled: false, status: active,
+     capability: "ShuMei (数美) captcha recognition service: slider, text-click, icon-click, word-order click, spatial-reasoning solving (includes Xiaohongshu)",
+     when_to_use: "Target uses ShuMei (数美) captcha — captcha-*.fengkongcloud.com, register/conf/check endpoints, slider/文字点选/图标点选/语序/空间推理 challenges (incl. Xiaohongshu) — and you need an image-recognition solver service",
+     source: https://github.com/kekewind/ShuMeiServer, install: "git clone https://github.com/kekewind/ShuMeiServer"}
+  - {id: slider-cracker-mengpengfei, name: "SliderCracker", type: script, domain: web, bundled: false, status: active,
+     capability: "Multi-vendor pure-JS slider captcha cracking collection: Geetest2, Meituan, Anjuke, JD, YiDun, Yunpian, ShuMei, Ctrip, Sohu, Huya, iQiyi",
+     when_to_use: "Need a worked pure-JS slider-captcha example for a specific Chinese vendor (极验2/美团/安居客/京东/易盾/云片/数美/携程/搜狐/虎牙/爱奇艺) as a reference implementation",
+     source: https://github.com/mengpengfei/SliderCracker, install: "git clone https://github.com/mengpengfei/SliderCracker"}
+  - {id: tiktok-signature-5ime, name: "Tiktok_Signature (5ime)", type: tool, domain: web, bundled: false, status: active,
+     capability: "Douyin/TikTok web signature service generating X-Bogus, msToken, and ttwid for API requests",
+     when_to_use: "Douyin/TikTok web API needs X-Bogus + msToken + ttwid generated and you want a ready HTTP signing service rather than reversing the params yourself",
+     source: https://github.com/5ime/Tiktok_Signature, install: "git clone https://github.com/5ime/Tiktok_Signature"}
+  - {id: anti-content-gitbenxing, name: "anti-content (gitbenxing)", type: script, domain: web, bundled: false, status: active,
+     capability: "Pinduoduo Anti-Content encryption restoration for merchant-backend / order-scraping / promotion-data scenarios",
+     when_to_use: "Pinduoduo (PDD) request carries an anti_content / Anti-Content header in merchant-backend or order/promotion data collection and you need it regenerated",
+     source: https://github.com/gitbenxing/anti-content, install: "git clone https://github.com/gitbenxing/anti-content"}
+  - {id: pinduoduo-onetwo1, name: "pinduoduo (onetwo1)", type: script, domain: web, bundled: false, status: active,
+     capability: "Pinduoduo scraper with anti_content JS decryption and full-site crawl approach; canonical PDD risk-control signature reference",
+     when_to_use: "Reversing Pinduoduo anti_content risk-control signature — want a well-known reference for the JS decryption and full-site crawl methodology",
+     source: https://github.com/onetwo1/pinduoduo, install: "git clone https://github.com/onetwo1/pinduoduo"}
+  - {id: ddddocr-rust-86maid, name: "ddddocr (Rust, 86maid)", type: tool, domain: web, bundled: false, status: active,
+     capability: "Rust port of ddddocr + ocr_api_server: cross-platform single binary, no OpenCV dependency, OCR/detection with AI MCP support",
+     when_to_use: "Need ddddocr OCR/object-detection captcha recognition as a self-contained cross-platform binary (no Python/OpenCV install) or via MCP",
+     source: https://github.com/86maid/ddddocr, install: "cargo add ddddocr"}
+  - {id: captcha-killer-modified, name: "captcha-killer-modified", type: tool, domain: web, bundled: false, status: active,
+     capability: "Modified Burp Suite captcha-recognition plugin: base64 image keyword recognition, built-in free OCR, for captcha-protected brute force",
+     when_to_use: "Doing pentest/brute force in Burp Suite against a login form gated by an image captcha and you need automated OCR feeding Intruder",
+     source: https://github.com/f0ng/captcha-killer-modified, install: "Download release JAR from https://github.com/f0ng/captcha-killer-modified and load in Burp Extender"}
+  - {id: puzzle-captcha-solver-vsmutok, name: "Puzzle-Captcha-Solver (vsmutok)", type: tool, domain: web, bundled: false, status: active,
+     capability: "Generic OpenCV gap-detection puzzle-slider solver computing the slide distance; covers Geetest/Binance/DataDome/TikTok",
+     when_to_use: "Have a slider puzzle background+gap image (Geetest/Binance/DataDome/TikTok style) and need the notch x-offset computed via OpenCV without a vendor-specific model",
+     source: https://github.com/vsmutok/Puzzle-Captcha-Solver, install: "git clone https://github.com/vsmutok/Puzzle-Captcha-Solver"}
+  - {id: cy-jsvmp, name: "cy_jsvmp", type: tool, domain: web, bundled: false, status: active,
+     capability: "JSVMP encryption/restoration experiment: translates ES5 (partial ES6) into VMP bytecode for studying and countering jsvmp protection",
+     when_to_use: "Learning how JSVMP/虚拟机保护 is built so you can reverse a target jsvmp interpreter — a sandbox to compile JS into VMP and study the dispatch loop",
+     source: https://github.com/2833844911/cy_jsvmp, install: "git clone https://github.com/2833844911/cy_jsvmp"}
+  - {id: wbi-miuzarte, name: "Wbi (Miuzarte)", type: tool, domain: web, bundled: false, status: active,
+     capability: "Bilibili WBI authentication signature library: mixinKey shuffle + md5 producing w_rid/wts",
+     when_to_use: "Calling Bilibili web APIs that require WBI signing (w_rid + wts, mixinKey-shuffled img_key/sub_key) and you want a native library implementation",
+     source: https://github.com/Miuzarte/Wbi, install: "git clone https://github.com/Miuzarte/Wbi"}
+  - {id: redcrack-cialle, name: "RedCrack (Cialle)", type: script, domain: web, bundled: false, status: active,
+     capability: "Xiaohongshu (小红书) full-site encrypted-param Python pure-algo reversal: xsec_token, a1, webId, shield, x-s/x-t",
+     when_to_use: "Reversing Xiaohongshu web request signatures — params x-s, x-t, xsec_token, a1, webId, shield — and you want a pure-Python algo reproduction",
+     source: https://github.com/Cialle/RedCrack, install: "git clone https://github.com/Cialle/RedCrack"}
+  - {id: pdd-merchant-service-yunzhiyike, name: "pdd-merchant-serivce (YunzhiYike)", type: script, domain: web, bundled: false, status: active,
+     capability: "Pinduoduo merchant-backend API reversal: Anti-Content encryption and login-password encryption implementations",
+     when_to_use: "Automating Pinduoduo merchant (商家后台) APIs that need Anti-Content plus encrypted login password regenerated",
+     source: https://github.com/YunzhiYike/pdd-merchant-serivce, install: "git clone https://github.com/YunzhiYike/pdd-merchant-serivce"}
+  - {id: a-bogus-douyin-jackluson, name: "a_bogus_douyin (jackluson)", type: tool, domain: web, bundled: false, status: active,
+     capability: "Douyin a_bogus parameter pure-algo implementation, focused solely on the a_bogus signature field",
+     when_to_use: "Douyin web request needs only the a_bogus param regenerated (newer replacement for X-Bogus) and you want a focused single-field implementation",
+     source: https://github.com/jackluson/a_bogus_douyin, install: "git clone https://github.com/jackluson/a_bogus_douyin"}
+  - {id: x-gorgon-khronos-argus-ladon-ssovit, name: "x-gorogn-khronos-argus-ladon (ssovit)", type: script, domain: web, bundled: false, status: active,
+     capability: "TikTok signature algo sources: X-Argus, X-Ladon, X-Gorgon, X-Khronos, TTEncrypt, XLog, with FastAPI interface",
+     when_to_use: "Generating TikTok mobile/API headers X-Argus / X-Ladon / X-Gorgon / X-Khronos (and TTEncrypt/XLog) and want source algos exposed via a FastAPI service",
+     source: https://github.com/ssovit/x-gorogn-khronos-argus-ladon, install: "git clone https://github.com/ssovit/x-gorogn-khronos-argus-ladon"}
+  - {id: weibo-crawler-dataabc, name: "weibo-crawler (dataabc)", type: script, domain: web, bundled: false, status: active,
+     capability: "Python scraper for Sina Weibo (m.weibo.cn) that collects user posts, images, videos, comments and metadata to CSV/MySQL/MongoDB; handles cookie auth and web request params/pagination.",
+     when_to_use: "Need to bulk-harvest a Weibo user's timeline/media via the m.weibo.cn JSON endpoints; reference for Weibo cookie auth and containerid/since_id pagination params.",
+     source: https://github.com/dataabc/weibo-crawler, install: "git clone https://github.com/dataabc/weibo-crawler && pip install -r requirements.txt"}
+  - {id: douyin-tiktok-download-api-evil0ctal, name: "Douyin_TikTok_Download_API (Evil0ctal)", type: tool, domain: web, bundled: false, status: active,
+     capability: "High-performance async FastAPI service crawling Douyin/Kuaishou/TikTok/Bilibili data with built-in signature param generation (X-Bogus/a_bogus) and API response parsing; watermark-free download.",
+     when_to_use: "Building a service that fetches Douyin/TikTok video/user data and needs ready-made X-Bogus/a_bogus signing plus endpoint parsing rather than reversing the web API yourself.",
+     source: https://github.com/Evil0ctal/Douyin_TikTok_Download_API, install: "git clone https://github.com/Evil0ctal/Douyin_TikTok_Download_API && pip install -r requirements.txt"}
+  - {id: x-client-transaction-id-lqm1, name: "Lqm1/x-client-transaction-id", type: tool, domain: web, bundled: false, status: active,
+     capability: "TypeScript/JS library generating the X (Twitter) x-client-transaction-id header from animation data + on-demand JS byte indices; packaged for npm, browser and Node.",
+     when_to_use: "Node/browser automation against X API needs a valid x-client-transaction-id header; want a maintained npm package instead of porting the algorithm.",
+     source: https://github.com/Lqm1/x-client-transaction-id, install: "npm install x-client-transaction-id"}
+  - {id: xclienttransactionjs-swyxio, name: "swyxio/XClientTransactionJS", type: tool, domain: web, bundled: false, status: active,
+     capability: "Pure-JavaScript port of the X-Client-Transaction-Id algorithm: parses Twitter's home page animation SVG data and on-demand JS to derive the per-request transaction id.",
+     when_to_use: "Running the X transaction-id signer inside a plain JS runtime (no TS/build step); cross-reference for how animation-data + verification-key feed the id.",
+     source: https://github.com/swyxio/XClientTransactionJS, install: "git clone https://github.com/swyxio/XClientTransactionJS"}
+  - {id: x-client-transaction-langkor, name: "langkor/x-client-transaction", type: tool, domain: web, bundled: false, status: active,
+     capability: "Rust implementation of the X Client Transaction library producing the x-client-transaction-id required by the X API; native-speed for high-throughput pipelines.",
+     when_to_use: "High-volume X API signing in a Rust/native stack where the JS/Python signer is a bottleneck; need a compiled x-client-transaction-id generator.",
+     source: https://github.com/langkor/x-client-transaction, install: "cargo add x-client-transaction"}
+  - {id: twitter-generator-glizzykingdreko, name: "glizzykingdreko/twitter-generator", type: tool, domain: web, bundled: false, status: active,
+     capability: "Python module plus reverse-engineering write-up generating X x-client-transaction-id and x-xp-forwarded-for headers; documents the RE methodology behind both.",
+     when_to_use: "Need both x-client-transaction-id and x-xp-forwarded-for for X requests, or want the documented RE breakdown of how these headers are derived.",
+     source: https://github.com/glizzykingdreko/twitter-generator, install: "pip install twitter-generator"}
+  - {id: scweet-altimis, name: "Altimis/Scweet", type: tool, domain: web, bundled: false, status: active,
+     capability: "Python tweet/profile/follower scraper requiring no API key, with multi-account pooling, proxy rotation and async; drives the X web UI to bypass API limits.",
+     when_to_use: "Scraping X tweets/profiles/followers at scale without official API access; need account pooling + proxy support via browser automation.",
+     source: https://github.com/Altimis/Scweet, install: "pip install Scweet"}
+  - {id: unofficial-twitter-api-voroware, name: "voroware/unofficial-twitter-api", type: tool, domain: web, bundled: false, status: active,
+     capability: "Unofficial Twitter/X API reconstructed by reversing the iOS app and web front-end; logs in with username/password/email and bypasses rate limits.",
+     when_to_use: "Need authenticated X access reconstructed from the iOS app's auth flow (username/password/email login) rather than the public web API; rate-limit bypass.",
+     source: https://github.com/voroware/unofficial-twitter-api, install: "git clone https://github.com/voroware/unofficial-twitter-api"}
+  - {id: twitter-tid-generator-fa0311, name: "fa0311/twitter-tid-generator", type: tool, domain: web, bundled: false, status: active,
+     capability: "Working X-Client-Transaction-Id generator with an accompanying blog write-up dissecting the obfuscator.io-style transaction algorithm in X's bundle.",
+     when_to_use: "Want a reference x-client-transaction-id generator plus the deobfuscation walkthrough of X's obfuscated transaction JS to understand/maintain the algorithm.",
+     source: https://github.com/fa0311/twitter-tid-generator, install: "git clone https://github.com/fa0311/twitter-tid-generator"}
+  - {id: lorien-awesome-web-scraping, name: "awesome-web-scraping", type: platform, domain: web, bundled: false, status: active,
+     capability: "Index of web-scraping libraries, tools and APIs organized by language (Python/PHP/Ruby/JS).",
+     when_to_use: "Choosing a scraping library or data-processing tool for a given language stack; general scraping-ecosystem reference (not anti-bot specific), not a runnable tool.",
+     source: https://github.com/lorien/awesome-web-scraping}
+  - {id: anti-detect-browser-tools-comparison, name: "anti-detect-browser-tools-tech-comparison", type: platform, domain: web, bundled: false, status: active,
+     capability: "Technical side-by-side comparison of anti-bot bypass / anti-detect browser tools (Botasaurus, Patchright, etc.) against Cloudflare/DataDome/Akamai.",
+     when_to_use: "Deciding which stealth/anti-detect browser tool to use against a specific protection (Cloudflare/DataDome/Akamai) and want a feature/effectiveness comparison; routing aid for picking a bypass stack.",
+     source: https://github.com/pim97/anti-detect-browser-tools-tech-comparison}
+  - {id: jsrei-awesome-protobuf-re, name: "awesome-protobuf-reverse-engineering", type: platform, domain: web, bundled: false, status: active,
+     capability: "Resource collection (from the JSREI JS-reverse org) focused on reversing Protocol Buffers traffic and payloads.",
+     when_to_use: "Hitting protobuf-encoded (application/x-protobuf or binary) request/response bodies in web/app API reversing and needing tools/techniques to decode and reconstruct schemas; protobuf-RE reference, and gateway to other JSREI JS/crawler RE tools.",
+     source: https://github.com/JSREI/awesome-protobuf-reverse-engineering}
+  - {id: mitmproxy2swagger, name: "alufers/mitmproxy2swagger", type: tool, domain: web, bundled: false, status: active,
+     capability: "CLI that reverse-engineers REST APIs from captured traffic: ingests mitmproxy flows or HAR exports and emits an OpenAPI 3.0 spec; re-run to diff/merge new endpoints.",
+     when_to_use: "Have mitmproxy flow files or a HAR and want to auto-generate an OpenAPI/Swagger spec documenting an app's REST endpoints, params and structures; canonical flow/HAR-to-API-spec extractor.",
+     source: https://github.com/alufers/mitmproxy2swagger, install: "pip install mitmproxy2swagger"}
+  - {id: har-to-openapi-jonluca, name: "har-to-openapi (jonluca)", type: tool, domain: web, bundled: false, status: active,
+     capability: "Node library/CLI (not an MCP) that converts HAR files into OpenAPI specs, inferring endpoints, params, and schemas from captured browser traffic; outputs JSON/YAML.",
+     when_to_use: "You captured browser/app traffic as a HAR and want to auto-derive an OpenAPI spec (endpoints + param schemas) from it programmatically inside a Node pipeline.",
+     source: https://github.com/jonluca/har-to-openapi, install: "npm install har-to-openapi"}
+  - {id: har2openapi-dcarr178, name: "har2openapi (dcarr178)", type: tool, domain: web, bundled: false, status: active,
+     capability: "CLI tool (not an MCP) that generates an OpenAPI spec / API documentation from recorded HAR files, deriving endpoints and params.",
+     when_to_use: "Alternative HAR-to-OpenAPI extractor: point it at recorded app traffic HARs to produce API docs/spec when the jonluca lib doesn't fit your workflow.",
+     source: https://github.com/dcarr178/har2openapi, install: "git clone https://github.com/dcarr178/har2openapi"}
+  - {id: sdenv-extend, name: "sdenv-extend", type: tool, domain: web, bundled: false, status: active,
+     capability: "Extension package for sdenv enabling shared browser/node code for JS environment patching (补环境).",
+     when_to_use: "You're using sdenv to 补环境 (patch browser globals) for running scraped anti-bot/JS code, and need code shared between browser and Node runtimes.",
+     source: https://github.com/pysunday/sdenv-extend, install: "npm install sdenv-extend"}
+  - {id: jsvmp-repository, name: "jsvmp-repository", type: script, domain: web, bundled: false, status: active,
+     capability: "Collection of real jsvmp (JS virtual-machine-protection) algorithm samples from Chinese websites, used as reference material for jsvmp reversing.",
+     when_to_use: "You're reversing a jsvmp-obfuscated JS interpreter (e.g. dispatcher-loop bytecode VM on a Chinese site) and want worked sample cases to compare opcode/handler patterns against.",
+     source: https://github.com/xiaoweigege/jsvmp-repository, install: "git clone https://github.com/xiaoweigege/jsvmp-repository"}
+  - {id: geetest-break-yinhao, name: "yinhao0214/geetest_break", type: script, domain: web, bundled: false, status: active,
+     capability: "GeeTest captcha cracking source code plus accompanying handbook/manual covering the break workflow.",
+     when_to_use: "When studying GeeTest (极验) bypass end-to-end and you want a worked source+manual reference; pair with dedicated v3/v4 solvers when targeting a specific GeeTest version.",
+     source: https://github.com/yinhao0214/geetest_break, install: "git clone https://github.com/yinhao0214/geetest_break"}
+  - {id: behavior-captcha-cracker-yujunjie, name: "yujunjiex/behavior_captcha_cracker", type: script, domain: web, bundled: false, status: active,
+     capability: "Deep-learning behavioral-captcha cracker covering slider and click(point-select) types for GeeTest, NetEase Yidun and Yunpian.",
+     when_to_use: "When you face a slider or click-to-select behavioral captcha from GeeTest/Yidun(易盾)/Yunpian(云片) and want a CNN-based image+trajectory solver reference rather than a single-vendor protocol break.",
+     source: https://github.com/yujunjiex/behavior_captcha_cracker, install: "git clone https://github.com/yujunjiex/behavior_captcha_cracker"}
+  - {id: geetest-crack-zhiying, name: "zhiying8710/geetest_crack", type: tool, domain: web, bundled: false, status: active,
+     capability: "GeeTest gen-2 slide, gen-3 slide and Chinese-character click(汉字点选) captcha breaking implementation.",
+     when_to_use: "When the target uses GeeTest v2 slider, v3 slider, or the Chinese-character click-order captcha and you need a ready cracking library for those specific modes.",
+     source: https://github.com/zhiying8710/geetest_crack, install: "git clone https://github.com/zhiying8710/geetest_crack"}
+  - {id: sijiyo-projects, name: "sijiyo/projects", type: script, domain: web, bundled: false, status: active,
+     capability: "Reverse-engineering case collection spanning JD(京东), Yunpian(云片), GeeTest(极验) and Shumei(数美).",
+     when_to_use: "When you want worked reverse cases for JD/Yunpian/GeeTest/Shumei in one repo as starting-point references for those Chinese platforms' risk-control and captcha flows.",
+     source: https://github.com/sijiyo/projects, install: "git clone https://github.com/sijiyo/projects"}
+  - {id: crack-geetest-cycyup, name: "cycyup/crack_geetest", type: tool, domain: web, bundled: false, status: active,
+     capability: "Breaks GeeTest third-generation spatial-reasoning (3D) captcha.",
+     when_to_use: "When the target shows the GeeTest v3 spatial/3D-reasoning captcha specifically (not the standard slider or icon-select) and you need a solver tailored to that mode.",
+     source: https://github.com/cycyup/crack_geetest, install: "git clone https://github.com/cycyup/crack_geetest"}
+  - {id: 10jqka-api-atomat, name: "atomat/10jqka-API", type: tool, domain: web, bundled: false, status: active,
+     capability: "Reverse-engineered THS / 10jqka (同花顺) stock-trading API client.",
+     when_to_use: "When you need to programmatically drive Tonghuashun(同花顺, 10jqka) stock trading endpoints and want a reversed API wrapper for the trading interface.",
+     source: https://github.com/atomat/10jqka-API, install: "git clone https://github.com/atomat/10jqka-API"}
+  - {id: browser-env-decodecaptcha, name: "decodecaptcha/Browser-Env", type: tool, domain: web, bundled: false, status: active,
+     capability: "Crawler framework that executes inside a real browser with patched JS so you skip env-faking (补环境) and defeat JS encryption generically.",
+     when_to_use: "When you'd otherwise have to reconstruct a browser environment (补环境) to run a site's obfuscated JS crypto, and prefer running it inside a real patched browser to bypass JS encryption without rebuilding window/navigator.",
+     source: https://github.com/decodecaptcha/Browser-Env, install: "git clone https://github.com/decodecaptcha/Browser-Env"}
+  - {id: rotate-captcha-angle-prediction, name: "decodecaptcha/Rotate-Captcha-Angle-Prediction", type: tool, domain: web, bundled: false, status: active,
+     capability: "Rotate-captcha bypass that predicts the rotation angle from an image feature library.",
+     when_to_use: "When the challenge is a rotate-the-image captcha (drag a dial/slider to upright an image) and you need an angle-prediction solver based on image feature matching.",
+     source: https://github.com/decodecaptcha/Rotate-Captcha-Angle-Prediction, install: "git clone https://github.com/decodecaptcha/Rotate-Captcha-Angle-Prediction"}
+  - {id: 10jqka-login-wangh00, name: "wangh00/10jqka_login", type: script, domain: web, bundled: false, status: active,
+     capability: "Full Tonghuashun(同花顺) login reverse including the cookie 'v' value generation; actively maintained.",
+     when_to_use: "When you specifically need to authenticate against Tonghuashun(同花顺, 10jqka) and must generate the cookie v value for login; a maintained companion to the 10jqka trading API.",
+     source: https://github.com/wangh00/10jqka_login, install: "git clone https://github.com/wangh00/10jqka_login"}
+  - {id: ruishu6-yaojianju-ctl456, name: "ctl456/ruishu6-yaojianju", type: script, domain: web, bundled: false, status: active,
+     capability: "Ruishu(瑞数) v6 env-reconstruction (补环境) for the NMPA(药监局) drug-query API, a recent real-world Ruishu6 case.",
+     when_to_use: "When you hit Ruishu(瑞数) v6 protection on the NMPA drug-lookup site (药监局/查询) and need a worked 补环境 example for generating Ruishu6 dynamic cookies.",
+     source: https://github.com/ctl456/ruishu6-yaojianju, install: "git clone https://github.com/ctl456/ruishu6-yaojianju"}
+  - {id: spider-captcha-windseason, name: "WindSeason666/Spider_Captcha", type: script, domain: web, bundled: false, status: active,
+     capability: "Breaks mainstream captchas: GeeTest click/slide/word-order/grid and NetEase Yidun text/icon/slide/scrambled-jigsaw.",
+     when_to_use: "When you need solvers across many GeeTest and NetEase Yidun(易盾) modes at once (click, slide, word-order, 9-grid, scrambled jigsaw) and want a multi-mode case collection.",
+     source: https://github.com/WindSeason666/Spider_Captcha, install: "git clone https://github.com/WindSeason666/Spider_Captcha"}
+  - {id: bypass-captcha-examples-moterhaker, name: "MoterHaker/bypass-captcha-examples", type: script, domain: web, bundled: false, status: active,
+     capability: "Worked complex-captcha bypass examples for Steam, Netflix, DataDome, Adobe and similar Western targets.",
+     when_to_use: "When you need concrete bypass references for specific Western-site captcha integrations (Steam, Netflix, DataDome, Adobe) rather than a generic vendor solver.",
+     source: https://github.com/MoterHaker/bypass-captcha-examples, install: "git clone https://github.com/MoterHaker/bypass-captcha-examples"}
+  - {id: opencv-iconselect-taisuii, name: "taisuii/OpenCV_IconSelect", type: script, domain: web, bundled: false, status: active,
+     capability: "Shumei(数美) icon-select(点选) captcha recognition/solver using OpenCV.",
+     when_to_use: "When the target uses the Shumei(数美) click-the-icons captcha and you want an OpenCV-based icon-matching solver specialized for it.",
+     source: https://github.com/taisuii/OpenCV_IconSelect, install: "git clone https://github.com/taisuii/OpenCV_IconSelect"}
+  - {id: yidun-captcha-break-decode, name: "decodecaptcha/YidunCaptchaBreak", type: script, domain: web, bundled: false, status: active,
+     capability: "NetEase Yidun(易盾) captcha pure-protocol / pure-algorithm break (no browser).",
+     when_to_use: "When you want to defeat NetEase Yidun(易盾) captcha purely at the protocol/algorithm level (generating valid tokens without driving a browser), from the decodecaptcha series.",
+     source: https://github.com/decodecaptcha/YidunCaptchaBreak, install: "git clone https://github.com/decodecaptcha/YidunCaptchaBreak"}
+  - {id: acw-sc-v2-py-wangyihang, name: "WangYihang/acw-sc-v2-py", type: script, domain: web, bundled: false, status: active,
+     capability: "Python requests.HTTPAdapter implementing the Aliyun(阿里盾) acw_sc__v2 cookie algorithm.",
+     when_to_use: "When a site returns the acw_sc__v2 challenge cookie (Aliyun WAF/阿里盾) and you want a drop-in Python requests HTTPAdapter that solves it transparently for your session.",
+     source: https://github.com/WangYihang/acw-sc-v2-py, install: "git clone https://github.com/WangYihang/acw-sc-v2-py"}
+  - {id: captcha-source-robin-ohp, name: "Robin-OHP/captcha-source", type: script, domain: web, bundled: false, status: active,
+     capability: "Collected captcha/risk-control source: Tencent tdc/collect, Aliyun 228/227/bx-et, Kuaishou, Pinduoduo, Douyin, GeeTest, Yidun, Dingxiang slider.",
+     when_to_use: "When you need raw original-source samples of many Chinese captcha/risk engines (Tencent tdc, Aliyun bx-et/228/227, Kuaishou, PDD, Douyin, GeeTest, Yidun, Dingxiang) to study or de-obfuscate.",
+     source: https://github.com/Robin-OHP/captcha-source, install: "git clone https://github.com/Robin-OHP/captcha-source"}
+  - {id: doubao-2api-lza6, name: "lza6/doubao-2api", type: tool, domain: web, bundled: false, status: active,
+     capability: "Playwright headless-browser reverse of Doubao a_bogus risk signature, static device fingerprint, dynamic msToken refresh and anti-detection disguise.",
+     when_to_use: "When you need to call ByteDance Doubao(豆包) web endpoints and must produce valid a_bogus signatures plus refreshing msToken/device fingerprint, using a real Playwright browser to dodge detection.",
+     source: https://github.com/lza6/doubao-2api, install: "git clone https://github.com/lza6/doubao-2api"}
+  - {id: bytedance-a-bogus-hzhertz, name: "HZhertz/ByteDance-a_bogus-parameter", type: script, domain: web, bundled: false, status: active,
+     capability: "Generates the ByteDance a_bogus web-signature parameter across multiple ByteDance product lines.",
+     when_to_use: "When a ByteDance/Douyin web request requires the a_bogus query parameter and you need a focused generator for it (works across several ByteDance products), without the full headless-browser stack.",
+     source: https://github.com/HZhertz/ByteDance-a_bogus-parameter, install: "git clone https://github.com/HZhertz/ByteDance-a_bogus-parameter"}
+  - {id: a-bogus-dengmin, name: "dengmin/a-bogus", type: script, domain: web, bundled: false, status: active,
+     capability: "Pure-JS implementation of Douyin's a_bogus signature parameter; standalone reference port of the algorithm.",
+     when_to_use: "Need to generate the a_bogus query parameter for Douyin/抖音 web API requests (douyin.com aweme endpoints returning blank/risk responses without it). Pure-JS port runnable in Node; cross-check with TikTokApi_aBogus_Test for version coverage.",
+     source: https://github.com/dengmin/a-bogus, install: "git clone https://github.com/dengmin/a-bogus"}
+  - {id: tiktok-abogus-test-superheroff, name: "Superheroff/TikTokApi_aBogus_Test", type: tool, domain: web, bundled: false, status: active,
+     capability: "Multi-version availability test harness for aBogus 1.0.1.1 through 1.0.1.20, tracking which a_bogus algorithm versions still pass.",
+     when_to_use: "When a Douyin/TikTok a_bogus implementation suddenly returns risk/blank and you need to determine which aBogus version (1.0.1.x) the target endpoint currently accepts; use to pin or bisect the working algorithm version.",
+     source: https://github.com/Superheroff/TikTokApi_aBogus_Test, install: "git clone https://github.com/Superheroff/TikTokApi_aBogus_Test"}
+  - {id: douyin-signs-ohpder, name: "ohpder/douyin", type: tool, domain: web, bundled: false, status: active,
+     capability: "Extractor for Douyin web signatures a_bogus, __ac_signature, _signature, X-Bogus, web cookies, plus research on the six 'shen' native params (X-Argus/Gorgon/Helios/Khronos/Ladon/Medusa).",
+     when_to_use: "When reversing Douyin and you need multiple web-side signature fields at once (__ac_signature gating page load, X-Bogus/_signature on XHR) rather than a single param; also references the native 六神 header set for app traffic.",
+     source: https://github.com/ohpder/douyin, install: "git clone https://github.com/ohpder/douyin"}
+  - {id: selfshore-spiders, name: "selfshore/spiders", type: script, domain: web, bundled: false, status: active,
+     capability: "Crawler-RE case collection: Xiaohongshu, NetEase Yidun slider captcha, and Zhihu login reversing examples.",
+     when_to_use: "Browse when you need worked examples for Xiaohongshu scraping, NetEase 易盾 slider captcha bypass, or Zhihu login flow reversing. Case-study collection, not a single-target library.",
+     source: https://github.com/selfshore/spiders, install: "git clone https://github.com/selfshore/spiders"}
+  - {id: xhs-spider-xxxxspider, name: "xxxxspider/xhs_spider", type: tool, domain: web, bundled: false, status: active,
+     capability: "Xiaohongshu data-collection toolkit generating the full param set: tokens/cookies, xsec_token, app shield algorithm, xy-platform-info and main_hmac.",
+     when_to_use: "When XHS (xiaohongshu.com / 小红书) requests need xsec_token, xy-platform-info or main_hmac signing and you want a kit covering the whole shield/token chain rather than a single field. Pair with xhs_unidbg_sign for the native sign.",
+     source: https://github.com/xxxxspider/xhs_spider, install: "git clone https://github.com/xxxxspider/xhs_spider"}
+  - {id: weiboapis-cv-cat, name: "cv-cat/WeiboApis", type: script, domain: web, bundled: false, status: active,
+     capability: "Weibo algorithm reversing with packaged API wrappers for signed Weibo web requests.",
+     when_to_use: "When you need signed Weibo (weibo.com) web API access and want reversed signature logic plus ready API wrappers. Lighter-weight than full crawler frameworks for Weibo signing.",
+     source: https://github.com/cv-cat/WeiboApis, install: "git clone https://github.com/cv-cat/WeiboApis"}
+  - {id: meituan-mtgsig-eleme-bx-yeweilin, name: "yeweilin666/meituan-mtgsig-elema-bx-et", type: script, domain: web, bundled: false, status: active,
+     capability: "Continuously-updated signature algorithms for Meituan mtgsig and Eleme bx-et.",
+     when_to_use: "When you need Meituan mtgsig or Eleme/饿了么 bx-et signing and want an actively-maintained algorithm reference covering both. Use when on-device or unidbg routes are overkill and a pure algorithm port is preferred.",
+     source: https://github.com/yeweilin666/meituan-mtgsig-elema-bx-et, install: "git clone https://github.com/yeweilin666/meituan-mtgsig-elema-bx-et"}
+  - {id: mt-ast-deob-alohahahahaha, name: "Alohahahahaha/mt_ast", type: tool, domain: web, bundled: false, status: active,
+     capability: "AST-based deobfuscator for Meituan's mtgsig param JS: literal restoration and VMP-style if-to-switch control-flow recovery.",
+     when_to_use: "When the Meituan mtgsig JS is obfuscated with hidden literals and flattened/VMP control flow and you need to clean it before extracting the algorithm. Use as a Babel-AST 反混淆 worked example for mtgsig specifically.",
+     source: https://github.com/Alohahahahaha/mt_ast, install: "git clone https://github.com/Alohahahahaha/mt_ast"}
+  - {id: maotai-grab-jjjack230, name: "jjjack230/maotai", type: tool, domain: web, bundled: false, status: active,
+     capability: "Multi-platform purchase/grab scripts (i茅台, JD, Tmall, Taobao, Xianyu, Pinduoduo) bundling each app's protocol and request signing.",
+     when_to_use: "When you need worked, current protocol+signing examples for i茅台 or major CN e-commerce apps (JD/Tmall/Taobao/闲鱼/PDD) and prefer a multi-app reference. Grab-script framing but useful as a signature/protocol cookbook.",
+     source: https://github.com/jjjack230/maotai, install: "git clone https://github.com/jjjack230/maotai"}
+  - {id: decryptlogin-charlespikachu, name: "CharlesPikachu/DecryptLogin", type: tool, domain: web, bundled: false, status: active,
+     capability: "requests-based login library for many sites (Weibo, QQ, NetEase, etc.) with the per-site login-password/signature encryption reversed in.",
+     when_to_use: "When you need to programmatically log into a major CN/global site and the blocker is the login-form password encryption or token signing. Broad, well-maintained (2.8k star) reference for many sites' login flows.",
+     source: https://github.com/CharlesPikachu/DecryptLogin, install: "pip install DecryptLogin"}
+  - {id: akamai-sensor-generator-hype, name: "HypePhilosophy/Akamai_Sensor_Generator", type: script, domain: web, bundled: false, status: active,
+     capability: "Akamai sensor_data generator that synthesizes human-like activity (mouse/touch/timing) within Akamai's constraints to build the payload.",
+     when_to_use: "When an Akamai Bot Manager web target rejects requests lacking realistic sensor_data and you need a generator that fabricates plausible behavioral telemetry. Web (not mobile BMP) sensor path.",
+     source: https://github.com/HypePhilosophy/Akamai_Sensor_Generator, install: "git clone https://github.com/HypePhilosophy/Akamai_Sensor_Generator"}
+  - {id: akamai-collector-nsigel, name: "nsigel/akamai-collector", type: tool, domain: web, bundled: false, status: active,
+     capability: "Akamai sensor-data collector service with API and database backing for storing/serving generated sensor payloads.",
+     when_to_use: "When you need an Akamai web sensor_data producer exposed as an API with DB persistence (caching/serving sensors at scale) rather than an inline generator. Service-shaped Akamai sensor component.",
+     source: https://github.com/nsigel/akamai-collector, install: "git clone https://github.com/nsigel/akamai-collector"}
+  - {id: akamai-sensor-data-tools-klenne, name: "klenne/akamai-sensor-data-tools", type: script, domain: web, bundled: false, status: active,
+     capability: "Study-resource collection of Akamai sensor_data tooling and solution notes.",
+     when_to_use: "Reference/learning material when researching Akamai web sensor_data structure and solution approaches; mine for background before building a generator. Documentation-heavy, not a drop-in solver.",
+     source: https://github.com/klenne/akamai-sensor-data-tools, install: "git clone https://github.com/klenne/akamai-sensor-data-tools"}
+  - {id: abck-tools, name: "abck-tools", type: script, domain: web, bundled: false, status: active,
+     capability: "Collection of helper functions for generating valid Akamai Bot Manager sensor_data payloads (the body POSTed to set the _abck cookie).",
+     when_to_use: "Reach for it when you see _abck / bm_sz cookies and need example sensor_data field assembly; a lightweight reference snippet set, not a full solver — cross-check against akamai-sensordata / akamai-reverse for current sensor format.",
+     source: https://github.com/fxnatic/abck-tools, install: "git clone https://github.com/fxnatic/abck-tools"}
+  - {id: riskbypass-demo, name: "riskbypass_demo", type: script, domain: web, bundled: false, status: active,
+     capability: "Bilingual demo client for a multi-vendor anti-bot/CAPTCHA bypass service covering Shape, Kasada, PerimeterX, Akamai and DataDome.",
+     when_to_use: "Use as a worked multi-target reference when a site stacks several vendors (Shape+Kasada+PX+Akamai+DataDome) and you want to see request/response shapes; it's a demo wrapper around a (commercial) backend, so treat as routing/structure example not a self-contained solver.",
+     source: https://github.com/RiskByPass/riskbypass_demo, install: "git clone https://github.com/RiskByPass/riskbypass_demo"}
+  - {id: is-antibot, name: "is-antibot", type: tool, domain: web, bundled: false, status: active,
+     capability: "Node library that fingerprints which anti-bot vendor protects a page (Cloudflare, Akamai, DataDome, PerimeterX, Kasada, Imperva, Turnstile, 20+ providers) from response headers/cookies/markers.",
+     when_to_use: "First-step triage: feed it an HTML response or headers to identify the protection vendor before choosing a solver; trigger when you have a blocked/challenge page and don't yet know if it's Cloudflare vs DataDome vs Akamai etc.",
+     source: https://github.com/microlinkhq/is-antibot, install: "npm install is-antibot"}
+  - {id: datadome-geetest-captcha-solver, name: "Datadome-GeeTest-Captcha-Solver", type: tool, domain: web, bundled: false, status: active,
+     capability: "Python image-processing tool that locates the slider/puzzle gap position in DataDome's GeeTest-style slide captcha; includes a Medium write-up of the approach.",
+     when_to_use: "Trigger when DataDome serves a GeeTest slider puzzle (geo.captcha-delivery.com slide challenge) and you need to compute the gap offset / drag distance via image diffing rather than an ML model.",
+     source: https://github.com/glizzykingdreko/Datadome-GeeTest-Captcha-Solver, install: "git clone https://github.com/glizzykingdreko/Datadome-GeeTest-Captcha-Solver"}
+  - {id: datadome-solution-frenchghost, name: "Datadome-Solution", type: script, domain: web, bundled: false, status: active,
+     capability: "API/service that generates a valid datadome cookie to avoid DataDome blocks.",
+     when_to_use: "Use when you hit DataDome 403s and need a working datadome cookie generator reference; pairs with datadome-bp / datadome-generator — compare cookie-build logic across them since DataDome rotates its payload.",
+     source: https://github.com/frenchghost/Datadome-Solution, install: "git clone https://github.com/frenchghost/Datadome-Solution"}
+  - {id: datadome-documentation, name: "datadome-documentation", type: script, domain: web, bundled: false, status: active,
+     capability: "Reverse-engineering notes documenting the DataDome payload fields plus a rough Go payload-generation example.",
+     when_to_use: "Read when you need a field-by-field breakdown of what goes into the DataDome interstitial payload (sensor data semantics) before writing your own generator; documentation-first companion to datadome-generator/datadome-vm.",
+     source: https://github.com/post04/datadome-documentation, install: "git clone https://github.com/post04/datadome-documentation"}
+  - {id: datadome-bp, name: "datadome-bp", type: script, domain: web, bundled: false, status: active,
+     capability: "DataDome cookie generator that simulates realistic human behavior signals when building the payload.",
+     when_to_use: "Pick when a simple cookie generator is flagged and you need behavior-simulation (mouse/timing) baked into the DataDome payload; compare against datadome-solution and datadome-generator for the freshest sensor format.",
+     source: https://github.com/d-suter/datadome-bp, install: "git clone https://github.com/d-suter/datadome-bp"}
+  - {id: datadome-captcha-deobfuscator, name: "Datadome-Captcha-Deobfuscator", type: tool, domain: web, bundled: false, status: active,
+     capability: "Tool to decode and simplify the JavaScript that DataDome serves in its captcha/challenge script.",
+     when_to_use: "Trigger when you're staring at obfuscated DataDome captcha-delivery JS and need it un-mangled before analysis; deobfuscation step that precedes writing a DataDome payload generator.",
+     source: https://github.com/glizzykingdreko/Datadome-Captcha-Deobfuscator, install: "git clone https://github.com/glizzykingdreko/Datadome-Captcha-Deobfuscator"}
+  - {id: kasada-deobfuscated, name: "Kasada-Deobfuscated", type: script, domain: web, bundled: false, status: active,
+     capability: "A partially deobfuscated copy of Kasada's p.js bot-defense script (VM/interpreter logic still intact).",
+     when_to_use: "Reference when reversing Kasada (ips.js/p.js, x-kpsdk-ct / x-kpsdk-cd headers) and you want a head-start readable version of p.js; note the bytecode-VM portion is unsolved, so use alongside kasada-vm / kpsdk-solver.",
+     source: https://github.com/Humphryyy/Kasada-Deobfuscated, install: "git clone https://github.com/Humphryyy/Kasada-Deobfuscated"}
+  - {id: incapsula-cracker-py3, name: "incapsula-cracker-py3", type: script, domain: web, bundled: false, status: active,
+     capability: "Python3 library to bypass Imperva Incapsula-protected sites by solving the legacy ___utmvc / cookie JS challenge; long-standing canonical Incapsula bypass.",
+     when_to_use: "Trigger on Incapsula 'incident_id' / visid_incap / ___utmvc cookie challenges on older Imperva setups; canonical reference for the classic challenge — for modern reese84 sensor use reese84-rs / incapsula-reese84 instead.",
+     source: https://github.com/ziplokk1/incapsula-cracker-py3, install: "pip install incapsula-cracker-py3"}
+  - {id: reese84-rs, name: "reese84-rs", type: script, domain: web, bundled: false, status: active,
+     capability: "Rust implementation of the Imperva/Incapsula reese84 sensor/payload generation.",
+     when_to_use: "Use when a site sets the reese84 token (Imperva Advanced Bot Protection, /<random>?d=...reese84 endpoint) and you want a Rust port of the payload logic; companion to incapsula-reese84 / incaps-lancet deobfuscation.",
+     source: https://github.com/manudeobs/reese84-rs, install: "git clone https://github.com/manudeobs/reese84-rs"}
+  - {id: incaps-lancet, name: "Incaps_lancet", type: tool, domain: web, bundled: false, status: active,
+     capability: "Anti-confusion / deobfuscation tooling targeting Imperva's reese84-gen.js challenge script.",
+     when_to_use: "Trigger when the reese84-gen.js sensor script is obfuscated and you need it cleaned up before extracting the payload algorithm; deobfuscation pre-step for reese84-rs / incapsula-reese84.",
+     source: https://github.com/oioie/Incaps_lancet, install: "git clone https://github.com/oioie/Incaps_lancet"}
+  - {id: px-grubhub-mobile, name: "px-grubhub-mobile", type: script, domain: web, bundled: false, status: active,
+     capability: "Go implementation of the PerimeterX mobile SDK API as used by Grubhub, companion to an antibot.blog write-up.",
+     when_to_use: "Use when reversing PerimeterX MOBILE SDK traffic (collector POSTs, _px mobile tokens) for apps like Grubhub; concrete Go reference for the mobile (not web) PX flow — pair with px-reverse skill and px-mobile-api.",
+     source: https://github.com/obfio/px-grubhub-mobile, install: "git clone https://github.com/obfio/px-grubhub-mobile"}
+  - {id: perimeterx-deobfuscator, name: "PerimeterX-Deobfuscator", type: tool, domain: web, bundled: false, status: active,
+     capability: "Tool to deobfuscate the PerimeterX main collector JavaScript file.",
+     when_to_use: "Trigger when you have the obfuscated PerimeterX main.min.js / collector script and need it readable before mapping the _px3 sensor logic; deobfuscation entry-point to the px-reverse workflow.",
+     source: https://github.com/glizzykingdreko/PerimeterX-Deobfuscator, install: "git clone https://github.com/glizzykingdreko/PerimeterX-Deobfuscator"}
+  - {id: perimeterx-captcha-wasm, name: "PerimeterX-Captcha-WASM", type: script, domain: web, bundled: false, status: active,
+     capability: "Node.js emulation of the WASM module embedded in the PerimeterX (HUMAN) press-and-hold captcha script.",
+     when_to_use: "Use when the PerimeterX captcha relies on a WebAssembly component you must execute/emulate in Node to produce a valid token; niche WASM piece complementing the JS deobfuscator and px-reverse.",
+     source: https://github.com/glizzykingdreko/PerimeterX-Captcha-WASM, install: "git clone https://github.com/glizzykingdreko/PerimeterX-Captcha-WASM"}
+  - {id: cloudflare-cookie-analysis, name: "Cloudflare-Cookie-Analysis", type: script, domain: web, bundled: false, status: active,
+     capability: "Write-up analyzing the Cloudflare anti-bot cookie flow (__cf_bm / cf_clearance) from a defensive standpoint.",
+     when_to_use: "Read when you need to understand how/when Cloudflare issues __cf_bm and cf_clearance and what they gate, before attempting clearance scraping; background research, not an active solver — pair with cf-clearance-scraper / cloudflare-jsd-solver.",
+     source: https://github.com/seadhy/Cloudflare-Cookie-Analysis, install: "git clone https://github.com/seadhy/Cloudflare-Cookie-Analysis"}
+  - {id: turnaround-turnstile, name: "turnaround", type: script, domain: web, bundled: false, status: active,
+     capability: "Browser-based solver for Cloudflare Turnstile that drives a real browser to obtain the cf-turnstile-response token.",
+     when_to_use: "Trigger on Cloudflare Turnstile widgets (cf-turnstile-response field, challenges.cloudflare.com/turnstile) when you want a browser-automation solver; alternative to turnstile-solver / cloudflare-turnstile-solver-rs.",
+     source: https://github.com/Body-Alhoha/turnaround, install: "git clone https://github.com/Body-Alhoha/turnaround"}
+  - {id: queue-checker-python, name: "Queue-Checker-Python", type: tool, domain: web, bundled: false, status: active,
+     capability: "Python + Selenium script that bypasses Queue-it virtual waiting-room captchas and retrieves event identifiers.",
+     when_to_use: "Trigger specifically on Queue-it waiting rooms (queue-it.net, queueittoken) for ticketing/event sites where you need to get past the queue and pull event IDs; narrow Queue-it target.",
+     source: https://github.com/ahmedmujtaba1/Queue-Checker-Python, install: "git clone https://github.com/ahmedmujtaba1/Queue-Checker-Python"}
+  - {id: hcaptcha-solver-jimmylaurent, name: "hcaptcha-solver (JimmyLaurent)", type: script, domain: web, bundled: false, status: active,
+     capability: "Node library that solves hCaptcha image challenges programmatically and returns a token for use in form submission/automation.",
+     when_to_use: "Need an hCaptcha h-captcha-response token in a Node scraper; site embeds hCaptcha (data-sitekey, hcaptcha.com/1/api.js) and you want a drop-in JS solver rather than a paid service.",
+     source: https://github.com/JimmyLaurent/hcaptcha-solver, install: "npm install hcaptcha-solver"}
+  - {id: hektcaptcha-extension, name: "hektCaptcha-extension", type: tool, domain: web, bundled: false, status: active,
+     capability: "Browser extension that auto-solves hCaptcha visual challenges in-page using bundled ONNX AI models, no external API.",
+     when_to_use: "Browser-based (Playwright/Puppeteer/Selenium) flow hits an hCaptcha widget and you want a loadable extension that clicks/solves the challenge locally via AI image classification.",
+     source: https://github.com/Wikidepia/hektCaptcha-extension, install: "git clone https://github.com/Wikidepia/hektCaptcha-extension (load unpacked in Chrome)"}
+  - {id: aws-waf-solver-chackthree, name: "aws-waf-solver", type: script, domain: web, bundled: false, status: active,
+     capability: "Solves AWS WAF CAPTCHA challenges using audio and visual AI, producing the token needed to clear the WAF gate.",
+     when_to_use: "Target sits behind AWS WAF and serves a CAPTCHA (captcha.awswaf.com, token cookie aws-waf-token); need to programmatically pass the audio/visual challenge.",
+     source: https://github.com/ChackThree/aws-waf-solver, install: "git clone https://github.com/ChackThree/aws-waf-solver"}
+  - {id: py-jsrpc-sixgad, name: "py-jsrpc", type: tool, domain: web, bundled: false, status: active,
+     capability: "Lightweight Python coroutine/async WebSocket RPC server that bridges browser JS into Python, exposing in-page encryption/obfuscation functions as callable RPC endpoints.",
+     when_to_use: "Want to call a site's JS sign/encrypt function from Python without porting it; inject a WS client into the page and invoke obfuscated functions over a local RPC bridge.",
+     source: https://github.com/sixgad/py-jsrpc, install: "git clone https://github.com/sixgad/py-jsrpc"}
+  - {id: jsrpc-by-cdp-python, name: "jsrpc_by_cdp_python", type: tool, domain: web, bundled: false, status: active,
+     capability: "Python JSRPC that auto-registers the RPC client into a page via Chrome DevTools Protocol, removing manual hook injection from the JSRPC workflow.",
+     when_to_use: "Doing JSRPC against a site but tired of pasting injection scripts; attach to a running Chrome over CDP and have RPC hooks installed automatically before calling page functions.",
+     source: https://github.com/winezer0/jsrpc_by_cdp_python, install: "git clone https://github.com/winezer0/jsrpc_by_cdp_python"}
+  - {id: node-sandbox-bnmgh1, name: "node-sandbox (魔改 buhuanjing)", type: tool, domain: web, bundled: false, status: active,
+     capability: "Modified Node.js sandbox/env-patching framework that fakes browser globals (window/document/navigator/location) so extracted anti-bot JS runs under Node.",
+     when_to_use: "Running a site's encryption/anti-bot JS standalone in Node and hitting ReferenceError on window/document/navigator; need a 补环境 shim to make the script execute headless.",
+     source: https://github.com/bnmgh1/node-sandbox, install: "git clone https://github.com/bnmgh1/node-sandbox"}
+  - {id: firefox-fingerprint-analyzer-losenine, name: "Firefox-FingerPrint-Analyzer", type: tool, domain: web, bundled: false, status: active,
+     capability: "Desktop tool that logs all browser-fingerprint/risk-control property accesses; full logs can be fed to an AI to auto-generate JS env-patching (补环境) code.",
+     when_to_use: "Building a Node 补环境 and need to know exactly which navigator/screen/canvas/WebGL properties the target reads; capture the access log to enumerate every fingerprint surface to stub.",
+     source: https://github.com/LoseNine/Firefox-FingerPrint-Analyzer, install: "git clone https://github.com/LoseNine/Firefox-FingerPrint-Analyzer"}
+  - {id: de4js, name: "de4js", type: tool, domain: web, bundled: false, status: active,
+     capability: "Web-based JavaScript deobfuscator and unpacker handling eval, Dean Edwards packer, _Number/array, urlencode, JSFuck, AAEncode, JJEncode formats.",
+     when_to_use: "Quick one-off unpack of packed/encoded JS (eval(function(p,a,c,k,e,d)…, JSFuck, AAEncode); paste into a browser tool to get readable source without a build step.",
+     source: https://github.com/lelinhtinh/de4js, install: "git clone https://github.com/lelinhtinh/de4js (or use hosted page)"}
+  - {id: ob-decrypt-dingzaihub, name: "ob-decrypt", type: tool, domain: web, bundled: false, status: active,
+     capability: "AST-based restorer for obfuscator.io (OB)-protected JS: decodes the string-array/rotate decoder, inlines wrappers, simplifies control flow and recovers identifiers.",
+     when_to_use: "Source shows the obfuscator.io fingerprint (_0x array decoder, string-array rotation, control-flow flattening, dead-code) and you want it reverted to readable JS.",
+     source: https://github.com/DingZaiHub/ob-decrypt, install: "git clone https://github.com/DingZaiHub/ob-decrypt"}
+  - {id: akamai-deobfuscator-voidstar0, name: "akamai-deobfuscator", type: tool, domain: web, bundled: false, status: active,
+     capability: "Deobfuscator specifically for Akamai Bot Manager sensor-collection scripts, untangling their bespoke obfuscation into analyzable code.",
+     when_to_use: "Reversing Akamai _abck/sensor_data generation and the bmak script is heavily obfuscated; run this to recover readable Akamai bot-detection logic.",
+     source: https://github.com/voidstar0/akamai-deobfuscator, install: "git clone https://github.com/voidstar0/akamai-deobfuscator"}
+  - {id: illuminatejs, name: "IlluminateJS", type: tool, domain: web, bundled: false, status: active,
+     capability: "Static JavaScript deobfuscator built on partial evaluation that constant-folds and simplifies obfuscated/malicious JS without executing it.",
+     when_to_use: "Want safe static deobfuscation of potentially malicious or eval-heavy JS via partial evaluation (no sandbox execution); good for malware-dropper or anti-analysis script triage.",
+     source: https://github.com/geeksonsecurity/illuminatejs, install: "git clone https://github.com/geeksonsecurity/illuminatejs"}
+  - {id: ai-code-decompile, name: "ai-code-decompile", type: tool, domain: web, bundled: false, status: active,
+     capability: "AI-assisted JS decompiler/deobfuscator combining AST transforms with an LLM to turn minified/obfuscated build output back into readable, named source.",
+     when_to_use: "Pure-AST tools leave unreadable variable names and structure; want an LLM-in-the-loop pass to rename and restructure obfuscated webpack/build JS into human-readable code.",
+     source: https://github.com/zhongguagua/ai-code-decompile, install: "git clone https://github.com/zhongguagua/ai-code-decompile"}
+  - {id: supplementary-ast-deob-materials, name: "Supplementary AST-Based Deobfuscation Materials", type: script, domain: web, bundled: false, status: active,
+     capability: "Companion Babel AST transformer source code for the SteakEnthusiast/ReverseJS deobfuscation blog series: string-array decoding, control-flow unflattening, constant folding examples.",
+     when_to_use: "Learning to write your own Babel AST deobfuscation passes; want worked, runnable examples of each transform technique rather than a black-box tool.",
+     source: https://github.com/SteakEnthusiast/Supplementary-AST-Based-Deobfuscation-Materials, install: "git clone https://github.com/SteakEnthusiast/Supplementary-AST-Based-Deobfuscation-Materials"}
+  - {id: datadome-deobfuscator-glizzykingdreko, name: "Datadome-Deobfuscator", type: tool, domain: web, bundled: false, status: active,
+     capability: "Deobfuscates DataDome bot-protection JS: decodes string arrays, simplifies structure, and renames identifiers for readable analysis.",
+     when_to_use: "Reversing DataDome (datadome cookie, js.datadome.co tags, dd payload) and the collection script is obfuscated; run to recover analyzable DataDome logic.",
+     source: https://github.com/glizzykingdreko/Datadome-Deobfuscator, install: "git clone https://github.com/glizzykingdreko/Datadome-Deobfuscator"}
+  - {id: jsdefender-deobfuscator, name: "JSDefender-Deobfuscator", type: tool, domain: web, bundled: false, status: active,
+     capability: "Deobfuscator targeting PreEmptive JSDefender-protected JavaScript, reversing its control-flow and string protections.",
+     when_to_use: "Target JS shows PreEmptive JSDefender protection (its signature control-flow/domain-lock/string-split patterns); run this to restore readable code.",
+     source: https://github.com/0v41n/JSDefender-Deobfuscator, install: "git clone https://github.com/0v41n/JSDefender-Deobfuscator"}
+  - {id: jscrewit, name: "JScrewIt", type: tool, domain: web, bundled: false, status: active,
+     capability: "Encodes arbitrary JavaScript using only the six characters [ ] ( ) ! + (modern, maintained JSFuck-style encoder) and runs the result in browsers/Node.",
+     when_to_use: "Need to produce or understand six-character JSFuck-style payloads (only []()!+ visible); use to encode/test such code or as reference when reversing JSFuck-encoded scripts.",
+     source: https://github.com/fasttime/JScrewIt, install: "npm install jscrewit"}
+  - {id: charles-hello-ast-antibot-228, name: "Charles-Hello 228 (AST + 通杀 devtool + env-patching)", type: script, domain: web, bundled: false, status: active,
+     capability: "Broad anti-bot toolkit: full AST course, a modified Chromium that defeats devtools detection, a Douyin jsvmp interpreter, reCAPTCHA/Cloudflare/Aliyun x82y slider algos, 瑞数 456 VMP notes, and a DOM env-patching framework.",
+     when_to_use: "Need worked examples across many targets at once (Douyin jsvmp, Aliyun slider x82y, 瑞数 VMP, reCAPTCHA/CF) or a Chromium build that bypasses devtools-detection traps during JS reversing.",
+     source: https://github.com/Charles-Hello/-228-, install: "git clone https://github.com/Charles-Hello/-228-"}
+  - {id: commercial-bot-detectors, name: "commercial-bot-detectors", type: script, domain: web, bundled: false, status: active,
+     capability: "Corpus of collected JS from many commercial bot-detection/fingerprinting vendors, some with accompanying string-deobfuscators, for comparative analysis.",
+     when_to_use: "Want a reference library of real vendor anti-bot/fingerprinting scripts to compare signatures or study env/AST techniques across multiple commercial detectors at once.",
+     source: https://github.com/chris124567/commercial-bot-detectors, install: "git clone https://github.com/chris124567/commercial-bot-detectors"}
+  - {id: bosszhipin-reverse-warterbili, name: "BossZhipin_reverse", type: script, domain: web, bundled: false, status: active,
+     capability: "Boss直聘 anti-crawler bypass using an RPC scheme to enable one-click resume delivery and large-scale job-listing scraping.",
+     when_to_use: "Scraping zhipin.com (Boss直聘) jobs or automating resume submission and hitting its strong anti-crawler/encryption; RPC-based approach.",
+     source: https://github.com/warterbili/BossZhipin_reverse, install: "git clone https://github.com/warterbili/BossZhipin_reverse"}
+  - {id: px3cookie-warterbili, name: "px3cookie", type: tool, domain: web, bundled: false, status: active,
+     capability: "PerimeterX _px3 cookie generator, the productized companion output of warterbili's PerimeterX reversing work.",
+     when_to_use: "Need to mint a valid PerimeterX _px3 cookie to pass PX-protected requests; route here for ready-made _px3 generation rather than full PX algorithm RE.",
+     source: https://github.com/warterbili/px3cookie, install: "git clone https://github.com/warterbili/px3cookie"}
+  - {id: shopee-food-reverse-warterbili, name: "shopee_food_reverse", type: script, domain: web, bundled: false, status: active,
+     capability: "Pure-algorithm reconstruction of Shopee Food Vietnam request signing (no browser/RPC, native signature reimplementation).",
+     when_to_use: "Generating valid request signatures for Shopee Food VN APIs and want a pure-algo (纯算) sign implementation to call directly.",
+     source: https://github.com/warterbili/shopee_food_reverse, install: "git clone https://github.com/warterbili/shopee_food_reverse"}
+  - {id: node-crawler-env-utils-warterbili, name: "node-crawler-env-utils", type: tool, domain: web, bundled: false, status: active,
+     capability: "Node.js crawler 补环境 utilities: environment patching/dumping (吐环境) and proxy helpers for running browser-derived JS outside a browser.",
+     when_to_use: "Patching the missing browser environment (window/navigator/document) so scraped/obfuscated site JS runs under Node for 纯算 sign reproduction.",
+     source: https://github.com/warterbili/node-crawler-env-utils, install: "git clone https://github.com/warterbili/node-crawler-env-utils"}

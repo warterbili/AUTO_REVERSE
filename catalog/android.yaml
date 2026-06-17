@@ -202,3 +202,89 @@ entries:
      capability: "Claude Code skill automating Android app reverse engineering (decompile, static analysis, RE workflow) authored by a mobile-security researcher.",
      when_to_use: "You want a ready-made Claude Code skill packaging an Android RE workflow; use as an alternative/reference skill when setting up automated APK analysis in Claude Code.",
      source: https://github.com/incogbyte/android-reverse-engineering-claude-skill, install: "git clone https://github.com/incogbyte/android-reverse-engineering-claude-skill"}
+
+  # ── batch-added from collection shortlist (core, bundled:false) ──
+  - {id: 0xdea-frida-scripts, name: "0xdea/frida-scripts", type: script, domain: android, bundled: false, status: active,
+     capability: "Curated Frida instrumentation scripts including full-featured Java-layer and native-module tracers (raptor_frida) for mobile runtime RE.",
+     when_to_use: "When you need a drop-in Frida Java/native function tracer for an Android app and want vetted raptor-style scripts rather than writing tracing hooks from scratch.",
+     source: https://github.com/0xdea/frida-scripts, install: "git clone https://github.com/0xdea/frida-scripts"}
+  - {id: frida-il2cppdumper-immy, name: "frida-il2cppDumper (IIIImmmyyy)", type: tool, domain: android, bundled: false, status: active,
+     capability: "Enhanced Riru/Frida IL2CPP dumper recovering source-level type/method info directly from process memory; handles NetEase yidun (易盾) protected Unity games.",
+     when_to_use: "When dumping a Unity IL2CPP Android game whose global-metadata is encrypted/stripped or protected by NetEase yidun, and static Il2CppDumper fails so you need a memory-based runtime dump.",
+     source: https://github.com/IIIImmmyyy/frida-il2cppDumper, install: "git clone https://github.com/IIIImmmyyy/frida-il2cppDumper"}
+  - {id: fart-fix, name: "FART-Fix", type: script, domain: android, bundled: false, status: active,
+     capability: "Updated Frida unpacking scripts adapting FART to run on Frida 16.1.0 + Android 12 for ART-based DEX dumping",
+     when_to_use: "Want to use FART-style Frida unpacking (whole-app/抽取壳 dump) on a modern stack (Frida 16.1.0, Android 12) where the original FART scripts break",
+     source: https://github.com/LLeavesG/FART-Fix, install: "git clone https://github.com/LLeavesG/FART-Fix"}
+  - {id: youpk-unpacker, name: "Youpk (unpacker)", type: tool, domain: android, bundled: false, status: active,
+     capability: "ART active-invocation unpacker (脱壳机): builds call chains to traverse all methods and backfill CodeItem, defeating whole-app and method-extraction packers (Pixel1 / Android 7.1.2)",
+     when_to_use: "Need to unpack an Android app protected by an extraction/抽取壳 packer where in-memory frida-dexdump fails — use Youpk's ART active-call traversal on a Pixel1 / Android 7.1.2 ROM",
+     source: https://github.com/youlor/unpacker, install: "git clone https://github.com/youlor/unpacker"}
+  - {id: user1342-awesome-android-re, name: "Awesome-Android-Reverse-Engineering", type: platform, domain: android, bundled: false, status: active,
+     capability: "Curated Android RE index: decompilers, unpackers, Frida/dynamic-analysis tooling, smali resources and training material.",
+     when_to_use: "Hunting for an Android-specific RE tool (decompiler, unpacker, Frida workflow, smali) or training resource; Android-focused discovery list, not executable.",
+     source: https://github.com/user1342/Awesome-Android-Reverse-Engineering}
+  - {id: ashishb-android-security-awesome, name: "android-security-awesome", type: platform, domain: android, bundled: false, status: active,
+     capability: "Veteran collection of Android security tooling: online/static/dynamic analyzers and reversing utilities.",
+     when_to_use: "Want a long-established index of Android static/dynamic security analyzers and reversing utilities to pick scanning/analysis tools; older but canonical Android-security reference.",
+     source: https://github.com/ashishb/android-security-awesome}
+  - {id: vaib25vicky-awesome-mobile-security, name: "awesome-mobile-security", type: platform, domain: android, bundled: false, status: active,
+     capability: "Single index covering both Android and iOS security: tutorials, tools, Frida scripts, labs and writeups.",
+     when_to_use: "Want one combined Android+iOS mobile-security index (tutorials, Frida scripts, vulnerable labs, writeups) rather than a platform-specific list; discovery hub.",
+     source: https://github.com/vaib25vicky/awesome-mobile-security}
+  - {id: zentracer, name: "ZenTracer", type: tool, domain: android, bundled: false, status: active,
+     capability: "Frida-based Android method-tracing GUI that traces Java method calls at runtime with a visual interface.",
+     when_to_use: "You want to visually trace which Android Java methods fire during an app action (find the call path to a sign/encrypt routine) without hand-writing Frida tracing scripts.",
+     source: https://github.com/hluwa/ZenTracer, install: "git clone https://github.com/hluwa/ZenTracer"}
+  - {id: hluwa-patchs, name: "Patchs (strongR-frida)", type: script, domain: android, bundled: false, status: active,
+     capability: "Patch set (strongR-frida) that rebuilds frida-server with default detection signatures removed to bypass anti-Frida checks.",
+     when_to_use: "An Android app detects stock frida-server (string/symbol scanning, port 27042, named pipes) and crashes/exits; use these patches to produce a stealthier frida-server build.",
+     source: https://github.com/hluwa/Patchs, install: "git clone https://github.com/hluwa/Patchs"}
+  - {id: r0rpc, name: "r0rpc", type: tool, domain: android, bundled: false, status: active,
+     capability: "Android/iOS RPC framework for remotely invoking in-app algorithm functions from outside the device.",
+     when_to_use: "You want to call an app's internal sign/encrypt function directly over RPC (e.g. expose it as a local service) instead of reimplementing the algorithm, on Android or iOS.",
+     source: https://github.com/r0ysue/r0rpc, install: "git clone https://github.com/r0ysue/r0rpc"}
+  - {id: crack-libsgmain, name: "crack_libsgmain", type: script, domain: android, bundled: false, status: active,
+     capability: "Reverse-engineering case/scripts for Alibaba JAQ security's libsgmain (sgmain) native sign library.",
+     when_to_use: "Your target uses Alibaba/Aliyun JAQ (聚安全) native protection — libsgmain / sgmain sign generation — and you want a worked reversing reference for that .so.",
+     source: https://github.com/r0ysue/crack_libsgmain, install: "git clone https://github.com/r0ysue/crack_libsgmain"}
+  - {id: smartdone-frida-scripts, name: "Frida-Scripts (smartdone)", type: script, domain: android, bundled: false, status: active,
+     capability: "Collection of practical Frida scripts for common Android hooking tasks.",
+     when_to_use: "You need ready-made Frida hook snippets for routine Android RE tasks (hooking common APIs/crypto/utility methods) instead of writing them from scratch.",
+     source: https://github.com/smartdone/Frida-Scripts, install: "git clone https://github.com/smartdone/Frida-Scripts"}
+  - {id: smartdone-dexdump, name: "dexdump (smartdone)", type: tool, domain: android, bundled: false, status: active,
+     capability: "Xposed plugin that quickly unpacks first-generation Android packers by dumping released DEX from memory.",
+     when_to_use: "jadx shows only a packer stub and the app uses a first-gen (whole-DEX-release) shell; use this Xposed plugin to dump the real DEX. Needs Xposed/LSPosed environment.",
+     source: https://github.com/smartdone/dexdump, install: "git clone https://github.com/smartdone/dexdump"}
+  - {id: cyrus-androidexample, name: "CYRUS AndroidExample", type: script, domain: android, bundled: false, status: active,
+     capability: "Companion sample code for CYRUS-STUDIO's Android RE article series — continuously updated teaching samples covering reversing techniques.",
+     when_to_use: "You're learning a specific Android RE technique from CYRUS-STUDIO write-ups and want the matching runnable example project to follow along.",
+     source: https://github.com/CYRUS-STUDIO/AndroidExample, install: "git clone https://github.com/CYRUS-STUDIO/AndroidExample"}
+  - {id: cyrus-frida-fart, name: "frida_fart", type: tool, domain: android, bundled: false, status: active,
+     capability: "Frida-enhanced FART providing stronger active-call (主动调用) DEX unpacking without Xposed.",
+     when_to_use: "You need FART-style unpacking with forced method invocation but want it driven by Frida (no Xposed) to dump DEX from a packed app.",
+     source: https://github.com/CYRUS-STUDIO/frida_fart, install: "git clone https://github.com/CYRUS-STUDIO/frida_fart"}
+  - {id: douyin-httpso-gorgon, name: "China-0x4thk/douyin_httpso", type: tool, domain: android, bundled: false, status: active,
+     capability: "AndServer-based black-box SO-calling environment that runs the Douyin native library on-device to generate X-Gorgon (updated for Douyin 11.0.0), exposed over HTTP.",
+     when_to_use: "When you cannot reproduce Douyin's X-Gorgon in pure code and prefer to invoke the original .so directly: deploy this AndServer app on an Android device/emulator and POST request data to get a valid X-Gorgon. Classic black-box RPC-the-so approach.",
+     source: https://github.com/China-0x4thk/douyin_httpso, install: "git clone https://github.com/China-0x4thk/douyin_httpso"}
+  - {id: xhs-unidbg-sign-litsummer, name: "LitSummer/xhs_unidbg_sign", type: script, domain: android, bundled: false, status: active,
+     capability: "unidbg emulation project generating Xiaohongshu app sign for version 7.6.73, with JNI env-patching for the native signer.",
+     when_to_use: "When reversing the Xiaohongshu Android app's native sign and you want to run the .so under unidbg instead of on-device: use as a worked JNI补环境 example for XHS 7.6.73. Pair with unidbg-emulation/jni-env-patching skills.",
+     source: https://github.com/LitSummer/xhs_unidbg_sign, install: "git clone https://github.com/LitSummer/xhs_unidbg_sign"}
+  - {id: unidbg-mt-server-mtgsig23, name: "irabbit666666/unidbg-mt-server23", type: tool, domain: android, bundled: false, status: active,
+     capability: "Java unidbg-based emulation service that produces Meituan mtgsig 2.3 signatures, with native JNI env-patching wired up.",
+     when_to_use: "When Meituan/美团 requests are rejected without mtgsig (version 2.3) and you want to generate it by emulating the app .so under unidbg as an HTTP service rather than calling a device. Reference for mtgsig 2.3 补环境.",
+     source: https://github.com/irabbit666666/unidbg-mt-server23, install: "git clone https://github.com/irabbit666666/unidbg-mt-server23"}
+  - {id: akamai-bmp-decrypt-yoghurtbot, name: "yoghurtbot/akamai-bmp-decrypt", type: script, domain: android, bundled: false, status: active,
+     capability: "Snippet demonstrating how to decrypt the sensor strings produced by the Akamai Mobile SDK (BMP).",
+     when_to_use: "When analyzing Akamai BMP (mobile SDK) traffic and you need to decrypt/inspect the encrypted sensor string from an Android app to understand its fields. Mobile BMP path, distinct from web sensor_data.",
+     source: https://github.com/yoghurtbot/akamai-bmp-decrypt, install: "git clone https://github.com/yoghurtbot/akamai-bmp-decrypt"}
+  - {id: reverse-engineering-is-over, name: "reverse-engineering-is-over", type: script, domain: android, bundled: false, status: active,
+     capability: "Methodology write-up plus code reconstructing Douyin (TikTok CN) native HTTP request-signing parameters in 30 days using Claude Opus; detailed AI-assisted RE case study.",
+     when_to_use: "Reversing Douyin/TikTok-CN native signing params (X-Argus/X-Gorgon-style) or want a worked example of LLM-driven native signature recovery as a methodology reference.",
+     source: https://github.com/yasminefolo/reverse-engineering-is-over, install: "git clone https://github.com/yasminefolo/reverse-engineering-is-over"}
+  - {id: android-pentest-ai-balzabu, name: "android-pentest-ai", type: skill, domain: android, bundled: false, status: active,
+     capability: "AI-powered Android pentest skill doing static analysis, Frida bypass-script generation, and OWASP MASVS v2.1.0 control mapping across Claude Code/OpenCode/Codex/Gemini/Cursor/Windsurf.",
+     when_to_use: "Running a structured Android app pentest (MASVS-aligned) where you want auto-generated Frida bypasses and static findings inside a multi-client AI agent.",
+     source: https://github.com/Balzabu/android-pentest-ai, install: "git clone https://github.com/Balzabu/android-pentest-ai"}
