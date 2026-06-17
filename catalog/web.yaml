@@ -33,6 +33,10 @@ entries:
      capability: "Identify + reverse Akamai Bot Manager (BMP): fingerprint by _abck/bm_sz/ak_bmsc/sbsd + sensor_data POST; split Web sensor_data vs mobile BMP; the _abck handshake state machine (~-1~-1 invalid vs ~0~ valid); routes mobile to xvertile/akamai-bmp-generator (pipe protocol + RSA/AES/HMAC + PoW + version pin), Web to a per-target methodology",
      when_to_use: "Target sends Akamai fingerprints: _abck / bm_sz / ak_bmsc / sbsd / bm_sv cookie, sensor_data or akamai-bm-telemetry POST, /_bm/ path, 403 re-issuing _abck=...~-1~-1. Mobile app/API to akamai-bmp-generator; site to methodology. Counter: _px3->px-reverse, datadome->DataDome, cf_clearance->Cloudflare, X-Castle-Request-Token->castle-reverse",
      source: "skills/web/akamai-reverse"}
+  - {id: env-supplement-proxy, name: "Proxy 自动补环境", type: skill, domain: web, bundled: true, status: active,
+     capability: "Recursive ES6 Proxy + access-logging to AUTO-patch the browser env (自动补环境/吐环境): wrap globalThis/window/navigator/document in a recursive Proxy, trap get/set/has/getOwnPropertyDescriptor, log accessed-but-undefined paths, and run an AI loop (run -> catch 'X is not defined' -> stub -> re-run -> diff vs real browser). Covers detection pitfalls (toString [native code] integrity, descriptor getter-vs-value, fingerprint self-consistency, Proxy leaks) + framework selection (sdenv/qxVm/NodeSandbox/boda_jsEnv/js-sandbox-env-framework/Browser-Env)",
+     when_to_use: "Need to run obfuscated anti-bot/sign JS headlessly in Node at scale, the algorithm is too costly to fully reverse, and a real browser/RPC is too slow; JS throws window/navigator/document is not defined and you want the env built semi-automatically instead of hand-stubbing. Escalate to cdp-browser / jsrpc-universal when the Proxy/jsdom ceiling is hit",
+     source: "skills/web/env-supplement-proxy", alt_to: [node-bridge-build, jsrpc-universal]}
 
   # ── External, fillable ──
   - {id: nodriver, name: nodriver, type: tool, domain: web, bundled: false, status: active,
