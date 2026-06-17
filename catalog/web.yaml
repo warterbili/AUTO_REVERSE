@@ -21,6 +21,10 @@ entries:
      capability: "End-to-end Castle.io reversing — Android native v3.1.1 (io.castle.android/Highwind: hex-fp + 3-layer nibble-XOR + base64url, NO XXTEA; full generator+decoder) + web v11 (open-source castleio-gen archive); generates X-Castle-Request-Token + x-castle-client-id",
      when_to_use: "Target sends X-Castle-Request-Token / x-castle-client-id / __cuid, loads castle.browser.js, calls Castle.createRequestToken(), or bundles io.castle.android; need to decode or reproduce the token",
      source: "skills/web/castle-reverse"}
+  - {id: node-bridge-build, name: Node Bridge (jsdom env-patching), type: skill, domain: web, bundled: true, status: active,
+     capability: "jsdom + 11 env-patching modules + Python curl_cffi orchestrator: build a 补环境 fallback bridge for anti-bot SDKs (PerimeterX/Akamai/etc.) without a real browser; ports ifood/ templates to new sites",
+     when_to_use: "Plan-B when a pure-algo generator breaks after an SDK upgrade, a 30-min spike on a new site, or a high-bar endpoint where pure-algo scoring is insufficient; escalate to sdenv (pysunday) when the jsdom ceiling is hit",
+     source: "skills/web/node-bridge-build", alt_to: [px-reverse], note: "first-party, imported from warterbili/PerimeterX_RE node_bridge/skill"}
 
   # ── External, fillable ──
   - {id: nodriver, name: nodriver, type: tool, domain: web, bundled: false, status: active,
