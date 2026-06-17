@@ -25,6 +25,14 @@ entries:
      capability: "jsdom + 11 env-patching modules + Python curl_cffi orchestrator: build a 补环境 fallback bridge for anti-bot SDKs (PerimeterX/Akamai/etc.) without a real browser; ports ifood/ templates to new sites",
      when_to_use: "Plan-B when a pure-algo generator breaks after an SDK upgrade, a 30-min spike on a new site, or a high-bar endpoint where pure-algo scoring is insufficient; escalate to sdenv (pysunday) when the jsdom ceiling is hit",
      source: "skills/web/node-bridge-build", alt_to: [px-reverse], note: "first-party, imported from warterbili/PerimeterX_RE node_bridge/skill"}
+  - {id: jsrpc-universal, name: "JsRpc 通杀 (RPC 远程调用)", type: skill, domain: web, bundled: true, status: active,
+     capability: "Expose a real in-page/in-app JS or native algorithm over WebSocket/HTTP RPC so Python calls the real environment remotely — no code-extraction / env-patching / pure-algo. Browser route (jxhczhl/JsRpc: HlClient+regAction+/go/execjs) + Android route (yint-tech/sekiro-open: SekiroClient register via frida/Xposed); group/clientId routing, pseudo-concurrency via multiple clients, keep-alive",
+     when_to_use: "Algorithm too hard or drifts too fast, strongly depends on runtime env (window/DOM/canvas fingerprint, app native context), or you must reuse a logged-in session / real TLS fingerprint, at low-to-mid QPS. Triggers: jsrpc, 通杀, HlClient, regAction, execjs, 黑脸怪, sekiro, SekiroClient, frida rpc. Sekiro for Android/cluster, JsRpc for single-box browser",
+     source: "skills/web/jsrpc-universal", alt_to: [px-reverse, ruishu-reverse, node-bridge-build]}
+  - {id: akamai-reverse, name: "Akamai Bot Manager 逆向", type: skill, domain: web, bundled: true, status: active,
+     capability: "Identify + reverse Akamai Bot Manager (BMP): fingerprint by _abck/bm_sz/ak_bmsc/sbsd + sensor_data POST; split Web sensor_data vs mobile BMP; the _abck handshake state machine (~-1~-1 invalid vs ~0~ valid); routes mobile to xvertile/akamai-bmp-generator (pipe protocol + RSA/AES/HMAC + PoW + version pin), Web to a per-target methodology",
+     when_to_use: "Target sends Akamai fingerprints: _abck / bm_sz / ak_bmsc / sbsd / bm_sv cookie, sensor_data or akamai-bm-telemetry POST, /_bm/ path, 403 re-issuing _abck=...~-1~-1. Mobile app/API to akamai-bmp-generator; site to methodology. Counter: _px3->px-reverse, datadome->DataDome, cf_clearance->Cloudflare, X-Castle-Request-Token->castle-reverse",
+     source: "skills/web/akamai-reverse"}
 
   # ── External, fillable ──
   - {id: nodriver, name: nodriver, type: tool, domain: web, bundled: false, status: active,
