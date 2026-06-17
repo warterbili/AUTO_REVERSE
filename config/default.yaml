@@ -1,0 +1,27 @@
+# auto_reverse global configuration. The installer/adapters read from here; users can override in config/local.yaml (gitignored).
+# Key rule: never hard-code personal absolute paths — use placeholders or a "logical name on PATH."
+
+paths:
+  tools_root_env: AUTO_REVERSE_TOOLS    # environment variable name pointing to the tools install dir (on this machine = auto_reverseTOOL)
+  workspace: "./workspace"              # per-target artifact directory (gitignored)
+  cases: "./cases"                      # desensitized real-world case records (committed)
+
+device:
+  transport: usb                        # usb | tcp
+  frida_server_path: /data/local/tmp/frida-server
+  # frida-server version must match the host frida; architecture must match the device abi (this machine = arm64-v8a)
+  start_frida_cmd: "su -c '{frida_server_path} &'"
+
+capture:
+  mitm_port: 8080
+  session_dir_env: TEMP                 # cross-platform temp directory (Win=%TEMP%, POSIX=/tmp)
+  ssl_bypass: frida                     # frida (dynamic) | apk-mitm (static patch)
+
+native:
+  ghidra_version_pin: "12.0.3"          # the GhidraMCP extension version must be aligned
+  unidbg_max_sdk: 23                    # for libraries above this SDK, unidbg environment patching may be limited
+
+policy:
+  desensitize: true                     # never write real credentials/PII into reports or cases
+  stop_on_blocked_rounds: 2             # stop and report after N consecutive rounds with no progress
+  require_human_for_device_actions: true

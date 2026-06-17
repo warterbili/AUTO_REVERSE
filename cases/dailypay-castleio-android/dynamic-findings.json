@@ -1,0 +1,48 @@
+{
+  "phase": "dynamic",
+  "status": "ok",
+  "method": "frida spawn + hook on rooted Xiaomi MI 9 (1125df3); hooked Castle.createRequestToken, u.g(), f.a(), d.c()",
+  "captured": {
+    "tokens": 2,
+    "token_sample_head": "SEI5HgoaID0xBAQnLAImJQQeHnt8fTgpOB9xKz4PBQB-… (full in captured_tokens.txt, DESENSITIZED context)",
+    "fp_data_main_hex": "f.a() output, 183 bytes — see fp_data_main.hex",
+    "motion": "d.c() = 10dd0000…(1772 hex) — sensors ~0 (device stationary)"
+  },
+  "fp_data_decoded_fields": {
+    "note": "f.a() output is PLAINTEXT — directly confirms NO per-field XXTEA in v3.1.1",
+    "examples": [
+      "idx1 SBA = 'Xiaomi' (vendor/manufacturer)",
+      "idx2 SBA = 'zh-CN' (locale)",
+      "SBA 'Android', 'cn', 'DailyPay', '48.0.0'",
+      "User-Agent verbatim: 'DailyPay/48.0.0 (510250072) (Castle 3.1.1; Android 13; Xiaomi MI 9)'",
+      "timezone SBA = 'Asia/Shanghai'",
+      "terminator 0xff"
+    ]
+  },
+  "verification_decode_round_trip": {
+    "tool": "tools/decode_v311.py (self-written, no xxtea)",
+    "results": [
+      "length byte check: OK (appended len == (2*len(str4_bytes))&0xff)",
+      "lead byte = 0x0a == this.b=y.a(10)  ✓",
+      "recovered publishable key = pk_<32chars>, len 35, 'pk_' prefix  ✓ (valid Castle pk)",
+      "recovered version bytes 0x5041 -> 3.1.1  == BuildConfig.VERSION_NAME  ✓",
+      "recovered cuid/uuid (16 bytes) and unix timestamp 1781200252  ✓",
+      "peeled 3 XOR layers (random-byte, uuid slice8/rot9, time slice4/rot3)",
+      "GOLD: independently-hooked f.a() fingerprint (183B) found VERBATIM inside decoded token right after the 0x58 part header ((24&31)|64) -> full chain confirmed",
+      "determinism: token#1 and token#2 -> SAME pk, SAME cuid, SAME version; only time/random nibble differ"
+    ]
+  },
+  "opensource_incompatibility_proof": {
+    "baseline": "yubie-re/castleio-gen DecodeToken (Castle v2.6.0 / token v11)",
+    "result": "open-source post-XOR leading byte EXPECTS 0x0b (v11); real DailyPay token gives 0x0a, and the open-source xxtea_decrypt(TEA_KEY) step has no counterpart in v3.1.1 -> open-source decoder produces garbage. Confirms version drift; v3.1.1 dropped XXTEA."
+  },
+  "findings": [
+    {"type": "param", "detail": "X-Castle-Request-Token fully reproduced/decoded; pk+cuid+version+fingerprint recovered", "evidence": "decode_v311.py output, frida_capture.log"},
+    {"type": "algorithm", "detail": "v3.1.1 confirmed NO XXTEA; SBA fields plaintext UTF-8; 3-layer XOR + base64url", "evidence": "f.a() plaintext + decode round-trip"}
+  ],
+  "open_questions": [
+    "f.a() full field map (jadx couldn't decompile f.a()) — fields are readable from captured hex; enumerate all 24 for a full generator",
+    "motion section exact float encoding when sensors are non-zero (capture with device movement)"
+  ],
+  "next_suggested": "Phase 6 synthesize — write report + a v3.1.1 generator (reuse decode_v311 primitives in reverse); Phase 7 already largely met by the decode round-trip"
+}

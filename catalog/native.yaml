@@ -1,0 +1,82 @@
+# General native/binary (.so/PE/ELF) reverse-engineering catalog. See catalog/SCHEMA.md for the schema.
+
+entries:
+  # ── Bundled ──
+  - {id: ghidra-reverse-engineering, name: Ghidra, type: skill, domain: native, bundled: true, status: active, alt_to: [ida-pro],
+     capability: "Free decompilation of .so/PE, scriptable analyzeHeadless + GhidraMCP",
+     when_to_use: "Decompiling native libraries, locating JNI entry points, reading algorithms — the free workhorse when IDA isn't available",
+     source: https://github.com/NationalSecurityAgency/ghidra}
+  - {id: ida-reverse-engineering, name: IDA Pro, type: skill, domain: native, bundled: true, status: commercial,
+     capability: "Commercial decompiler + idat headless + ida-pro-mcp",
+     when_to_use: "When you have an IDA license — better interactive feel / deobfuscation / Hex-Rays; use Ghidra without a license",
+     source: https://hex-rays.com/ida-pro/}
+  - {id: capa-triage, name: capa + FLOSS, type: skill, domain: native, bundled: true, status: active,
+     capability: "Capability identification (crypto/anti-debug/network + addresses) + string deobfuscation",
+     when_to_use: "Triaging a .so's capabilities and harvesting obfuscated strings before diving into decompilation",
+     source: https://github.com/mandiant/capa}
+  - {id: unidbg-emulation, name: unidbg, type: skill, domain: native, bundled: true, status: active,
+     capability: "Emulates .so execution on the JVM to extract signature algorithms offline",
+     when_to_use: "When reproducing native signature algorithms offline / in batch (note: max SDK 23)",
+     source: https://github.com/zhkl0228/unidbg}
+  - {id: jni-env-patching, name: JNI Env Patching, type: skill, domain: native, bundled: true, status: active,
+     capability: "Methodology for patching the JNI callback environment in unidbg",
+     when_to_use: "When unidbg running a .so throws JNI unhandled / UnsupportedOperationException",
+     source: ""}
+
+  # ── External, top-tier ──
+  - {id: binary-ninja, name: Binary Ninja, type: tool, domain: native, bundled: false, status: commercial,
+     capability: "Multi-tier IL (LLIL/MLIL/HLIL), cleanest data flow, strong scripting API; free Cloud edition available",
+     when_to_use: "When you want clean data flow / programmable analysis, or zero-cost online decompilation (Cloud)",
+     source: https://binary.ninja/, note: "Free Cloud: https://cloud.binary.ninja/"}
+  - {id: radare2, name: radare2, type: tool, domain: native, bundled: false, status: active,
+     capability: "Fully open-source disassembly + analysis framework, ESIL emulation, r2pipe scripting, widest architecture support",
+     when_to_use: "When you want fully open-source / scripting in any language / obscure architectures; pair r2frida for dynamic",
+     source: https://github.com/radareorg/radare2, install: "see official sys/install"}
+  - {id: cutter, name: Cutter, type: tool, domain: native, bundled: false, status: active,
+     capability: "Free open-source GUI reversing platform driven by rizin (the closest UX to IDA)",
+     when_to_use: "When you want a free GUI, graph view, and integrated decompiler",
+     source: https://github.com/rizinorg/cutter}
+  - {id: angr, name: angr, type: tool, domain: native, bundled: false, status: active,
+     capability: "Symbolic execution + binary analysis (Python): CFG recovery, constraint solving",
+     when_to_use: "For what static decompilation can't do: automatic input synthesis, path constraints, automatic deobfuscation (deflat depends on it)",
+     source: https://github.com/angr/angr, install: "pip install angr"}
+  - {id: triton, name: Triton, type: tool, domain: native, bundled: false, status: active,
+     capability: "Dynamic symbolic execution (DSE) + taint analysis, x86/ARM/AArch64",
+     when_to_use: "Trace-based deobfuscation / VM-protection analysis (complementary to angr)",
+     source: https://github.com/JonathanSalwan/Triton, install: "pip install triton-library"}
+  - {id: bindiff, name: BinDiff, type: tool, domain: native, bundled: false, status: active,
+     capability: "Binary diffing (function / basic-block matching)",
+     when_to_use: "For patch diffing, variant comparison, and cross-version symbol porting",
+     source: https://github.com/google/bindiff}
+  - {id: d810-ng, name: D-810-ng, type: tool, domain: native, bundled: false, status: active, alt_to: [deflat],
+     capability: "Microcode-level deobfuscation in IDA: removes OLLVM flattening + opaque predicates + simplifies MBA",
+     when_to_use: "Stronger than deflat — when you need to remove MBA / opaque predicates and repair decompiler output (requires IDA v9+)",
+     source: https://github.com/w00tzenheimer/d810-ng}
+  - {id: goomba, name: gooMBA, type: tool, domain: native, bundled: false, status: active,
+     capability: "MBA expression simplification (pattern matching + SMT-provable equivalence), IDA plugin",
+     when_to_use: "Simplifying residual MBA expressions after deflattening (bundled with IDA ≥ 8.3)",
+     source: https://github.com/HexRaysSA/goomba}
+  - {id: mergen, name: Mergen, type: tool, domain: native, bundled: false, status: active,
+     capability: "Lifts assembly to LLVM IR for generic devirtualization, no per-handler identification needed",
+     when_to_use: "Devirtualizing VM protections like VMProtect/Themida (2026 cutting edge)",
+     source: https://github.com/NaC-L/Mergen}
+  - {id: novmp, name: NoVmp, type: tool, domain: native, bundled: false, status: slowed,
+     capability: "Static devirtualization of VMProtect 3.x (built on VTIL)",
+     when_to_use: "Devirtualizing an already-unpacked VMP3 target",
+     source: https://github.com/can1357/NoVmp}
+  - {id: yara-x, name: YARA-X, type: tool, domain: native, bundled: false, status: active,
+     capability: "Rust rewrite of YARA; faster rules, memory-safe, ~99% compatible",
+     when_to_use: "Sample classification / rule matching (the modern YARA replacement)",
+     source: https://github.com/VirusTotal/yara-x}
+  - {id: capev2, name: CAPEv2, type: platform, domain: native, bundled: false, status: active,
+     capability: "Dynamic sandbox specializing in unpacking + config extraction (300+ family config parsers)",
+     when_to_use: "When you need dynamic unpacking + C2/config extraction + detonation (capa's dynamic backend)",
+     source: https://github.com/kevoreilly/CAPEv2, platform: [linux]}
+  - {id: flare-emu, name: flare-emu, type: tool, domain: native, bundled: false, status: active,
+     capability: "IDA/r2 + Unicorn emulation library, reaches the ARM / custom decryptors FLOSS misses",
+     when_to_use: "For ARM / non-standard calling conventions / custom string decryptors that FLOSS can't resolve",
+     source: https://github.com/mandiant/flare-emu}
+  - {id: retdec, name: RetDec, type: tool, domain: native, bundled: false, status: slowed,
+     capability: "LLVM-based open-source C decompiler (MIT)",
+     when_to_use: "When you want fully open-source MIT C decompiler output (limited official maintenance)",
+     source: https://github.com/avast/retdec}

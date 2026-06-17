@@ -1,0 +1,29 @@
+# Web / JS / anti-bot reverse-engineering catalog. See catalog/SCHEMA.md for the schema.
+
+entries:
+  - {id: cdp-browser, name: CDP Browser, type: skill, domain: web, bundled: true, status: active,
+     capability: "Real Chrome + CDP control, no webdriver fingerprint, captures XHR/Fetch/WS + injects hooks",
+     when_to_use: "Reversing sites with anti-bot (PerimeterX/Akamai/Cloudflare), capturing APIs, locating encryption functions",
+     source: ""}
+  - {id: web-api-analyzer, name: Web API Analyzer, type: skill, domain: web, bundled: true, status: active,
+     capability: "Playwright API capture + crypto hook + HAR export",
+     when_to_use: "Quickly exporting HAR on sites without strong anti-bot, hooking CryptoJS/MD5 to locate encryption",
+     source: ""}
+  - {id: px-reverse, name: px-reverse (PerimeterX), type: skill, domain: web, bundled: true, status: active,
+     capability: "End-to-end PerimeterX/HUMAN SDK reversing (payload/HMAC/OB/SID algorithm modules + generates _pxN cookies)",
+     when_to_use: "When the target uses PerimeterX/HUMAN anti-bot and you need to reproduce _px3/_px2 cookies (dedicated asset)",
+     source: ""}
+  - {id: ruishu-reverse, name: Ruishu (Rivers) Anti-bot Reverse, type: skill, domain: web, bundled: true, status: active,
+     capability: "Pure-algorithm reversing of Ruishu / Rivers Security 412 protection: Cookie T generation + URL suffix (VM bytecode -> Huffman/XOR/AES-CBC/CRC32 chain)",
+     when_to_use: "Target returns HTTP 412 with $_ts.cd / $_ts.nsd (Ruishu / Rivers Security); need to generate Cookie T purely in code",
+     source: "skills/web/ruishu-reverse"}
+  - {id: castle-reverse, name: Castle.io Reverse, type: skill, domain: web, bundled: true, status: active,
+     capability: "End-to-end Castle.io reversing — Android native v3.1.1 (io.castle.android/Highwind: hex-fp + 3-layer nibble-XOR + base64url, NO XXTEA; full generator+decoder) + web v11 (open-source castleio-gen archive); generates X-Castle-Request-Token + x-castle-client-id",
+     when_to_use: "Target sends X-Castle-Request-Token / x-castle-client-id / __cuid, loads castle.browser.js, calls Castle.createRequestToken(), or bundles io.castle.android; need to decode or reproduce the token",
+     source: "skills/web/castle-reverse"}
+
+  # ── External, fillable ──
+  - {id: nodriver, name: nodriver, type: tool, domain: web, bundled: false, status: active,
+     capability: "Async browser automation with no webdriver fingerprint (the successor to undetected)",
+     when_to_use: "When you need stronger anti-detection browser automation (an alternative/complement to cdp-browser)",
+     source: https://github.com/ultrafunkamsterdam/nodriver, install: "pip install nodriver"}

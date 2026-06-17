@@ -1,0 +1,78 @@
+{
+  "phase": "static",
+  "status": "ok",
+  "target": "com.DailyPay.DailyPay v48.0.0 — Castle SDK io.castle.android v3.1.1 (BuildConfig.VERSION_NAME)",
+  "entrypoint_chain": [
+    "Castle.createRequestToken() -> Castle.id() -> Highwind.token() -> d.g()  (d extends u; real builder is u.g())",
+    "header sent: X-Castle-Request-Token (Castle.requestTokenHeaderName)"
+  ],
+  "publishable_key": {
+    "format": "must start with 'pk_' and be exactly 35 chars",
+    "configured_via": "CastleConfiguration.publishableKey() — DailyPay passes it from JS/Castle.configure; meta-data key name 'castle_publishable_key' is the fallback path",
+    "value": "TBD (capture in Phase 4; do NOT hardcode — desensitize)"
+  },
+  "token_engine": "io.castle.highwind.android (codename 'Highwind') — 70 obfuscated classes, PURE JAVA, no .so",
+  "primitives_reversed": {
+    "y.a(int)": "byte -> 2 hex chars (low 8 bits, zero-padded). Whole token assembled as a HEX STRING.",
+    "y.a(int,nbytes)": "int -> big-endian nbytes hex (cap 2^(n*8)-1)",
+    "y.c(hex)": "hex string -> raw bytes (= binascii.unhexlify)",
+    "y.a(String)": "hex-encode each char (latin1 byte)",
+    "q.a.a(int)": "encode_timestamp_to_bytes: clamp [0,0x0FFFFFFF], 4 BE bytes",
+    "q.a.a(hex,key)": "xor_hex_strings — nibble-wise XOR of two hex strings, key cycled",
+    "q.a.a(verStr,i)": "version packing: (patch&63)|(i<<13)|(((major-1)&3)<<11)|((minor&31)<<6)",
+    "d0.a.a(hex,key)": "xor_and_append_key: XOR hex[1:] with key nibble, append key",
+    "d0.a.a(key,slice,rotChar,data)": "derive_key_and_xor_bytes: take key[:slice], rotate by int(rotChar,16)%len, XOR data with rotated key cycled",
+    "p0.a.a(str,255)": "UTF-8 encode to byte ints, capped at 255 bytes (NO encryption)",
+    "z.a()": "field header byte y.a(((index&31)<<3)|(type&7))",
+    "b0.a(list,z)": "process_fp_value — field encoder; types: 1=UNK 3=B2H 4=SBA 5=B2H_WITH_CHECKS 6=B2H_ROUNDED 7=JUST_APPEND",
+    "k.a.a(bytes)": "Base64.encodeToString(flag 11 = URL_SAFE|NO_PADDING|NO_WRAP)"
+  },
+  "token_layout_u_g": {
+    "time": "unixSeconds - 1535000000",
+    "string2 (time material)": "xor_and_append(q.a.a(time), nibble) + xor_and_append(y.a(last3digits(time),2), nibble); nibble=hex(rand(16)&15)",
+    "str (fp data, e()==2 branch)": "partHdr + fpMain.data + y.a((bPart.size&31)|((a()&7)<<5)) + bPart.data + motion + this.c(0xFF)",
+    "  partHdr": "y.a((fpMain.size & 31) | 64)",
+    "  fpMain": "f.a() -> a0(data,size)  [main device fingerprint, jadx failed to decompile -> get fields via Phase4 hook]",
+    "  bPart": "r.a() -> a0  [secondary fingerprint part; a()=6 index]",
+    "  motion": "c() -> accelerometer/gyro/magnetic/rotation/gravity/user-accel doubles, each rint(d*100000) as 4-byte uint",
+    "strA4 (layer1)": "d0.a.a(string2, 4, string2[3], str)   == derive_key_and_xor(fp_key, 4, fp_key[3], fp)",
+    "str4": "this.b(=y.a(10)=0x0a) + y.a(pk.substring(3)) + this.e(version) + this.d(uuid) + d0.a.a(this.d, 8, this.d[9], string2+strA4)",
+    "  this.d (uuid)": "y.a(255)-seeded random hex, hyphens stripped (cuid/device uuid)",
+    "  this.e": "q.a.a(SDKversion '3.1.1', 2) version bytes",
+    "final": "base64url( y.c( randByte + q.a.a(str4 + y.a(len(str4)), randByte) ) ); randByte=y.a(rand(255))"
+  },
+  "comparison_to_opensource": {
+    "baseline": "yubie-re/castleio-gen — Castle v2.6.0 / token v11 (WEB/JS)",
+    "SAME": [
+      "epoch const 1535000000 & 0x0FFFFFFF clamp",
+      "hex-string assembly, byte=2hex",
+      "xor_and_append_key (d0.a 2-arg)",
+      "derive_key_and_xor_bytes: fp-key slice4/rot[3], uuid-key slice8/rot[9]",
+      "random-byte final XOR + prepend, base64url no-pad",
+      "field type enum 1/3/4/5/6/7 + header ((idx&31)<<3)|(type&7)",
+      "B2H_WITH_CHECKS >127 -> (v&0x7FFF)|0x8000 ; B2H_ROUNDED *10",
+      "version bit-packing (major-1/minor/patch)",
+      "0xFF fp-data terminator"
+    ],
+    "DIFFERENT_v3.1.1_android": [
+      "NO XXTEA anywhere: dropped both the whole-token TEA_KEY wrap (+0x0b version byte + padding) AND per-field SBA encryption. Confirmed: zero XXTEA/AES/Cipher/Mac in the highwind package.",
+      "SBA (type 4) fields are PLAIN UTF-8 bytes (p0.a.a), not xxtea-encrypted",
+      "pk encoded as substring(3) (without 'pk_') and placed inside str4",
+      "Section c() collects REAL MOTION SENSORS (accel/gyro/magnetic/rotation/gravity/user-accel) instead of web mouse/touch event datapoints — the core web->mobile difference",
+      "str4 leads with 0x0a (this.b=y.a(10)); send-time timestamp lives inside the uuid layer rather than a separate header field",
+      "device-id source can be Widevine DRM ID (Highwind.ID_SOURCE_WIDEVINE)"
+    ],
+    "impact": "Open-source DecodeToken.py will FAIL on a real DailyPay token at the xxtea_decrypt step. The container/XOR scheme is reusable; the crypto and fingerprint payload are NOT. Algorithm must be reproduced fresh for v3.1.1."
+  },
+  "findings": [
+    {"type": "algorithm", "detail": "Castle v3.1.1 token = hex-assembled fp + 3-layer nibble-XOR (time-key slice4/rot3, uuid-key slice8/rot9, random-byte) + base64url; NO block cipher", "evidence": "u.java:34-62, q.java, d0.java, y.java"},
+    {"type": "crypto_site", "detail": "u.g() token builder; field encoder b0.a(); fp builder f.a() (not decompiled)", "evidence": "io/castle/highwind/android/{u,b0,f}.java"},
+    {"type": "param", "detail": "motion-sensor fingerprint in d.c()", "evidence": "d.java:30-67"}
+  ],
+  "open_questions": [
+    "f.a() main fingerprint fields (jadx failed) — resolve via Phase 4 frida hook on f.a()/u.g()",
+    "Real publishable key value + exact str4 byte layout — confirm by hooking token() and decoding a live token",
+    "Does motion-sensor section match d.c() exactly at runtime?"
+  ],
+  "next_suggested": "Phase 4 dynamic — install on device, frida hook Highwind.token()/u.g()/f.a(), capture a real X-Castle-Request-Token, decode to verify the reversed layout (expect open-source DecodeToken to fail at xxtea, confirming the no-XXTEA finding)"
+}

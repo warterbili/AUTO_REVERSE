@@ -1,0 +1,22 @@
+# Per-target artifacts (including APK/.so/plaintext traffic) — not committed; only the sanitized cases/ are committed
+workspace/*
+!workspace/.gitkeep
+
+# Machine-specific / generated
+config/local.yaml
+.mcp.json
+*.log
+
+# python / node
+__pycache__/
+*.pyc
+node_modules/
+
+# Large tool binaries (downloaded by the setup script per registry.yaml; not committed)
+tools/bin/
+*.apk
+*.aab
+*.xapk
+*.so
+*.jar
+!**/apktool*.jar

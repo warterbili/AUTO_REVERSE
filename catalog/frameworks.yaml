@@ -1,0 +1,35 @@
+# Framework-specific reverse-engineering catalog (Flutter / Unity / React Native). See catalog/SCHEMA.md for the schema.
+# Routing: unpack and check lib/ — libflutter.so → flutter, libil2cpp.so → unity, libhermes.so → rn.
+
+entries:
+  # ── Flutter ──
+  - {id: reflutter, name: reFlutter, type: tool, domain: framework, bundled: false, status: active,
+     capability: "Repacks a patched Flutter engine; dumps classes/functions + redirects traffic + bypasses certificate pinning",
+     when_to_use: "When the target is Flutter (jadx fails completely) and repacking is possible (Android + iOS)",
+     source: https://github.com/Impact-I/reFlutter, install: "pip install reflutter", platform: [android, ios]}
+  - {id: blutter, name: blutter, type: tool, domain: framework, bundled: false, status: active,
+     capability: "Static disassembly of Flutter libapp.so, reconstructs classes/functions + emits IDA/Frida scripts",
+     when_to_use: "Flutter static analysis (without repacking), complementary to reFlutter",
+     source: https://github.com/worawit/blutter, platform: [android]}
+  # ── Unity / IL2CPP ──
+  - {id: frida-il2cpp-bridge, name: frida-il2cpp-bridge, type: tool, domain: framework, bundled: false, status: active,
+     capability: "Runtime dump/trace/hijack of IL2CPP (Unity) class methods without global-metadata.dat",
+     when_to_use: "When the target is a Unity/IL2CPP game (libil2cpp.so) — the top-tier dynamic approach",
+     source: https://github.com/vfsfitvnm/frida-il2cpp-bridge, install: "npm i frida-il2cpp-bridge", platform: [android, ios]}
+  - {id: il2cppdumper, name: Il2CppDumper, type: tool, domain: framework, bundled: false, status: slowed,
+     capability: "Static IL2CPP dumper, generates IDA/Ghidra/BN scripts",
+     when_to_use: "Static DLL recovery for Unity (stops at Unity 2022.2; for newer versions pair frida-il2cpp-bridge)",
+     source: https://github.com/Perfare/Il2CppDumper}
+  # ── React Native / Hermes ──
+  - {id: hermes-dec, name: hermes-dec, type: tool, domain: framework, bundled: false, status: active,
+     capability: "Hermes bytecode (HBC) disassembly + decompilation back to pseudo-JS (HBC 59+)",
+     when_to_use: "When RN uses Hermes (libhermes.so + index.android.bundle) — decompile the bundle",
+     source: https://github.com/P1sec/hermes-dec, install: "pip install hermes-dec", platform: [android, ios]}
+  - {id: hermes-decomp, name: hermes-decomp, type: tool, domain: framework, bundled: false, status: active,
+     capability: "Rust Hermes decompiler, widest coverage of HBC 40–99",
+     when_to_use: "For newer Hermes bundles (high HBC versions that hermes-dec doesn't support)",
+     source: https://github.com/SymbioticSec/hermes-decomp}
+  - {id: hermes-rs, name: hermes_rs, type: tool, domain: framework, bundled: false, status: active, alt_to: [hbctool],
+     capability: "Rust Hermes disassembler + assembler (HBC 89–96 round-trip patch)",
+     when_to_use: "When you need to modify Hermes bytecode and repack (a replacement for the stalled hbctool)",
+     source: https://github.com/Pilfer/hermes_rs}

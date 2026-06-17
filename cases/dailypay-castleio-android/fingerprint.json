@@ -1,0 +1,51 @@
+{
+  "phase": "fingerprint",
+  "status": "ok",
+  "target": "com.DailyPay.DailyPay v48.0.0",
+  "app_framework": "React Native + Hermes + Expo",
+  "evidence_framework": [
+    "lib/arm64-v8a/libhermes.so, libreactnative.so, libjsi.so, libreanimated.so, libworklets.so, libjsctooling.so",
+    "lib/arm64-v8a/libexpo-modules-core.so",
+    "assets/index.android.bundle (12.3 MB Hermes bytecode bundle), assets/index.js"
+  ],
+  "packing": "none (classes.dex .. classes9.dex all present, real app code visible)",
+  "dex_count": 9,
+  "antibot_fingerprint_sdks": [
+    {
+      "name": "Castle.io",
+      "layer": "native Java SDK",
+      "package": "io.castle.android",
+      "evidence": "classes7.dex: 39x io/castle/android, createRequestToken, X-Castle-Request-Token, castle.io; classes6.dex: createRequestToken/RequestToken refs",
+      "likely_version": "2.9.0 (string '2.9.0' in classes7.dex) — NEWER than open-source castleio-gen (covers v2.6.0/token v11, excludes v2.6.2+/V12). Algorithm may differ — MUST verify.",
+      "header": "X-Castle-Request-Token",
+      "is_target": true
+    },
+    {
+      "name": "ThreatMetrix (LexisNexis)",
+      "layer": "native .so + Java",
+      "evidence": "lib/arm64-v8a/libTMXProfiling-rl-8.0-82-jni.so; classes.dex/6 threatmetrix/TMXProfiling refs",
+      "is_target": false,
+      "note": "secondary device-fingerprint SDK, out of scope for the Castle task"
+    }
+  ],
+  "other_notable_native_libs": [
+    "libthemis_jni.so (Cossack Labs Themis crypto)",
+    "libtoolChecker.so, libbf17.so, libd2d238.so (small libs — possible anti-tamper, TBD)",
+    "libsentry.so / libcrashlytics.so (crash reporting)",
+    "libbarhopper_v3.so / libopencv_java4.so / libtensorflowlite_jni.so (ML Kit / vision — ID scan)"
+  ],
+  "ssl_pinning": "unknown yet — check OkHttp CertificatePinner / NetworkSecurityConfig in Phase 3/4",
+  "rasp": "rootbeer (Castle dep) + libtoolChecker.so suspected — confirm in Phase 4",
+  "analysis_chain_decision": "Castle token gen lives in native Java io.castle.android → standard jadx Java chain (android-java-sign style). Hermes bundle NOT needed for Castle (it would only matter if the token were built in JS).",
+  "findings": [
+    {"type": "endpoint", "detail": "header X-Castle-Request-Token sent to DailyPay backend", "evidence": "classes7.dex string"},
+    {"type": "crypto_site", "detail": "io.castle.android.Castle.createRequestToken()", "evidence": "classes6/7.dex"}
+  ],
+  "open_questions": [
+    "Exact Castle SDK version (2.9.0?) and token version (v11 vs V12+)",
+    "Is token built purely in Java or does it call a .so?",
+    "Castle publishable key (pk) value — where configured (manifest meta-data / JS bundle / string res)?",
+    "Does the v48 algorithm match open-source castleio-gen, or has the container/fingerprint changed?"
+  ],
+  "next_suggested": "Phase 3 static — jadx decompile io.castle.android, read createRequestToken call chain + token assembly; compare to docs/source-castleio-gen"
+}

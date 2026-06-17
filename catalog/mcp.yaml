@@ -1,0 +1,67 @@
+# Cross-domain MCP server catalog — let the AI drive reversing tools directly. See catalog/SCHEMA.md for the schema.
+# bundled:true = this project already ships the config / has the backend installed (see mcp/mcp.template.json).
+
+entries:
+  # ── Already integrated (mcp.template.json) ──
+  - {id: jadx-ai-mcp, name: JADX AI MCP, type: mcp, domain: android, bundled: true, status: active,
+     capability: "Agent-driven JADX: decompile/search/xref/rename (GUI plugin + python server)",
+     when_to_use: "When you want the AI to operate jadx live rather than just generate commands",
+     source: https://github.com/zinja-coder/jadx-ai-mcp, note: "Requires JADX-GUI open with the APK loaded"}
+  - {id: apktool-mcp-server, name: Apktool MCP, type: mcp, domain: android, bundled: true, status: active,
+     capability: "Agent-driven apktool: smali repack / resource edit / repackage",
+     when_to_use: "When letting the AI run a smali-level 'read → edit → build' loop",
+     source: https://github.com/zinja-coder/apktool-mcp-server}
+  - {id: frida-mcp, name: Frida MCP, type: mcp, domain: android, bundled: true, status: slowed,
+     capability: "Agent-driven Frida: attach/spawn/REPL/script injection (general-purpose, incl. iOS)",
+     when_to_use: "When letting the AI drive dynamic instrumentation directly (no GUI needed)",
+     source: https://github.com/dnakov/frida-mcp, platform: [android, ios]}
+  - {id: ghidra-mcp, name: GhidraMCP, type: mcp, domain: native, bundled: true, status: active,
+     capability: "Agent-driven Ghidra: decompile/xref/rename/P-code (249 tools)",
+     when_to_use: "When letting the AI analyze .so/PE live (requires Ghidra open with the program loaded)",
+     source: https://github.com/bethington/ghidra-mcp}
+  - {id: ida-pro-mcp, name: IDA Pro MCP, type: mcp, domain: native, bundled: false, status: active,
+     capability: "Agent-driven IDA: decompile/xref/rename/patch (stdio + headless idalib)",
+     when_to_use: "When you have an IDA Pro 8.3+ license and want the AI to drive IDA (the most popular RE MCP)",
+     source: https://github.com/mrexodia/ida-pro-mcp}
+
+  # ── External, top-tier (connect on demand) ──
+  - {id: reva, name: ReVa, type: mcp, domain: native, bundled: false, status: active, alt_to: [ghidra-mcp],
+     capability: "Ghidra extension MCP with crypto analysis; fine-grained tools to suppress hallucinations",
+     when_to_use: "When you want a Ghidra MCP that is more actively maintained than GhidraMCP + crypto analysis",
+     source: https://github.com/cyberkaida/reverse-engineering-assistant}
+  - {id: binary-ninja-mcp, name: Binary Ninja MCP, type: mcp, domain: native, bundled: false, status: active,
+     capability: "Agent-driven Binary Ninja: functions/decompile/xref/rename/types",
+     when_to_use: "When you have Binary Ninja and want the AI to use its clean IL / data flow",
+     source: https://github.com/fosdickio/binary_ninja_mcp}
+  - {id: radare2-mcp, name: radare2 MCP, type: mcp, domain: native, bundled: false, status: active,
+     capability: "Official radare2 MCP (open/analyze/disassemble/decompile/xref)",
+     when_to_use: "For a fully open-source MCP route, or pairing r2frida for static-dynamic interplay",
+     source: https://github.com/radareorg/radare2-mcp, note: "Beware issue #45 shell-escape; audit before use"}
+  - {id: re-mcp, name: re-mcp (IDA+Ghidra), type: mcp, domain: native, bundled: false, status: active,
+     capability: "Drives headless IDA + Ghidra through one interface, multiple concurrent databases",
+     when_to_use: "For a portable workflow that uses unified tool names to switch between IDA/Ghidra",
+     source: https://github.com/jtsylve/re-mcp}
+  - {id: revula, name: Revula, type: mcp, domain: native, bundled: false, status: active,
+     capability: "General-purpose RE MCP (80+ tools): Ghidra/r2/BN/angr/Triton/Frida/YARA/capa/apktool/jadx",
+     when_to_use: "When you want one MCP covering the most backends, especially angr/Triton symbolic execution over MCP (Linux/WSL2)",
+     source: https://github.com/president-xd/revula, platform: [linux]}
+  - {id: mcp-windbg, name: WinDbg MCP, type: mcp, domain: windows, bundled: false, status: active,
+     capability: "Agent-driven WinDbg: load crash dump / !analyze / stack backtrace / kernel post-mortem",
+     when_to_use: "When Windows crash-dump / kernel debugging needs AI assistance (the only mature WinDbg MCP)",
+     source: https://github.com/svnscha/mcp-windbg, platform: [windows]}
+  - {id: x64dbg-mcp, name: x64dbg MCP, type: mcp, domain: windows, bundled: false, status: active,
+     capability: "Agent-driven x64dbg (breakpoints/disassembly/memory/scripting)",
+     when_to_use: "When Windows dynamic debugging needs AI driving (the AgentSmithers C#/HTTP version is battle-tested; for safe defaults choose SetsunaYukiOvO)",
+     source: https://github.com/AgentSmithers/x64DbgMCPServer, platform: [windows]}
+  - {id: medusa-mcp, name: Medusa MCP, type: mcp, domain: android, bundled: false, status: active,
+     capability: "Medusa's bundled Android Frida MCP (HTTP transport)",
+     when_to_use: "When you want to use medusa modules + MCP to let the AI orchestrate dynamic instrumentation",
+     source: https://github.com/Ch0pin/medusa}
+  - {id: kahlo-mcp, name: kahlo-mcp, type: mcp, domain: android, bundled: false, status: active,
+     capability: "Autonomous AI-agent Frida instrumentation (Android, most recently maintained)",
+     when_to_use: "When you want the most recently maintained autonomous-instrumentation Android Frida MCP",
+     source: https://github.com/FuzzySecurity/kahlo-mcp}
+  - {id: wshobson-re, name: wshobson RE plugin, type: agent, domain: native, bundled: false, status: active,
+     capability: "RE/malware/firmware: 3 agents + 4 skills (anti-reversing / binary patterns / memory forensics / protocol reversing) orchestrating desktop binary tools",
+     when_to_use: "When desktop-binary / malware analysis needs a ready-made agent workflow (includes ethical gating)",
+     source: https://github.com/wshobson/agents}

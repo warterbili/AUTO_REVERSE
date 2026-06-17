@@ -1,0 +1,192 @@
+# auto_reverse tool registry
+# Each tool: purpose / domain / install method / real download URL / detection command / platform.
+# The doctor script reads this file to run the checkup; the setup script reads it for one-shot installs.
+# Path policy: install tools onto PATH where possible and have the skill invoke them by logical name, avoiding hardcoded absolute paths.
+
+meta:
+  version: "0.1.0"
+  install_root_hint: "Recommended: install everything into a single directory and add it to PATH (e.g. ~/auto_reverseTOOL or a custom directory, pointed to by $AUTO_REVERSE_TOOLS)"
+
+# ── Base runtimes (prerequisite dependencies) ───────────────────────────────
+runtimes:
+  - id: python
+    purpose: Run the many pip tools and adapters
+    min: "3.10+ (3.14 verified working; some packages occasionally lag on wheels)"
+    url: https://www.python.org/downloads/
+    check: "python --version"
+  - id: jdk
+    purpose: jadx / apktool / ghidra / unidbg all require Java
+    min: "JDK 17+ (Ghidra 12 requires JDK 21)"
+    url: https://adoptium.net/
+    check: "java -version"
+  - id: node
+    purpose: apk-mitm / playwright / frida-il2cpp-bridge
+    min: "Node 18+"
+    url: https://nodejs.org/
+    check: "node --version"
+
+# ── Android: decompilation / repackaging ───────────────────────────────
+android_static:
+  - id: jadx
+    purpose: DEX->Java decompilation (GUI + CLI)
+    install: "Download the release, extract, add bin/ to PATH"
+    url: https://github.com/skylot/jadx/releases
+    check: "jadx --version"
+  - id: apktool
+    purpose: smali disassembly / resource editing / repackaging
+    install: "Download the jar + write an apktool.bat wrapper; or use a package manager"
+    url: https://github.com/iBotPeaches/Apktool/releases   # this machine uses v3.0.2: /download/v3.0.2/apktool_3.0.2.jar
+    check: "apktool --version"
+  - id: gda
+    purpose: Native ultra-fast Windows decompiler (second opinion)
+    install: "Download the zip, extract, GDA.exe; optionally write a gda.bat wrapper"
+    url: https://github.com/charles2gan/GDA-android-reversing-Tool/releases  # GDA4.12: /download/GDA4.12/gda4.12.zip
+    check: "GDA.exe present"
+  - id: dex2jar
+    purpose: DEX->.class (fallback when jadx fails)
+    url: https://github.com/pxb1988/dex2jar/releases
+    check: "d2j-dex2jar present"
+
+# ── Android: dynamic / traffic capture / unpacking ──────────────────────────
+android_dynamic:
+  - id: frida-tools
+    purpose: Primary dynamic instrumentation (host side)
+    install: "pip install frida-tools"
+    url: https://github.com/frida/frida
+    check: "frida --version"
+  - id: frida-server
+    purpose: Device-side frida daemon (architecture/version must match the host frida)
+    install: "Download the .xz for the matching abi, extract -> adb push /data/local/tmp -> chmod 755 -> run in background via su"
+    url: https://github.com/frida/frida/releases   # frida-server-<ver>-android-arm64.xz
+    check: "frida-ps -U can list device processes"
+  - id: objection
+    purpose: One-shot runtime exploration (SSL unpin / class enumeration / memory dump)
+    install: "pip install objection"
+    url: https://github.com/sensepost/objection
+    check: "objection version"
+  - id: frida-dexdump
+    purpose: In-memory unpacking to dump DEX
+    install: "pip install frida-dexdump"
+    url: https://github.com/hluwa/frida-dexdump
+    check: "frida-dexdump --version"
+  - id: mitmproxy
+    purpose: HTTPS traffic capture / decryption / JSONL output
+    install: "pip install mitmproxy"
+    url: https://github.com/mitmproxy/mitmproxy
+    check: "mitmdump --version"
+  - id: apk-mitm
+    purpose: Statically patch an APK to remove SSL pinning
+    install: "npm i -g apk-mitm"
+    url: https://github.com/niklashigi/apk-mitm
+    check: "apk-mitm --version"
+
+# ── Native: analysis / deobfuscation / emulation ─────────────────────────
+native:
+  - id: ghidra
+    purpose: Free IDA alternative, analyze .so files (GUI + analyzeHeadless)
+    install: "Download the release, extract; requires JDK21"
+    url: https://github.com/NationalSecurityAgency/ghidra/releases
+    check: "ghidraRun.bat present"
+  - id: ida-pro
+    purpose: Commercial decompiler (optional, more powerful but requires a paid license; no pirated copies provided)
+    install: "Purchase officially"
+    url: https://hex-rays.com/ida-pro/
+    check: "ida/idat present"
+    optional: true
+  - id: capa
+    purpose: Native capability identification (crypto/anti-debug/network + addresses)
+    install: "pip install flare-capa"
+    url: https://github.com/mandiant/capa
+    check: "capa --version"
+  - id: floss
+    purpose: .so string deobfuscation (stack/encoded strings)
+    install: "pip install flare-floss"
+    url: https://github.com/mandiant/flare-floss
+    check: "floss --version"
+  - id: deflat
+    purpose: OLLVM control-flow flattening deobfuscation (ARM .so, depends on angr)
+    install: "git clone + pip install angr; write a deflat.bat wrapper"
+    url: https://github.com/cq674350529/deflat
+    check: "deflat -h"
+  - id: unidbg
+    purpose: Offline emulated execution of .so to extract algorithms (note - max SDK23)
+    install: "git clone, build with Maven"
+    url: https://github.com/zhkl0228/unidbg
+    check: "project builds via ./gradlew/mvn"
+
+# ── Framework-specific (install once matched by fingerprint) ──────────────────────────
+framework_specific:
+  - id: reflutter
+    purpose: Flutter app reversing (dynamic)
+    install: "pip install reflutter"
+    url: https://github.com/Impact-I/reFlutter   # note: the original ptswarm repo is archived, use the Impact-I fork
+    check: "reflutter --help"
+  - id: blutter
+    purpose: Static decompilation of Flutter libapp.so
+    url: https://github.com/worawit/blutter
+  - id: frida-il2cpp-bridge
+    purpose: Unity/IL2CPP runtime dump
+    install: "npm i frida-il2cpp-bridge"
+    url: https://github.com/vfsfitvnm/frida-il2cpp-bridge
+  - id: hermes-dec
+    purpose: React Native Hermes bytecode decompilation
+    install: "pip install hermes-dec"
+    url: https://github.com/P1sec/hermes-dec
+
+# ── Web reversing ─────────────────────────────────────────────
+web:
+  - id: cdp-browser
+    purpose: Real Chrome CDP control, capture API/JS with no bot fingerprint
+    install: "pip install websockets; requires Chrome"
+    url: https://www.google.com/chrome/
+    check: "Chrome can launch with --remote-debugging-port"
+  - id: playwright
+    purpose: Website API analysis / JS hooking / HAR export
+    install: "npm i -g playwright && npx playwright install chromium"
+    url: https://github.com/microsoft/playwright
+
+# ── MCP servers (let the AI drive tools directly, optional enhancement) ──────────
+mcp:
+  - id: ghidra-mcp
+    purpose: Agent-driven Ghidra (matched to the current Ghidra version; extension version numbers must align)
+    url: https://github.com/bethington/ghidra-mcp/releases    # alternative: https://github.com/LaurieWired/GhidraMCP
+  - id: jadx-ai-mcp
+    purpose: Agent-driven JADX (GUI plugin + python server)
+    install: "jadx plugins --install github:zinja-coder:jadx-ai-mcp"
+    url: https://github.com/zinja-coder/jadx-ai-mcp        # server: https://github.com/zinja-coder/jadx-mcp-server
+  - id: apktool-mcp-server
+    purpose: Agent-driven apktool (smali repackaging)
+    url: https://github.com/zinja-coder/apktool-mcp-server
+  - id: frida-mcp
+    purpose: Agent-driven Frida (attach/spawn/REPL/injection)
+    install: "pip install frida-mcp"
+    url: https://github.com/dnakov/frida-mcp
+
+# ── Device-side anti-detection (root device Magisk modules) ───────────────
+device_anti_detection:
+  - id: shamiko
+    purpose: Hide root / Magisk / Zygisk traces, bypass RASP
+    install: "Enable Zygisk in Magisk -> flash the zip -> configure the denylist"
+    url: https://github.com/LSPosed/LSPosed.github.io/releases   # Shamiko
+  - id: zygisk-frida
+    purpose: Stealthy frida-gadget injection, bypass ptrace/signature-verification detection
+    url: https://github.com/lico-n/ZygiskFrida
+
+# ── Automation platforms (heavy, optional) ──────────────────────────────
+platforms:
+  - id: mobsf
+    purpose: Automated static + dynamic analysis platform (REST API)
+    install: "docker pull (Docker must be installed first)"
+    url: https://github.com/MobSF/Mobile-Security-Framework-MobSF
+    optional: true
+
+# ── Windows reversing (roadmap, to be filled in) ────────────────────────
+windows_roadmap:
+  - id: x64dbg
+    url: https://github.com/x64dbg/x64dbg
+  - id: detect-it-easy
+    url: https://github.com/horsicq/Detect-It-Easy
+  - id: dnspy
+    url: https://github.com/dnSpyEx/dnSpy
+  - id: pe-bear
+    url: https://github.com/hasherezade/pe-bear

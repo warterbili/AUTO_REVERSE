@@ -1,0 +1,52 @@
+# Windows-specific reverse-engineering catalog (PE / .NET / debuggers / unpacking). See catalog/SCHEMA.md for the schema.
+# This domain is currently all external registrations (bundled:false) and is a key area for the project to strengthen.
+
+entries:
+  - {id: windows-pe-re, name: Windows PE RE, type: skill, domain: windows, bundled: true, status: active,
+     capability: "Windows PE reversing automation orchestration: detect packer → unpack → (.NET/native) decompile → dynamic → deobfuscate → capability triage",
+     when_to_use: "The main entry point for reversing any Windows program (exe/dll/sys) — it routes to the tools below by fingerprint",
+     source: "skills/windows/windows-pe-re", platform: [windows]}
+  - {id: x64dbg, name: x64dbg, type: tool, domain: windows, bundled: false, status: active,
+     capability: "Open-source x86/x64 user-mode debugger (breakpoints / disassembly / scripting / plugins, integrated Scylla)",
+     when_to_use: "The backbone of Windows dynamic debugging / unpacking — trace execution, set breakpoints, rewrite memory, manual unpacking",
+     source: https://github.com/x64dbg/x64dbg, platform: [windows]}
+  - {id: detect-it-easy, name: Detect It Easy (DIE), type: tool, domain: windows, bundled: false, status: active,
+     capability: "File-type / packer / compiler / protector identification (diec CLI, JSON output) + entropy analysis",
+     when_to_use: "The first triage before digging into any Windows binary — determine whether it's packed (UPX/Themida/VMP)",
+     source: https://github.com/horsicq/Detect-It-Easy, install: "release binary"}
+  - {id: dnspyex, name: dnSpyEx, type: tool, domain: windows, bundled: false, status: active,
+     capability: ".NET decompilation + live debugging + assembly editing, all in one",
+     when_to_use: "When the target is .NET/Mono/Unity-C# — decompile, set breakpoints and debug, rewrite and recompile",
+     source: https://github.com/dnSpyEx/dnSpy, platform: [windows], note: "Use the dnSpyEx fork; the original is dead"}
+  - {id: ilspy, name: ILSpy, type: tool, domain: windows, bundled: false, status: active,
+     capability: ".NET decompiler (GUI + cross-platform CLI ilspycmd)",
+     when_to_use: "For cross-platform / pipelined batch decompilation of .NET assemblies (complements dnSpyEx)",
+     source: https://github.com/icsharpcode/ILSpy}
+  - {id: de4dot, name: de4dot-cex, type: tool, domain: windows, bundled: false, status: archived,
+     capability: ".NET deobfuscation (de-rename / control flow / string encryption), specializing in ConfuserEx",
+     when_to_use: "When a .NET sample is obfuscated by ConfuserEx and similar — clean it up before decompiling",
+     source: https://github.com/ViRb3/de4dot-cex, note: "Archived but still the de facto standard deobfuscator"}
+  - {id: pe-bear, name: PE-bear, type: tool, domain: windows, bundled: false, status: active,
+     capability: "Parse/edit PE headers/sections/imports-exports/resources, side-by-side comparison of multiple PEs",
+     when_to_use: "PE-header surgery during unpacking, editing sections, inspecting the import table (the only still-maintained free PE editor)",
+     source: https://github.com/hasherezade/pe-bear, platform: [windows]}
+  - {id: pe-sieve, name: PE-sieve, type: tool, domain: windows, bundled: false, status: active,
+     capability: "Live-process memory scanning / implant dumping (detects process hollowing / reflective injection / inline hooks)",
+     when_to_use: "Recovering an unpacked payload from a live process, catching process hollowing / injection",
+     source: https://github.com/hasherezade/pe-sieve, platform: [windows]}
+  - {id: hollows-hunter, name: hollows_hunter, type: tool, domain: windows, bundled: false, status: active,
+     capability: "System-wide PE-sieve wrapper: scan all processes + batch dump + watch",
+     when_to_use: "IR triage on an infected host, batch-scanning all processes for injection",
+     source: https://github.com/hasherezade/hollows_hunter, platform: [windows]}
+  - {id: scylla, name: Scylla, type: tool, domain: windows, bundled: false, status: slowed,
+     capability: "IAT reconstruction / unpacked-dump repair (rebuild import table, fix OEP)",
+     when_to_use: "Wrapping up manual unpacking — after dumping memory, rebuild the IAT to produce a runnable PE",
+     source: https://github.com/NtQuery/Scylla, platform: [windows]}
+  - {id: scyllahide, name: ScyllaHide / TitanHide, type: tool, domain: windows, bundled: false, status: active,
+     capability: "Anti-anti-debug (user-mode ScyllaHide / kernel-mode TitanHide)",
+     when_to_use: "When a sample detects the debugger, changing behavior or exiting",
+     source: https://github.com/x64dbg/ScyllaHide, platform: [windows]}
+  - {id: windbg, name: WinDbg, type: tool, domain: windows, bundled: false, status: active,
+     capability: "Microsoft kernel + user-mode debugger (crash dumps / !analyze / kernel debugging)",
+     when_to_use: "Post-mortem crash-dump analysis, kernel-mode debugging (pair mcp-windbg to let AI drive it)",
+     source: https://learn.microsoft.com/windows-hardware/drivers/debugger/, platform: [windows]}

@@ -1,0 +1,15 @@
+{
+  "name": "auto-reverse",
+  "description": "A collection of fully automated reverse-engineering skills (Android / Web / Windows) — feed the AI a single target and it reverses it end to end. Includes an analysis-brain orchestrator + domain skill libraries + a tool registry.",
+  "version": "0.1.0",
+  "plugins": [
+    {
+      "name": "auto-reverse",
+      "source": "./",
+      "description": "auto-reverse-orchestrator brain + all domain skills",
+      "skills": [
+        "brain"
+      ]
+    }
+  ]
+}

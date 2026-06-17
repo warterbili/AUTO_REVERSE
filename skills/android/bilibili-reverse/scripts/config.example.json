@@ -1,0 +1,32 @@
+{
+    "_comment": "Copy to config.json and fill in your own captured values. NEVER commit config.json. All <...> fields are personal session data captured per device/account.",
+
+    "access_key": "<ACCESS_KEY>",
+    "refresh_token": "<REFRESH_TOKEN>",
+    "buvid": "<BUVID>",
+    "mid": "116xxxxxxxxxxxx",
+
+    "device": {
+        "build": "8830500",
+        "channel": "html5_search_google",
+        "mobi_app": "android",
+        "platform": "android",
+        "model": "MI 9",
+        "os_ver": "13",
+        "app_ver": "8.83.0"
+    },
+
+    "fingerprint": {
+        "fp_local": "<FP_LOCAL>",
+        "fp_remote": "<FP_REMOTE>",
+        "guestid": "<GUESTID>",
+        "aurora_eid": "<AURORA_EID>",
+        "locale_bin": "<LOCALE_BIN>"
+    },
+
+    "ticket": {
+        "value": "",
+        "created_at": 0,
+        "ttl": 0
+    }
+}

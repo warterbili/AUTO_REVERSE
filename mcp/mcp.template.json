@@ -1,0 +1,21 @@
+{
+  "_comment": "MCP configuration template. Replace ${TOOLS_ROOT} with your tools directory and ${PYTHON} with your python path, then save it as .mcp.json in the target project root. The setup script generates this automatically. Placeholders are used for distributability — it works even when others clone the project and have different paths.",
+  "mcpServers": {
+    "ghidra": {
+      "command": "${PYTHON}",
+      "args": ["${TOOLS_ROOT}/ghidra-mcp-bethington/bridge_mcp_ghidra.py", "--transport", "stdio"]
+    },
+    "jadx": {
+      "command": "${PYTHON}",
+      "args": ["${TOOLS_ROOT}/jadx-mcp-server/jadx_mcp_server.py"]
+    },
+    "apktool": {
+      "command": "${PYTHON}",
+      "args": ["${TOOLS_ROOT}/apktool-mcp-server/apktool_mcp_server.py"]
+    },
+    "frida": {
+      "command": "frida-mcp",
+      "args": []
+    }
+  }
+}

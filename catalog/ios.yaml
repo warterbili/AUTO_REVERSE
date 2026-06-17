@@ -1,0 +1,67 @@
+# iOS reverse-engineering catalog (a brand-new domain). See catalog/SCHEMA.md for the schema.
+# Minimal-from-scratch toolchain: access (palera1n|TrollStore|SideStore) → decrypt-dump (bagbak) →
+#                class-dump/binary (ipsw) → dynamic (Frida+objection) → re-sign + deploy (ldid+theos).
+
+entries:
+  - {id: ios-app-re, name: iOS App RE, type: skill, domain: ios, bundled: true, status: active,
+     capability: "iOS reversing automation orchestration: access device → decrypt-dump → class-dump/binary → Frida dynamic → re-sign + deploy",
+     when_to_use: "The main entry point for reversing any iOS app — it routes to the tools below by iOS version / target",
+     source: "skills/ios/ios-app-re", platform: [ios]}
+
+  # ── Decrypt-dump / binary ──
+  - {id: bagbak, name: bagbak, type: tool, domain: ios, bundled: false, status: active, alt_to: [frida-ios-dump],
+     capability: "Frida-based decrypt-dumping, outputs a clean IPA (iOS 15/16)",
+     when_to_use: "The first step of iOS static analysis — dump a decrypted IPA / main binary from a jailbroken device",
+     source: https://github.com/ChiChou/bagbak, install: "npm i -g bagbak", platform: [ios]}
+  - {id: frida-ios-dump, name: frida-ios-dump, type: script, domain: ios, bundled: false, status: archived,
+     capability: "SSH into a jailbroken device to decrypt-dump and repack an IPA (the historical de facto standard)",
+     when_to_use: "Reference for older tutorials; on iOS 15+ switch to bagbak",
+     source: https://github.com/AloneMonkey/frida-ios-dump, platform: [ios]}
+  - {id: ipsw, name: ipsw (blacktop), type: tool, domain: ios, bundled: false, status: active,
+     capability: "iOS swiss-army knife: Mach-O parsing / class-dump / dyld_shared_cache extraction / disassembly / IPSW diff",
+     when_to_use: "Infrastructure for iOS binary analysis — class-dump, split the DSC to reverse system frameworks, Mach-O analysis (ships with SKILL.md)",
+     source: https://github.com/blacktop/ipsw, install: "winget/brew/go install", platform: [ios, windows, mac, linux]}
+  - {id: dsdump, name: dsdump, type: tool, domain: ios, bundled: false, status: archived,
+     capability: "Modern class-dump (supports Swift + ObjC types)",
+     when_to_use: "Dumping ObjC/Swift headers; archived — for new targets use ipsw class-dump",
+     source: https://github.com/DerekSelander/dsdump, platform: [ios, mac]}
+  - {id: hopper, name: Hopper, type: tool, domain: ios, bundled: false, status: commercial,
+     capability: "Commercial GUI disassembler/decompiler with native ObjC/Swift metadata parsing",
+     when_to_use: "An affordable IDA alternative on Mac for iOS static analysis (~$99 perpetual license)",
+     source: https://www.hopperapp.com/}
+
+  # ── Access: jailbreak / permanent install / re-signing ──
+  - {id: palera1n, name: palera1n, type: tool, domain: ios, bundled: false, status: active,
+     capability: "checkm8 jailbreak (iOS 15–17+, rootless/rootful)",
+     when_to_use: "When you need a jailbreak to run frida-server (A11 and earlier devices only)",
+     source: https://github.com/palera1n/palera1n, platform: [ios]}
+  - {id: trollstore, name: TrollStore, type: tool, domain: ios, bundled: false, status: active,
+     capability: "Permanently install any IPA on non-jailbroken devices (CoreTrust bug), never expires",
+     when_to_use: "Permanently installing a target app embedded with Frida-gadget on a non-jailbroken device (iOS ≤ 16.6.1/17.0)",
+     source: https://github.com/opa334/TrollStore, platform: [ios]}
+  - {id: sidestore, name: SideStore, type: tool, domain: ios, bundled: false, status: active,
+     capability: "Re-signing app store with automatic re-signing, no computer required",
+     when_to_use: "Persistently installing re-signed/patched IPAs on any modern iOS, without weekly re-signing",
+     source: https://github.com/SideStore/SideStore, platform: [ios]}
+  - {id: theos, name: theos, type: tool, domain: ios, bundled: false, status: active,
+     capability: "The standard build system for iOS tweaks (Logos hooks + packaging)",
+     when_to_use: "Writing Logos hook patches after reversing → build and deploy",
+     source: https://github.com/theos/theos}
+  - {id: ldid, name: ldid (Procursus), type: tool, domain: ios, bundled: false, status: active,
+     capability: "Lightweight codesign that reads/writes Mach-O signatures + entitlements",
+     when_to_use: "Re-signing after patching, adding debug entitlements like get-task-allow",
+     source: https://github.com/ProcursusTeam/ldid}
+
+  # ── Dynamic ──
+  - {id: objection-ios, name: Objection (iOS), type: tool, domain: ios, bundled: false, status: active,
+     capability: "iOS one-click: SSL unpin / jailbreak-detection bypass / TouchID-FaceID bypass / keychain dump",
+     when_to_use: "iOS runtime exploration + one-click bypass of various checks (no jailbreak needed — can patchipa to embed the gadget)",
+     source: https://github.com/sensepost/objection, platform: [ios, android]}
+  - {id: grapefruit, name: Grapefruit, type: tool, domain: ios, bundled: false, status: active,
+     capability: "Frida-based Web UI for iOS analysis (hook/crypto/files/memory)",
+     when_to_use: "Quick dynamic reconnaissance before writing targeted Frida scripts",
+     source: https://github.com/ChiChou/grapefruit, platform: [ios, android]}
+  - {id: frida-ios-hook, name: frida-ios-hook, type: script, domain: ios, bundled: false, status: active,
+     capability: "iOS-specific Frida wrapper: bypass-jb / bypass-ssl / dump IPA / trace",
+     when_to_use: "A ready-made set of jailbreak/SSL-bypass + dump scripts on iOS",
+     source: https://github.com/noobpk/frida-ios-hook, platform: [ios]}

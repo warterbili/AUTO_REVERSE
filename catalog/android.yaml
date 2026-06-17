@@ -1,0 +1,114 @@
+# Android reverse-engineering capability catalog. See catalog/SCHEMA.md for the schema.
+# bundled:true = already shipped under skills/android/; false = external, fetch on demand.
+
+entries:
+  # ── Bundled skills ──
+  - {id: apk-acquire, name: APK Acquire, type: skill, domain: android, bundled: true, status: active,
+     capability: "Phase 0 Intake: auto-acquire an APK by package name — adb device pull (base+splits) / local file / APKPure direct-link (XAPK or APK) + verify + optional install",
+     when_to_use: "When a target is named by package/app but no APK is on disk yet — the very first step before fingerprinting. Runs fully automatically, no user confirmation.",
+     source: "skills/android/apk-acquire", note: "pure stdlib; adb auto-located; apkeep is a bundled:false multi-source upgrade"}
+  - {id: jadx-reverse-engineering, name: JADX, type: skill, domain: android, bundled: true, status: active,
+     capability: "DEX→Java decompilation + xref + search (CLI/GUI/MCP)",
+     when_to_use: "Reading Java-layer logic, finding OkHttp interceptors / signature call sites, locating the native boundary — the first step of static analysis",
+     source: https://github.com/skylot/jadx}
+  - {id: apktool-decompile, name: Apktool, type: skill, domain: android, bundled: true, status: active,
+     capability: "smali disassembly / resource editing / repack + sign",
+     when_to_use: "When you need to read or edit smali, modify the manifest, repack, or read smali when jadx decompilation fails",
+     source: https://github.com/iBotPeaches/Apktool}
+  - {id: android-re-decompile, name: Android RE (Kotlin/R8), type: skill, domain: android, bundled: true, status: active,
+     capability: "jadx/Vineflower decompilation + Kotlin/R8 name recovery + modern-framework API extraction (Retrofit/Ktor/Apollo)",
+     when_to_use: "When the target is Kotlin / heavily R8-obfuscated, or when batch-extracting API endpoints + call chains",
+     source: https://github.com/SimoneAvogadro/android-reverse-engineering-skill, note: "Can be upgraded for free to the Vineflower 1.12+ engine"}
+  - {id: android-unpacking, name: Android Unpacking, type: skill, domain: android, bundled: true, status: active,
+     capability: "frida-dexdump in-memory DEX dumping",
+     when_to_use: "When jadx shows only the packer stub and not the real business code (packed/hardened apps)",
+     source: https://github.com/hluwa/frida-dexdump, note: "frida-dexdump is archived; for newer packers prefer frida_dex_dump below"}
+  - {id: frida-hooking, name: Frida Hooking, type: skill, domain: android, bundled: true, status: active,
+     capability: "Java/Native hooking, RegisterNatives tracing, strace",
+     when_to_use: "When you need to precisely hook a specific method / native function to capture arguments → return values",
+     source: https://frida.re}
+  - {id: frida-mitm-capture, name: Frida MITM Capture, type: skill, domain: android, bundled: true, status: active,
+     capability: "Fully automated Frida + mitmproxy HTTPS capture, 10+ SSL bypasses (Windows-adapted)",
+     when_to_use: "When capturing the plaintext API triggered by a specific action, or locating signature/encrypted fields",
+     source: https://github.com/httptoolkit/frida-interception-and-unpinning}
+  - {id: mitm-capture, name: mitmproxy Capture, type: skill, domain: android, bundled: true, status: slowed,
+     capability: "Pure mitmproxy capture and analysis", when_to_use: "When the device proxy is already configured and Frida is not needed (cli.py is incomplete; prefer frida-mitm-capture)",
+     source: https://github.com/mitmproxy/mitmproxy}
+  - {id: objection-runtime, name: Objection, type: skill, domain: android, bundled: true, status: active,
+     capability: "One-shot runtime exploration: SSL unpin / root bypass / class enumeration / memory dump",
+     when_to_use: "When quickly profiling the state of a running app, or one-click disabling pinning / root detection",
+     source: https://github.com/sensepost/objection}
+  - {id: android-re-fundamentals, name: Android RE Fundamentals, type: skill, domain: android, bundled: true, status: active,
+     capability: "Android RE onboarding & fundamentals: device prep/root, JDK/adb/Frida/Charles environment setup, APK structure & packaging, Android filesystem, decompile+hook basics, phone automation",
+     when_to_use: "When you need to set up the environment / understand APK & Android internals before reversing, or are new to Android RE",
+     source: "skills/android/android-re-fundamentals"}
+  - {id: bilibili-reverse, name: Bilibili Android Reverse, type: skill, domain: android, bundled: true, status: active,
+     capability: "Reverse Bilibili Android API protection: APP-API sign (appkey/secret MD5), bili ticket (HMAC), access_key/refresh_token OAuth refresh, gRPC capture, SSL plaintext interception, comment API",
+     when_to_use: "Target is the Bilibili Android app; need to reproduce its API signing, ticket, access_key refresh, or comment API (specialized target asset)",
+     source: "skills/android/bilibili-reverse"}
+
+  # ── External, top-tier (fetch / register on demand) ──
+  - {id: medusa, name: Medusa, type: tool, domain: android, bundled: false, status: active, alt_to: [objection],
+     capability: "Modular Frida framework, 90+ modules, bundled MCP server",
+     when_to_use: "When combining multiple hook modules, batch behavior profiling, or RASP bypass — the advanced alternative to objection",
+     source: https://github.com/Ch0pin/medusa, install: "git clone + pip install -r requirements.txt", platform: [android, ios]}
+  - {id: dexcalibur, name: Dexcalibur, type: platform, domain: android, bundled: false, status: active,
+     capability: "Closed-loop platform: static → auto-generate Frida hooks → run → inspect data",
+     when_to_use: "When you need to automatically find hook points and trace the real call paths of obfuscated code (the auto-discovery objection lacks)",
+     source: https://github.com/FrenchYeti/dexcalibur, install: "npm i -g dexcalibur"}
+  - {id: mobsf, name: MobSF, type: platform, domain: android, bundled: false, status: active,
+     capability: "Automated static + dynamic + API analysis platform, REST API",
+     when_to_use: "The first stop for a new sample — a full triage (permissions/certs/keys/packer type/network) before deciding where to dig deeper",
+     source: https://github.com/MobSF/Mobile-Security-Framework-MobSF, install: "docker pull (Docker required)", platform: [android, ios]}
+  - {id: apkid, name: APKiD, type: tool, domain: android, bundled: false, status: active,
+     capability: "PEiD for Android — fingerprints packers / protectors / obfuscators / compilers",
+     when_to_use: "Before unpacking, to determine which packer it is (whole-release vs. function-extraction) and choose an unpacking strategy",
+     source: https://github.com/rednaga/APKiD, install: "pip install apkid"}
+  - {id: frida-dex-dump, name: frida_dex_dump (CYRUS), type: script, domain: android, bundled: false, status: active, alt_to: [android-unpacking],
+     capability: "Unpacks at the libdexfile.so load source; more reliable against newer whole-release packers",
+     when_to_use: "The modern replacement when frida-dexdump (archived) fails on newer packers — the go-to for everyday unpacking",
+     source: https://github.com/CYRUS-STUDIO/frida_dex_dump}
+  - {id: frida-dump-so, name: frida_dump (dex+so), type: script, domain: android, bundled: false, status: active,
+     capability: "Dumps both dex and so simultaneously (unpacks native packers)",
+     when_to_use: "When you also need to dump an encrypted .so out of memory",
+     source: https://github.com/lasting-yang/frida_dump}
+  - {id: vineflower, name: Vineflower, type: tool, domain: android, bundled: false, status: active,
+     capability: "Modern Java decompiler (Fernflower rewrite); lambda/coroutine/generic recovery better than jadx",
+     when_to_use: "When jadx output for certain Kotlin coroutines/lambdas is hard to read, switch engines to cross-check",
+     source: https://github.com/Vineflower/vineflower}
+  - {id: gda, name: GDA, type: tool, domain: android, bundled: false, status: slowed,
+     capability: "Native C++ Android decompiler with taint analysis / packer detection; far faster than jadx",
+     when_to_use: "For large samples where jadx hangs/times out, or when taint analysis is needed (native Windows)",
+     source: https://github.com/charles2gan/GDA-android-reversing-Tool, platform: [windows]}
+  - {id: bytecode-viewer, name: Bytecode-Viewer, type: tool, domain: android, bundled: false, status: active,
+     capability: "Side-by-side multi-decompiler view (Procyon/CFR/Fernflower/JADX/Krakatau)",
+     when_to_use: "Cross-validating across multiple engines when a single decompiler errs",
+     source: https://github.com/Konloch/bytecode-viewer}
+  - {id: androguard, name: Androguard, type: tool, domain: android, bundled: false, status: active,
+     capability: "Python static-analysis framework: CFG / call graph / manifest parsing, programmable",
+     when_to_use: "When you need to batch / script static analysis across multiple APKs (the library underlying MobSF)",
+     source: https://github.com/androguard/androguard, install: "pip install androguard"}
+  - {id: apkleaks, name: apkleaks, type: tool, domain: android, bundled: false, status: slowed,
+     capability: "Scans an APK for URLs / endpoints / keys / secrets",
+     when_to_use: "When quickly harvesting API endpoints and hardcoded credentials",
+     source: https://github.com/dwisiswant0/apkleaks, install: "pip install apkleaks"}
+  - {id: quark-engine, name: Quark-Engine, type: tool, domain: android, bundled: false, status: active,
+     capability: "Malicious-behavior detection scored on behavior 5-tuples + call graph + CWE",
+     when_to_use: "When quantifying a sample's maliciousness or performing malicious-behavior analysis",
+     source: https://github.com/quark-engine/quark-engine, install: "pip install quark-engine"}
+  - {id: blackdex, name: BlackDex, type: tool, domain: android, bundled: false, status: slowed,
+     capability: "One-click on-device unpacking, no root and no PC required",
+     when_to_use: "When unpacking older-generation packers (Legu/Bangcle/360) quickly in a non-rooted environment",
+     source: https://github.com/CodingGay/BlackDex}
+  - {id: youpk, name: Youpk, type: tool, domain: android, bundled: false, status: archived,
+     capability: "ART active-call unpacker, targeting extraction / instruction-extraction packers",
+     when_to_use: "For function-extraction packers (which memory-scanning tools can't handle); requires a custom ROM",
+     source: https://github.com/Youlor/Youpk, note: "No longer updated; a fallback for extraction packers — see also FART"}
+  - {id: frida-snippets, name: frida-snippets, type: script, domain: android, bundled: false, status: active,
+     capability: "Hand-curated Frida snippet library + JNI hook patterns",
+     when_to_use: "Reference for ready-made patterns when writing hooks",
+     source: https://github.com/iddoeldor/frida-snippets}
+  - {id: jeb, name: JEB Decompiler, type: tool, domain: android, bundled: false, status: commercial,
+     capability: "The industry's strongest commercial Android decompiler, resilient against heavy obfuscation / packers",
+     when_to_use: "For heavily obfuscated samples that jadx/GDA can't handle (paid license)",
+     source: https://www.pnfsoftware.com/}
