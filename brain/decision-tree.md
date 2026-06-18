@@ -68,9 +68,51 @@ Browser automation (orthogonal — when you need a real session / anti-detect dr
 └─ catalog: cdp-browser (bundled) → nodriver → botbrowser (strongest stealth, multi-target)
 ```
 
-## Windows (roadmap, not yet implemented)
+## iOS
+
+`skill:` = bundled (ios-app-re); `catalog:` = fillable in catalog/ios.yaml. Needs a target iOS device (jailbroken, or sideload tooling for jailed).
+
 ```
-DIE identifies language/packer → .NET? dnSpy/ILSpy ; native? Ghidra/x64dbg ; packed? unpack first
+Step 0 — Get a DECRYPTED binary (App Store apps are FairPlay-encrypted):
+├─ jailbroken            → catalog: frida-ios-dump | bagbak | dumpdecrypted  (pull decrypted .ipa / Mach-O)
+├─ no jailbreak          → catalog: ipatool (download) + trollstore/sidestore sideload ; flexdecrypt/bfdecrypt on-device
+└─ already decrypted ↓
+
+Step 1 — Static surface (skill: ios-app-re)
+├─ class metadata  → catalog: class-dump (ObjC) | dsdump / swiftdump (Swift type metadata)
+├─ disasm/decompile → catalog: hopper ; or skill: ghidra-reverse-engineering / ida-reverse-engineering
+└─ Output: endpoints[], classes[], candidate signing methods
+
+Step 2 — Dynamic instrumentation (skill: objection-ios + frida)
+├─ SSL pinning / jailbreak / anti-debug → catalog: objection-ios (unpin) | frida-ios-hook ; r2frida for live memory
+├─ hook the signing method → confirm in→out
+└─ Output: crypto_io[] samples
+
+Step 3 — Reproduce / patch (the brain)
+├─ pure ObjC/Swift signing  → reproduce in Python/Swift
+├─ native Mach-O/.dylib algo → escalate to Native (capa → ghidra/ida → reproduce)
+├─ Flutter iOS (libapp.so)  → same as playbook android-flutter; capture at BoringSSL
+└─ resign + inject dylib    → catalog: optool / insert-dylib + ldid ; theos for tweaks
+
+→ playbook: ios-app
+```
+
+## Windows
+
+`skill:` = bundled (windows-pe-re); `catalog:` = fillable in catalog/windows.yaml.
+
+```
+Step 0 — Fingerprint (catalog: detect-it-easy) → language / compiler / packer ↓
+
+Step 1 — Packed? (UPX / Themida / VMProtect, high entropy, tiny imports)
+├─ Yes → unpack: run + dump from memory → catalog: pe-sieve + hollows-hunter (dump) → scylla (rebuild imports) → re-fingerprint
+└─ No ↓
+
+Step 2 — Language?
+├─ .NET (managed)  → catalog: dnspyex (decompile/debug/edit) | ilspy ; de4dot to deobfuscate first
+└─ native C/C++    → skill: ghidra-reverse-engineering / ida-reverse-engineering (static); catalog: x64dbg + scyllahide (dynamic, anti-anti-debug) | windbg
+
+→ playbook: windows-pe ; skill: windows-pe-re
 ```
 
 ## Escalation Criteria (feedback-loop triggers)
