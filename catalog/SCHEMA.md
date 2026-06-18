@@ -42,6 +42,7 @@ Required: `id, name, type, domain, capability, when_to_use, source, bundled, sta
 
 1. Pick the `catalog/*.yaml` for the right domain and add an entry per the fields above.
 2. For `bundled: true`, place the skill directory under `skills/<domain>/<id>/` (including SKILL.md).
+   - **Note for `type: mcp` entries**: in `catalog/mcp.yaml`, `bundled: true` means "this project already ships the MCP config / backend" (see `mcp/mcp.template.json` → generated `.mcp.json`), NOT that there is a `skills/` directory. The two readings are deliberate: skill-type bundled = in `skills/`; mcp-type bundled = config-shipped.
 3. For `bundled: false`, just register it — the AI fetches it on demand via `install` when needed (pip/npm into the project `.venv`, binaries into `tools/bin/`; see `tools/fetch.py`).
 4. Run `python catalog/validate.py` to verify the fields are complete and ids are unique.
 

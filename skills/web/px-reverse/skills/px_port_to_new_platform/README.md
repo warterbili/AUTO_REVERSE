@@ -47,11 +47,11 @@ Optional:
 
 Before declaring done, confirm:
 
-- [ ] Wire chars detected from SDK (not hard-coded — [Gotcha 9](../../../../bug_report/gotchas/09_wire_chars_confusion.md))
-- [ ] state.* keys from value-match, not derivation ([Gotcha 11](../../../../bug_report/gotchas/11_state_to_ev2_key.md))
-- [ ] PC length verified against captures ([Gotcha 4](../../../../bug_report/gotchas/04_pc_md5_slice.md))
-- [ ] EV1 and EV2 use separate field maps ([Gotcha 12](../../../../bug_report/gotchas/12_cross_event_key_reuse.md))
-- [ ] Test spacing ≥ 15s ([Gotcha 13](../../../../bug_report/gotchas/13_ip_rate_limit.md))
+- [ ] Wire chars detected from SDK (not hard-coded — [Gotcha 9](../../references/gotchas.md))
+- [ ] state.* keys from value-match, not derivation ([Gotcha 11](../../references/gotchas.md))
+- [ ] PC length verified against captures ([Gotcha 4](../../references/gotchas.md))
+- [ ] EV1 and EV2 use separate field maps ([Gotcha 12](../../references/gotchas.md))
+- [ ] Test spacing ≥ 15s ([Gotcha 13](../../references/gotchas.md))
 
 ## Failure handling
 

@@ -98,5 +98,5 @@ JS and modifying no navigator properties**. This is currently the only way to ca
 
 ## Documentation reference
 
-For the full usage manual, see [`../../main/ZH/PX_完整SDK对照逆向方法论.md`](../../main/ZH/PX_完整SDK对照逆向方法论.md),
-the ★ section ("Traffic capture and SDK pinning").
+For the full PerimeterX SDK reversing methodology, see the [`px-reverse`](../px-reverse/SKILL.md) skill
+(its `references/` + `playbooks/` cover traffic capture and SDK pinning).
