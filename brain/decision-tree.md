@@ -115,7 +115,38 @@ Step 2 — Language?
 → playbook: windows-pe ; skill: windows-pe-re
 ```
 
+## Native / binary (.so · ELF · Mach-O · PE · DEX-native)
+
+Shared escalation target for Android-native-sign, iOS native, Windows native, and any standalone binary. Pick by ACTIVITY; full inventory is `catalog/native.yaml` (select by `when_to_use`).
+
+```
+1. Triage / identify  → catalog: capa-triage (capabilities) · flare-floss (deobf strings) · yara-x · detect-it-easy (PE)
+2. Disassemble / decompile (pick one you have) →
+   ├─ skill: ghidra-reverse-engineering (free, MCP-drivable) | ida-reverse-engineering (best decompiler)
+   └─ catalog: binary-ninja · radare2 / rizin · cutter
+3. Deobfuscate / deflatten / unpack → catalog: d810-ng · goomba (Hex-Rays OLLVM) · novmp (VMProtect) · unipacker · upx
+4. Emulate / run the algorithm →
+   ├─ Android .so + JNI → skill: unidbg-emulation (+ jni-env-patching)
+   └─ generic → catalog: qiling · unicorn-engine · flare-emu ; symbolic exec → angr · triton
+5. Diff for patch / N-day → catalog: bindiff · diaphora · ghidriff
+6. (optional) LLM-assisted → catalog: llm4decompile · reverser-ai · ghidrassist
+```
+
+## MCP — let the AI drive the tool directly (orthogonal to every section above)
+
+Whenever a step above needs a tool AND an MCP server exists for it, PREFER the MCP: it turns "generate a command" into an autonomous read→act loop the agent runs itself. Full inventory `catalog/mcp.yaml` (select by `when_to_use`); key mappings:
+
+```
+decompile/RE : jadx→jadx-mcp-server-zinja|jadx-ai-mcp · ghidra→ghidra-mcp-lauriewired · ida→ida-pro-mcp · binja→binary-ninja-mcp · radare2→radare2-mcp · apktool→apktool-mcp-server
+debug        : x64dbg→x64dbg-mcp-bromoket · windbg→mcp-windbg
+dynamic/hook : frida→frida-mcp · android-frida→kahlo-mcp · il2cpp→il2cpp-frida-mcp
+web/pentest  : burp→burp-mcp-portswigger · nmap/sqlmap/ffuf→mcp-for-security-cyproxio · metasploit→metasploit-mcp-gh05tcrew · nuclei→nuclei-mcp-addcontent · full Kali→kali-mcp · orchestrated→hexstrike-ai
+traffic      : wireshark→wireshark-mcp · pcap→sample-pcap-analyzer-mcp · mitmproxy→mitmproxy-mcp-lucasoeth · HAR→har-mcp · browser net→chrome-devtools-mcp-benjaminr
+malware      : remnux→remnux-mcp-server · all-in-one→arkana-malware-mcp
+```
+
 ## Escalation Criteria (feedback-loop triggers)
 - Static analysis finds an encrypted field but can't locate its plaintext source → escalate to Dynamic (hook).
-- Dynamic analysis shows the signature is computed in native code → escalate to Native (capa → ghidra → unidbg).
+- Dynamic analysis shows the signature is computed in native code → escalate to the **## Native / binary** section (capa → ghidra/ida → unidbg/qiling).
 - The native algorithm contains device-dependent callbacks and needs batch reproduction → patch the unidbg environment (jni-env-patching).
+- Any tool step would benefit from an autonomous read→act loop → drive it via its MCP server (**## MCP** section / `catalog/mcp.yaml`).
