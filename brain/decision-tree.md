@@ -9,7 +9,16 @@ Is it packed? (Application=stub / tiny dex / matches a known packer .so)
 ├─ Yes → [unpack] android-unpacking → return to Phase 1 and re-fingerprint
 └─ No ↓
 
-Framework? (scan lib/<abi>/)
+Is the TARGET a known 3rd-party anti-bot / risk SDK? (scan dex+lib for SDK fingerprints) —
+this takes PRECEDENCE over the framework branch below: the SDK token lives in native Java/.so
+independent of the app framework (a RN/Flutter app can still bundle a native-Java Castle SDK).
+├─ io.castle.android / X-Castle-Request-Token   → skill: castle-reverse (covers the Android-native SDK directly)
+├─ PerimeterX (_px*, px-cloud.net)               → skill: px-reverse
+├─ Akamai bundled in-app (sensor_data, _abck)    → skill: akamai-reverse → catalog: akamai-bmp-generator (mobile BMP)
+├─ DataDome / Geetest / others                   → see the Web vendor table (same skills cover the mobile SDK variant)
+└─ no dedicated anti-bot SDK (target is the app's OWN signing) ↓
+
+Framework? (scan lib/<abi>/) — answers "where is the app's own API logic"
 ├─ libflutter.so + libapp.so      → playbook: android-flutter   (reFlutter/blutter; jadx is useless)
 ├─ libhermes.so + *.bundle         → playbook: android-rn-hermes (hermes-dec)
 ├─ libil2cpp.so                    → playbook: android-unity     (frida-il2cpp-bridge)

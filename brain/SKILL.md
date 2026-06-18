@@ -37,6 +37,7 @@ You are a reverse-engineering orchestrator. You **do not just pile up commands**
 | `libhermes.so`+`index.android.bundle` | RN Hermes | hermes-dec |
 | `libil2cpp.so` | Unity | frida-il2cpp-bridge |
 | Only `classes.dex`, classes intact | Native Java/Kotlin | Standard jadx chain |
+| 3rd-party anti-bot/risk SDK present (`io.castle.android`, PerimeterX, Akamai, DataDome…) | Dedicated SDK is the target | Route to its skill (castle-reverse/px-reverse/akamai-reverse) — **takes precedence over the framework row**; the SDK token is in native Java/.so regardless of RN/Flutter |
 | Application is a stub / tiny dex / known packer .so | Packed | Unpack with `android-unpacking` first, then **return to Phase 1** |
 | manifest `networkSecurityConfig` / OkHttp CertificatePinner | SSL pinning | Dynamic bypass via frida-mitm-capture |
 | Strings contain root/frida/ptrace detection | RASP | Bypass with device-side Shamiko/vector + objection |
