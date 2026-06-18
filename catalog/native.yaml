@@ -412,3 +412,102 @@ entries:
      capability: "Binary-analysis Claude Code plugins wrapping angr (static analysis + symbolic execution) and Frida (dynamic instrumentation) as invokable skills.",
      when_to_use: "Want Claude Code skills that drive angr symbolic execution or Frida dynamic instrumentation on native binaries from within the agent.",
      source: https://github.com/sandbornm/my-claude-skills, install: "git clone https://github.com/sandbornm/my-claude-skills"}
+
+
+  # -- batch-added: fuzzing / content & API bruteforce (collect-fuzz-bruteforce) --
+  - {id: graphqlmap, name: "swisskyrepo/GraphQLmap", type: tool, domain: native, bundled: false, status: active,
+     capability: "GraphQLmap: scripting engine to interact with and pentest a GraphQL endpoint (enumeration, dumping, injection fuzzing).",
+     when_to_use: "Fuzz a binary/protocol/parser (mutation or coverage-guided) to surface crashes/memory bugs in authorized research.",
+     source: https://github.com/swisskyrepo/GraphQLmap, install: "git clone https://github.com/swisskyrepo/GraphQLmap && pip install -r requirements.txt"}
+  - {id: batchql, name: "assetnote/batchql", type: tool, domain: native, bundled: false, status: slowed,
+     capability: "BatchQL: GraphQL security auditing script focused on batching attacks (query/mutation batching, alias-based DoS, CSRF).",
+     when_to_use: "Fuzz a binary/protocol/parser (mutation or coverage-guided) to surface crashes/memory bugs in authorized research.",
+     source: https://github.com/assetnote/batchql, install: "git clone https://github.com/assetnote/batchql && pip install -r requirements.txt"}
+  - {id: crackql, name: "nicholasaleks/CrackQL", type: tool, domain: native, bundled: false, status: active,
+     capability: "CrackQL: GraphQL password brute-force and fuzzing utility leveraging query batching for high-throughput attacks.",
+     when_to_use: "Fuzz a binary/protocol/parser (mutation or coverage-guided) to surface crashes/memory bugs in authorized research.",
+     source: https://github.com/nicholasaleks/CrackQL, install: "git clone https://github.com/nicholasaleks/CrackQL && pip install -r requirements.txt"}
+  - {id: damn-vulnerable-graphql-application, name: "dolevf/Damn-Vulnerable-GraphQL-Application", type: tool, domain: native, bundled: false, status: active,
+     capability: "DVGA: intentionally vulnerable GraphQL service for learning and practising GraphQL security testing and fuzzing.",
+     when_to_use: "Fuzz a binary/protocol/parser (mutation or coverage-guided) to surface crashes/memory bugs in authorized research.",
+     source: https://github.com/dolevf/Damn-Vulnerable-GraphQL-Application, install: "git clone https://github.com/dolevf/Damn-Vulnerable-GraphQL-Application && docker build -t dvga ."}
+  - {id: aflplusplus, name: "AFLplusplus", type: tool, domain: native, bundled: false, status: active,
+     capability: "Community successor to AFL: coverage-guided greybox fuzzer with QEMU/Unicorn modes, RedQueen, MOpt, laf-intel, custom mutators.",
+     when_to_use: "Fuzz a binary/protocol/parser (mutation or coverage-guided) to surface crashes/memory bugs in authorized research.",
+     source: https://github.com/AFLplusplus/AFLplusplus, install: "git clone https://github.com/AFLplusplus/AFLplusplus && cd AFLplusplus && make distrib && sudo make install"}
+  - {id: honggfuzz, name: "google/honggfuzz", type: tool, domain: native, bundled: false, status: active,
+     capability: "Security-oriented, feedback-driven (SW/HW coverage) evolutionary fuzzer with persistent mode and ASan integration.",
+     when_to_use: "Fuzz a binary/protocol/parser (mutation or coverage-guided) to surface crashes/memory bugs in authorized research.",
+     source: https://github.com/google/honggfuzz, install: "git clone https://github.com/google/honggfuzz && cd honggfuzz && make && sudo make install"}
+  - {id: afl, name: "google/AFL", type: tool, domain: native, bundled: false, status: slowed,
+     capability: "Original american fuzzy lop, the security-oriented coverage-guided fuzzer that started the modern greybox era (archived).",
+     when_to_use: "Fuzz a binary/protocol/parser (mutation or coverage-guided) to surface crashes/memory bugs in authorized research.",
+     source: https://github.com/google/AFL, install: "git clone https://github.com/google/AFL && cd AFL && make && sudo make install"}
+  - {id: libafl, name: "LibAFL", type: tool, domain: native, bundled: false, status: active,
+     capability: "Modular Rust fuzzing library to compose your own fuzzer; scales across cores/machines, supports Windows/Android/macOS/Linux/no_std.",
+     when_to_use: "Fuzz a binary/protocol/parser (mutation or coverage-guided) to surface crashes/memory bugs in authorized research.",
+     source: https://github.com/AFLplusplus/LibAFL, install: "cargo install libafl_cc # or: git clone https://github.com/AFLplusplus/LibAFL"}
+  - {id: llvmlibfuzzer, name: "llvm libFuzzer", type: tool, domain: native, bundled: false, status: active,
+     capability: "In-process coverage-guided fuzzing engine shipped with LLVM/Clang (-fsanitize=fuzzer), the standard for library/API fuzzing.",
+     when_to_use: "Fuzz a binary/protocol/parser (mutation or coverage-guided) to surface crashes/memory bugs in authorized research.",
+     source: https://github.com/llvm/llvm-project, install: "# ships with clang: clang -fsanitize=fuzzer,address harness.c -o fuzzer  (install LLVM: apt install clang)"}
+  - {id: syzkaller, name: "google/syzkaller", type: tool, domain: native, bundled: false, status: active,
+     capability: "Unsupervised coverage-guided kernel fuzzer for OS syscall interfaces (Linux, *BSD, Windows, Fuchsia).",
+     when_to_use: "Fuzz a binary/protocol/parser (mutation or coverage-guided) to surface crashes/memory bugs in authorized research.",
+     source: https://github.com/google/syzkaller, install: "git clone https://github.com/google/syzkaller && cd syzkaller && make"}
+  - {id: winafl, name: "googleprojectzero/winafl", type: tool, domain: native, bundled: false, status: active,
+     capability: "AFL fork for fuzzing Windows binaries using DynamoRIO/Intel PT instrumentation for coverage.",
+     when_to_use: "Fuzz a binary/protocol/parser (mutation or coverage-guided) to surface crashes/memory bugs in authorized research.",
+     source: https://github.com/googleprojectzero/winafl, install: "git clone https://github.com/googleprojectzero/winafl  # build with cmake against DynamoRIO"}
+  - {id: aflnet, name: "aflnet/aflnet", type: tool, domain: native, bundled: false, status: active,
+     capability: "Greybox (coverage-guided) fuzzer for network protocols; uses server responses as feedback to drive state.",
+     when_to_use: "Fuzz a binary/protocol/parser (mutation or coverage-guided) to surface crashes/memory bugs in authorized research.",
+     source: https://github.com/aflnet/aflnet, install: "git clone https://github.com/aflnet/aflnet && cd aflnet && make"}
+  - {id: boofuzz, name: "jtpereyda/boofuzz", type: tool, domain: native, bundled: false, status: active,
+     capability: "Network protocol fuzzing framework; fork and successor of Sulley with logging, target monitoring and reusable blocks.",
+     when_to_use: "Fuzz a binary/protocol/parser (mutation or coverage-guided) to surface crashes/memory bugs in authorized research.",
+     source: https://github.com/jtpereyda/boofuzz, install: "pip install boofuzz"}
+  - {id: sulley, name: "OpenRCE/sulley", type: tool, domain: native, bundled: false, status: slowed,
+     capability: "Original pure-Python automated/unattended fuzzing framework for network protocols (predecessor of boofuzz).",
+     when_to_use: "Fuzz a binary/protocol/parser (mutation or coverage-guided) to surface crashes/memory bugs in authorized research.",
+     source: https://github.com/OpenRCE/sulley, install: "git clone https://github.com/OpenRCE/sulley"}
+  - {id: fuzzowski, name: "nccgroup/fuzzowski", type: tool, domain: native, bundled: false, status: active,
+     capability: "The Network Protocol Fuzzer from NCC Group; sulley/boofuzz-style with restarters, monitors and a CLI.",
+     when_to_use: "Fuzz a binary/protocol/parser (mutation or coverage-guided) to surface crashes/memory bugs in authorized research.",
+     source: https://github.com/nccgroup/fuzzowski, install: "git clone https://github.com/nccgroup/fuzzowski && cd fuzzowski && pip install -e ."}
+  - {id: mutiny-fuzzer, name: "Cisco-Talos/mutiny-fuzzer", type: tool, domain: native, bundled: false, status: slowed,
+     capability: "Network fuzzer that replays and mutates captured traffic (pcap/.fuzzer) via radamsa to test network apps.",
+     when_to_use: "Fuzz a binary/protocol/parser (mutation or coverage-guided) to surface crashes/memory bugs in authorized research.",
+     source: https://github.com/Cisco-Talos/mutiny-fuzzer, install: "git clone https://github.com/Cisco-Talos/mutiny-fuzzer"}
+  - {id: kitty, name: "cisco-sas/kitty", type: tool, domain: native, bundled: false, status: active,
+     capability: "Extensible Python fuzzing framework that models data and lets you fuzz any protocol/medium (network, USB, BLE).",
+     when_to_use: "Fuzz a binary/protocol/parser (mutation or coverage-guided) to surface crashes/memory bugs in authorized research.",
+     source: https://github.com/cisco-sas/kitty, install: "pip install kittyfuzzer"}
+  - {id: katnip, name: "cisco-sas/katnip", type: tool, domain: native, bundled: false, status: slowed,
+     capability: "Extension library for the Kitty fuzzing framework with ready-made targets, controllers and transport templates.",
+     when_to_use: "Fuzz a binary/protocol/parser (mutation or coverage-guided) to surface crashes/memory bugs in authorized research.",
+     source: https://github.com/cisco-sas/katnip, install: "pip install katnip"}
+  - {id: radamsa, name: "aoh/radamsa", type: tool, domain: native, bundled: false, status: slowed,
+     capability: "General-purpose dumb/mutation fuzzer that mutates sample inputs; pipe-friendly, language-agnostic.",
+     when_to_use: "Fuzz a binary/protocol/parser (mutation or coverage-guided) to surface crashes/memory bugs in authorized research.",
+     source: https://github.com/aoh/radamsa, install: "git clone https://gitlab.com/akihe/radamsa.git && cd radamsa && make && sudo make install"}
+  - {id: peach, name: "MozillaSecurity/peach", type: tool, domain: native, bundled: false, status: slowed,
+     capability: "Open Peach variant: DSL-driven fuzzing framework with observer-based execution and monitoring of fuzzers.",
+     when_to_use: "Fuzz a binary/protocol/parser (mutation or coverage-guided) to surface crashes/memory bugs in authorized research.",
+     source: https://github.com/MozillaSecurity/peach, install: "git clone https://github.com/MozillaSecurity/peach && cd peach && pip install -e ."}
+  - {id: netzob, name: "netzob/netzob", type: tool, domain: native, bundled: false, status: active,
+     capability: "Protocol reverse-engineering, modeling and fuzzing toolkit; infers grammars from traffic to drive fuzzing.",
+     when_to_use: "Fuzz a binary/protocol/parser (mutation or coverage-guided) to surface crashes/memory bugs in authorized research.",
+     source: https://github.com/netzob/netzob, install: "pip install netzob"}
+  - {id: honggfuzz-rs, name: "rust-fuzz/honggfuzz-rs", type: tool, domain: native, bundled: false, status: active,
+     capability: "Rust bindings/cargo subcommand to fuzz Rust code with honggfuzz coverage feedback.",
+     when_to_use: "Fuzz a binary/protocol/parser (mutation or coverage-guided) to surface crashes/memory bugs in authorized research.",
+     source: https://github.com/rust-fuzz/honggfuzz-rs, install: "cargo install honggfuzz"}
+  - {id: rusty-radamsa, name: "microsoft/rusty-radamsa", type: tool, domain: native, bundled: false, status: active,
+     capability: "Radamsa mutation fuzzer ported to Rust, usable as a library or CLI.",
+     when_to_use: "Fuzz a binary/protocol/parser (mutation or coverage-guided) to surface crashes/memory bugs in authorized research.",
+     source: https://github.com/microsoft/rusty-radamsa, install: "cargo install rusty-radamsa"}
+  - {id: rtsphuzz, name: "IncludeSecurity/RTSPhuzz", type: tool, domain: native, bundled: false, status: slowed,
+     capability: "RTSP protocol fuzzer built on the boofuzz framework; concrete protocol fuzzer example.",
+     when_to_use: "Fuzz a binary/protocol/parser (mutation or coverage-guided) to surface crashes/memory bugs in authorized research.",
+     source: https://github.com/IncludeSecurity/RTSPhuzz, install: "git clone https://github.com/IncludeSecurity/RTSPhuzz && pip install boofuzz"}

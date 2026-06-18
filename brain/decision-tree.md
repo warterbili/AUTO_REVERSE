@@ -154,6 +154,19 @@ traffic      : wireshark→wireshark-mcp · pcap→sample-pcap-analyzer-mcp · m
 malware      : remnux→remnux-mcp-server · all-in-one→arkana-malware-mcp
 ```
 
+## Web app / API pentest — recon · content & API discovery · fuzzing (authorized only)
+
+Active testing (distinct from anti-bot RE above). Pick a tool by task; full inventory in `catalog/web.yaml` + `catalog/native.yaml`, or drive the whole toolbox via `catalog: kali-mcp` (sandboxed container).
+
+```
+content / path / dir discovery → catalog: ffuf · feroxbuster · gobuster · dirsearch   (wordlists: seclists · leaky-paths)
+API route discovery            → catalog: kiterunner (OpenAPI-derived) · katana ; JS endpoint mining → hakrawler · gau · linkfinder
+HTTP parameter discovery       → catalog: arjun · x8 · paramspider
+API spec fuzzing (REST/GraphQL)→ catalog: schemathesis · restler · apifuzzer · graphql-cop
+protocol / coverage fuzzing    → catalog: boofuzz · afl++ · honggfuzz · radamsa   (native.yaml)
+vuln templates / orchestration → catalog: nuclei (nuclei-mcp) · hexstrike-ai (agent-orchestrated) · mcp-for-security (suite)
+```
+
 ## Escalation Criteria (feedback-loop triggers)
 - Static analysis finds an encrypted field but can't locate its plaintext source → escalate to Dynamic (hook).
 - Dynamic analysis shows the signature is computed in native code → escalate to the **## Native / binary** section (capa → ghidra/ida → unidbg/qiling).

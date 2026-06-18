@@ -1193,3 +1193,270 @@ entries:
      capability: "node 补环境实现小蓝本 h_sign 获取（小程序信息收集）。Low-star 补环境实战 NEW.",
      when_to_use: "jsdom-based 补环境 framework for hosting site JS headlessly; alternative to node-bridge-build.",
      source: https://github.com/r1is/xcx_collect, install: "git clone https://github.com/r1is/xcx_collect"}
+
+
+  # -- batch-added: fuzzing / content & API bruteforce (collect-fuzz-bruteforce) --
+  - {id: ffuf, name: "ffuf", type: tool, domain: web, bundled: false, status: active,
+     capability: "Fast web fuzzer in Go; the canonical FUZZ-keyword fuzzer for dirs, params, vhosts, headers, POST data.",
+     when_to_use: "General web fuzzing via FUZZ markers (paths, params, headers, POST body) on an authorized target.",
+     source: https://github.com/ffuf/ffuf, install: "go install github.com/ffuf/ffuf/v2@latest"}
+  - {id: dirsearch, name: "dirsearch", type: tool, domain: web, bundled: false, status: active,
+     capability: "Mature multithreaded web path scanner with recursion, extensions, and rich filtering.",
+     when_to_use: "Brute-force or discover hidden web paths/directories/files/vhosts on an AUTHORIZED target; feed a wordlist (SecLists) and filter by status/size.",
+     source: https://github.com/maurosoria/dirsearch, install: "pip install dirsearch"}
+  - {id: gobuster, name: "gobuster", type: tool, domain: web, bundled: false, status: active,
+     capability: "Directory/file, DNS, vhost, S3, GCS busting tool written in Go.",
+     when_to_use: "Brute-force or discover hidden web paths/directories/files/vhosts on an AUTHORIZED target; feed a wordlist (SecLists) and filter by status/size.",
+     source: https://github.com/OJ/gobuster, install: "go install github.com/OJ/gobuster/v3@latest"}
+  - {id: feroxbuster, name: "feroxbuster", type: tool, domain: web, bundled: false, status: active,
+     capability: "Fast, simple, recursive content discovery tool written in Rust.",
+     when_to_use: "Brute-force or discover hidden web paths/directories/files/vhosts on an AUTHORIZED target; feed a wordlist (SecLists) and filter by status/size.",
+     source: https://github.com/epi052/feroxbuster, install: "cargo install feroxbuster"}
+  - {id: wfuzz, name: "wfuzz", type: tool, domain: web, bundled: false, status: active,
+     capability: "Web application fuzzer for content discovery, parameter and form fuzzing via FUZZ markers.",
+     when_to_use: "General web fuzzing via FUZZ markers (paths, params, headers, POST body) on an authorized target.",
+     source: https://github.com/xmendez/wfuzz, install: "pip install wfuzz"}
+  - {id: kiterunner, name: "kiterunner", type: tool, domain: web, bundled: false, status: active,
+     capability: "Contextual content discovery tool optimized for finding API routes via OpenAPI/Swagger-derived wordlists.",
+     when_to_use: "Discover hidden API endpoints/routes (OpenAPI/Swagger-derived wordlists) on an authorized target when plain dir-busting misses API paths.",
+     source: https://github.com/assetnote/kiterunner, install: "git clone https://github.com/assetnote/kiterunner && cd kiterunner && make build"}
+  - {id: gospider, name: "gospider", type: tool, domain: web, bundled: false, status: active,
+     capability: "Fast web spider in Go that crawls and extracts URLs, JS endpoints, forms and links.",
+     when_to_use: "Brute-force or discover hidden web paths/directories/files/vhosts on an AUTHORIZED target; feed a wordlist (SecLists) and filter by status/size.",
+     source: https://github.com/jaeles-project/gospider, install: "go install github.com/jaeles-project/gospider@latest"}
+  - {id: hakrawler, name: "hakrawler", type: tool, domain: web, bundled: false, status: active,
+     capability: "Simple fast web crawler for quick discovery of endpoints and assets in a web app.",
+     when_to_use: "Brute-force or discover hidden web paths/directories/files/vhosts on an AUTHORIZED target; feed a wordlist (SecLists) and filter by status/size.",
+     source: https://github.com/hakluke/hakrawler, install: "go install github.com/hakluke/hakrawler@latest"}
+  - {id: photon, name: "Photon", type: tool, domain: web, bundled: false, status: active,
+     capability: "Fast crawler that extracts URLs, endpoints, secrets and files for OSINT/discovery.",
+     when_to_use: "Brute-force or discover hidden web paths/directories/files/vhosts on an AUTHORIZED target; feed a wordlist (SecLists) and filter by status/size.",
+     source: https://github.com/s0md3v/Photon, install: "git clone https://github.com/s0md3v/Photon && pip install -r Photon/requirements.txt"}
+  - {id: dirhunt, name: "dirhunt", type: tool, domain: web, bundled: false, status: slowed,
+     capability: "Finds web directories without bruteforce by analyzing index pages and crawling intelligently.",
+     when_to_use: "Brute-force or discover hidden web paths/directories/files/vhosts on an AUTHORIZED target; feed a wordlist (SecLists) and filter by status/size.",
+     source: https://github.com/Nekmo/dirhunt, install: "pip install dirhunt"}
+  - {id: meg, name: "meg", type: tool, domain: web, bundled: false, status: active,
+     capability: "Fetches many paths for many hosts without hammering any single host; mass path probing.",
+     when_to_use: "Brute-force or discover hidden web paths/directories/files/vhosts on an AUTHORIZED target; feed a wordlist (SecLists) and filter by status/size.",
+     source: https://github.com/tomnomnom/meg, install: "go install github.com/tomnomnom/meg@latest"}
+  - {id: cansina, name: "cansina", type: tool, domain: web, bundled: false, status: active,
+     capability: "Web content discovery tool that bruteforces paths with payload lists and filtering.",
+     when_to_use: "Brute-force or discover hidden web paths/directories/files/vhosts on an AUTHORIZED target; feed a wordlist (SecLists) and filter by status/size.",
+     source: https://github.com/deibit/cansina, install: "git clone https://github.com/deibit/cansina && pip install -r cansina/requirements.txt"}
+  - {id: rustbuster, name: "rustbuster", type: tool, domain: web, bundled: false, status: slowed,
+     capability: "Comprehensive web fuzzer and content discovery tool in Rust (dir, dns, vhost, fuzz modes).",
+     when_to_use: "Brute-force or discover hidden web paths/directories/files/vhosts on an AUTHORIZED target; feed a wordlist (SecLists) and filter by status/size.",
+     source: https://github.com/phra/rustbuster, install: "cargo install rustbuster"}
+  - {id: dirstalk, name: "dirstalk", type: tool, domain: web, bundled: false, status: slowed,
+     capability: "Modern alternative to dirbuster/dirb for scanning web server paths in Go.",
+     when_to_use: "Brute-force or discover hidden web paths/directories/files/vhosts on an AUTHORIZED target; feed a wordlist (SecLists) and filter by status/size.",
+     source: https://github.com/stefanoj3/dirstalk, install: "go install github.com/stefanoj3/dirstalk@latest"}
+  - {id: dirbuster-ng, name: "dirbuster-ng", type: tool, domain: web, bundled: false, status: slowed,
+     capability: "C CLI re-implementation of the classic Java DirBuster tool.",
+     when_to_use: "Brute-force or discover hidden web paths/directories/files/vhosts on an AUTHORIZED target; feed a wordlist (SecLists) and filter by status/size.",
+     source: https://github.com/digination/dirbuster-ng, install: "git clone https://github.com/digination/dirbuster-ng && cd dirbuster-ng && make"}
+  - {id: filebuster, name: "filebuster", type: tool, domain: web, bundled: false, status: slowed,
+     capability: "Extremely fast and flexible web fuzzer/path bruteforcer written in Python.",
+     when_to_use: "Brute-force or discover hidden web paths/directories/files/vhosts on an AUTHORIZED target; feed a wordlist (SecLists) and filter by status/size.",
+     source: https://github.com/henshin/filebuster, install: "git clone https://github.com/henshin/filebuster && pip install -r filebuster/requirements.txt"}
+  - {id: dirbusterkajanmmirror, name: "DirBuster (KajanM mirror)", type: tool, domain: web, bundled: false, status: active,
+     capability: "Source mirror of the classic OWASP DirBuster multithreaded Java directory/file bruteforcer.",
+     when_to_use: "Brute-force or discover hidden web paths/directories/files/vhosts on an AUTHORIZED target; feed a wordlist (SecLists) and filter by status/size.",
+     source: https://github.com/KajanM/DirBuster, install: "git clone https://github.com/KajanM/DirBuster"}
+  - {id: brainstorm, name: "brainstorm", type: tool, domain: web, bundled: false, status: active,
+     capability: "Smarter web fuzzing that pairs a local LLM with ffuf to predict likely dirs/files and cut requests.",
+     when_to_use: "Brute-force or discover hidden web paths/directories/files/vhosts on an AUTHORIZED target; feed a wordlist (SecLists) and filter by status/size.",
+     source: https://github.com/Invicti-Security/brainstorm, install: "git clone https://github.com/Invicti-Security/brainstorm && pip install -r brainstorm/requirements.txt"}
+  - {id: seclists, name: "SecLists", type: tool, domain: web, bundled: false, status: active,
+     capability: "The standard collection of wordlists: directories, files, vhosts, params, fuzzing payloads.",
+     when_to_use: "Wordlist / payload corpus that feeds content-discovery, parameter and fuzzing tools.",
+     source: https://github.com/danielmiessler/SecLists, install: "git clone https://github.com/danielmiessler/SecLists"}
+  - {id: leaky-paths, name: "leaky-paths", type: tool, domain: web, bundled: false, status: active,
+     capability: "Curated list of high-signal sensitive paths (APIs, devops, framework configs, misconfigs) for discovery.",
+     when_to_use: "Wordlist / payload corpus that feeds content-discovery, parameter and fuzzing tools.",
+     source: https://github.com/ayoubfathi/leaky-paths, install: "git clone https://github.com/ayoubfathi/leaky-paths"}
+  - {id: katana, name: "katana", type: tool, domain: web, bundled: false, status: active,
+     capability: "Next-generation crawling and spidering framework with JS parsing and headless mode to discover endpoints/routes.",
+     when_to_use: "Discover hidden API endpoints/routes (OpenAPI/Swagger-derived wordlists) on an authorized target when plain dir-busting misses API paths.",
+     source: https://github.com/projectdiscovery/katana, install: "go install github.com/projectdiscovery/katana/cmd/katana@latest"}
+  - {id: gaugetallurls, name: "gau (getallurls)", type: tool, domain: web, bundled: false, status: active,
+     capability: "Fetches known URLs from AlienVault OTX, Wayback Machine, and Common Crawl to surface historical API routes.",
+     when_to_use: "Discover hidden API endpoints/routes (OpenAPI/Swagger-derived wordlists) on an authorized target when plain dir-busting misses API paths.",
+     source: https://github.com/lc/gau, install: "go install github.com/lc/gau/v2/cmd/gau@latest"}
+  - {id: waybackurls, name: "waybackurls", type: tool, domain: web, bundled: false, status: active,
+     capability: "Fetches all URLs the Wayback Machine knows about for a domain, exposing legacy/hidden API paths.",
+     when_to_use: "Discover hidden API endpoints/routes (OpenAPI/Swagger-derived wordlists) on an authorized target when plain dir-busting misses API paths.",
+     source: https://github.com/tomnomnom/waybackurls, install: "go install github.com/tomnomnom/waybackurls@latest"}
+  - {id: linkfinder, name: "LinkFinder", type: tool, domain: web, bundled: false, status: active,
+     capability: "Python script that finds endpoints (including API paths) inside JavaScript files via regex.",
+     when_to_use: "Discover hidden API endpoints/routes (OpenAPI/Swagger-derived wordlists) on an authorized target when plain dir-busting misses API paths.",
+     source: https://github.com/GerbenJavado/LinkFinder, install: "git clone https://github.com/GerbenJavado/LinkFinder && cd LinkFinder && pip install -r requirements.txt && python setup.py install"}
+  - {id: xnlinkfinder, name: "xnLinkFinder", type: tool, domain: web, bundled: false, status: active,
+     capability: "Discovers endpoints, potential parameters, target-specific wordlists and secrets from JS/HTML sources.",
+     when_to_use: "Discover hidden API endpoints/routes (OpenAPI/Swagger-derived wordlists) on an authorized target when plain dir-busting misses API paths.",
+     source: https://github.com/xnl-h4ck3r/xnLinkFinder, install: "pip install xnLinkFinder"}
+  - {id: getjs, name: "getJS", type: tool, domain: web, bundled: false, status: active,
+     capability: "Fast tool to extract all JavaScript sources/files from URLs/subdomains for downstream endpoint mining.",
+     when_to_use: "Discover hidden API endpoints/routes (OpenAPI/Swagger-derived wordlists) on an authorized target when plain dir-busting misses API paths.",
+     source: https://github.com/003random/getJS, install: "go install github.com/003random/getJS/v2@latest"}
+  - {id: subjs, name: "subjs", type: tool, domain: web, bundled: false, status: active,
+     capability: "Fetches JavaScript file URLs from a list of URLs/subdomains for endpoint analysis.",
+     when_to_use: "Discover hidden API endpoints/routes (OpenAPI/Swagger-derived wordlists) on an authorized target when plain dir-busting misses API paths.",
+     source: https://github.com/lc/subjs, install: "go install github.com/lc/subjs@latest"}
+  - {id: jsfinder, name: "JSFinder", type: tool, domain: web, bundled: false, status: slowed,
+     capability: "Quickly extracts URLs and subdomains from JS files on a website.",
+     when_to_use: "Discover hidden API endpoints/routes (OpenAPI/Swagger-derived wordlists) on an authorized target when plain dir-busting misses API paths.",
+     source: https://github.com/Threezh1/JSFinder, install: "git clone https://github.com/Threezh1/JSFinder && pip install requests"}
+  - {id: secretfinder, name: "SecretFinder", type: tool, domain: web, bundled: false, status: active,
+     capability: "Finds sensitive data and endpoints (apikeys, tokens, paths) inside JavaScript files.",
+     when_to_use: "Discover hidden API endpoints/routes (OpenAPI/Swagger-derived wordlists) on an authorized target when plain dir-busting misses API paths.",
+     source: https://github.com/m4ll0k/SecretFinder, install: "git clone https://github.com/m4ll0k/SecretFinder && cd SecretFinder && pip install -r requirements.txt"}
+  - {id: jsscanner, name: "JSScanner", type: tool, domain: web, bundled: false, status: slowed,
+     capability: "Bash automation that pulls JS files and runs LinkFinder/SecretFinder to surface endpoints and secrets.",
+     when_to_use: "Discover hidden API endpoints/routes (OpenAPI/Swagger-derived wordlists) on an authorized target when plain dir-busting misses API paths.",
+     source: https://github.com/dark-warlord14/JSScanner, install: "git clone https://github.com/dark-warlord14/JSScanner && cd JSScanner && bash install.sh"}
+  - {id: jsfscansh, name: "JSFScan.sh", type: tool, domain: web, bundled: false, status: slowed,
+     capability: "Automation wrapper for JavaScript recon (endpoints, secrets, DOM XSS) in bug bounty.",
+     when_to_use: "Discover hidden API endpoints/routes (OpenAPI/Swagger-derived wordlists) on an authorized target when plain dir-busting misses API paths.",
+     source: https://github.com/KathanP19/JSFScan.sh, install: "git clone https://github.com/KathanP19/JSFScan.sh && cd JSFScan.sh && bash install.sh"}
+  - {id: galer, name: "galer", type: tool, domain: web, bundled: false, status: active,
+     capability: "Fast tool to fetch URLs from HTML attributes by crawling, surfacing endpoints.",
+     when_to_use: "Discover hidden API endpoints/routes (OpenAPI/Swagger-derived wordlists) on an authorized target when plain dir-busting misses API paths.",
+     source: https://github.com/dwisiswant0/galer, install: "go install github.com/dwisiswant0/galer@latest"}
+  - {id: urlfinder, name: "urlfinder", type: tool, domain: web, bundled: false, status: active,
+     capability: "High-speed passive URL gathering tool optimized for comprehensive web asset/endpoint discovery.",
+     when_to_use: "Discover hidden API endpoints/routes (OpenAPI/Swagger-derived wordlists) on an authorized target when plain dir-busting misses API paths.",
+     source: https://github.com/projectdiscovery/urlfinder, install: "go install github.com/projectdiscovery/urlfinder/cmd/urlfinder@latest"}
+  - {id: waymore, name: "waymore", type: tool, domain: web, bundled: false, status: active,
+     capability: "Pulls far more URLs from Wayback, Common Crawl, OTX, URLScan, VirusTotal, GhostArchive and Intelligence X.",
+     when_to_use: "Discover hidden API endpoints/routes (OpenAPI/Swagger-derived wordlists) on an authorized target when plain dir-busting misses API paths.",
+     source: https://github.com/xnl-h4ck3r/waymore, install: "pip install waymore"}
+  - {id: arjun, name: "Arjun", type: tool, domain: web, bundled: false, status: active,
+     capability: "HTTP parameter discovery suite that brute-forces hidden GET/POST/JSON parameters on API endpoints.",
+     when_to_use: "Brute-force / discover hidden HTTP GET/POST query or body parameters on an authorized endpoint.",
+     source: https://github.com/s0md3v/Arjun, install: "pip install arjun"}
+  - {id: x8, name: "x8", type: tool, domain: web, bundled: false, status: active,
+     capability: "Fast hidden parameter discovery suite written in Rust for headers, GET/POST and JSON params.",
+     when_to_use: "Brute-force / discover hidden HTTP GET/POST query or body parameters on an authorized endpoint.",
+     source: https://github.com/Sh1Yo/x8, install: "cargo install x8"}
+  - {id: restlerrestler-fuzzer, name: "RESTler (restler-fuzzer)", type: tool, domain: web, bundled: false, status: active,
+     capability: "First stateful REST API fuzzer; consumes an OpenAPI/Swagger spec to infer and exercise endpoint sequences.",
+     when_to_use: "Fuzz / security-test a REST or GraphQL API from its OpenAPI/Swagger/GraphQL schema (property-based or mutation) on an authorized target.",
+     source: https://github.com/microsoft/restler-fuzzer, install: "git clone https://github.com/microsoft/restler-fuzzer && python restler-fuzzer/build-restler.py"}
+  - {id: param-miner, name: "param-miner", type: tool, domain: web, bundled: false, status: active,
+     capability: "PortSwigger Burp Suite extension to identify hidden, unlinked parameters and headers; especially useful for cache poisoning and hidden input discovery.",
+     when_to_use: "Brute-force / discover hidden HTTP GET/POST query or body parameters on an authorized endpoint.",
+     source: https://github.com/PortSwigger/param-miner, install: "git clone https://github.com/PortSwigger/param-miner (build with gradle, load JAR in Burp)"}
+  - {id: parameth, name: "parameth", type: tool, domain: web, bundled: false, status: slowed,
+     capability: "Classic Python tool to brute-discover GET and POST parameters via wordlist requests against an endpoint.",
+     when_to_use: "Brute-force / discover hidden HTTP GET/POST query or body parameters on an authorized endpoint.",
+     source: https://github.com/maK-/parameth, install: "git clone https://github.com/maK-/parameth && pip install -r requirements.txt"}
+  - {id: paramspider, name: "ParamSpider", type: tool, domain: web, bundled: false, status: active,
+     capability: "Mines parameterized URLs (?param=value) from Web Archives (Wayback) to seed parameter fuzzing/probing; canonical URL-param harvesting tool.",
+     when_to_use: "Brute-force / discover hidden HTTP GET/POST query or body parameters on an authorized endpoint.",
+     source: https://github.com/devanshbatham/ParamSpider, install: "pip install git+https://github.com/devanshbatham/ParamSpider"}
+  - {id: parth, name: "Parth", type: tool, domain: web, bundled: false, status: active,
+     capability: "Heuristic vulnerable-parameter scanner; analyzes parameter names from URLs to flag those likely tied to specific vulnerability classes (XSS, SQLi, SSRF, etc).",
+     when_to_use: "Brute-force / discover hidden HTTP GET/POST query or body parameters on an authorized endpoint.",
+     source: https://github.com/s0md3v/Parth, install: "git clone https://github.com/s0md3v/Parth && pip install -r requirements.txt"}
+  - {id: x8-burp, name: "x8-Burp", type: tool, domain: web, bundled: false, status: slowed,
+     capability: "Burp Suite extension wrapper exposing x8 hidden-parameter discovery directly inside Burp's UI.",
+     when_to_use: "Brute-force / discover hidden HTTP GET/POST query or body parameters on an authorized endpoint.",
+     source: https://github.com/Impact-I/x8-Burp, install: "git clone https://github.com/Impact-I/x8-Burp (build, load JAR in Burp)"}
+  - {id: paramspider0xkayalafork, name: "ParamSpider (0xKayala fork)", type: tool, domain: web, bundled: false, status: active,
+     capability: "Maintained fork of ParamSpider; mines URLs with parameters from web archives for bug hunting and fuzzing pipelines.",
+     when_to_use: "Brute-force / discover hidden HTTP GET/POST query or body parameters on an authorized endpoint.",
+     source: https://github.com/0xKayala/ParamSpider, install: "pip install git+https://github.com/0xKayala/ParamSpider"}
+  - {id: unfurl, name: "unfurl", type: tool, domain: web, bundled: false, status: slowed,
+     capability: "Extracts and transforms parts of URLs from stdin; commonly used to pull unique parameter keys (unfurl keys) for building param wordlists.",
+     when_to_use: "Brute-force / discover hidden HTTP GET/POST query or body parameters on an authorized endpoint.",
+     source: https://github.com/tomnomnom/unfurl, install: "go install github.com/tomnomnom/unfurl@latest"}
+  - {id: dalfox, name: "Dalfox", type: tool, domain: web, bundled: false, status: active,
+     capability: "XSS scanner/utility with parameter analysis and mining; discovers reflected parameters and tests them, integrating with discovered param lists.",
+     when_to_use: "General web fuzzing via FUZZ markers (paths, params, headers, POST body) on an authorized target.",
+     source: https://github.com/hahwul/dalfox, install: "go install github.com/hahwul/dalfox/v2@latest"}
+  - {id: nucleifuzzer, name: "NucleiFuzzer", type: tool, domain: web, bundled: false, status: active,
+     capability: "Automation that chains ParamSpider for parameter URL collection with Nuclei fuzzing templates to detect XSS/SQLi/SSRF/Open Redirect in discovered params.",
+     when_to_use: "General web fuzzing via FUZZ markers (paths, params, headers, POST body) on an authorized target.",
+     source: https://github.com/0xKayala/NucleiFuzzer, install: "git clone https://github.com/0xKayala/NucleiFuzzer && ./install.sh"}
+  - {id: msarjun, name: "msarjun", type: tool, domain: web, bundled: false, status: active,
+     capability: "Mass-scale wrapper that parallelizes Arjun for hidden parameter discovery across many targets/URLs at once.",
+     when_to_use: "Brute-force / discover hidden HTTP GET/POST query or body parameters on an authorized endpoint.",
+     source: https://github.com/rix4uni/msarjun, install: "go install github.com/rix4uni/msarjun@latest"}
+  - {id: x8scan, name: "x8scan", type: tool, domain: web, bundled: false, status: active,
+     capability: "Mass-scale wrapper that parallelizes x8 for efficient hidden-parameter discovery across multiple targets.",
+     when_to_use: "Brute-force / discover hidden HTTP GET/POST query or body parameters on an authorized endpoint.",
+     source: https://github.com/rix4uni/x8scan, install: "go install github.com/rix4uni/x8scan@latest"}
+  - {id: github-endpoints, name: "github-endpoints", type: tool, domain: web, bundled: false, status: slowed,
+     capability: "Finds endpoints (and their parameters) by scraping a target's code on GitHub; supplements param discovery with source-derived params.",
+     when_to_use: "Brute-force / discover hidden HTTP GET/POST query or body parameters on an authorized endpoint.",
+     source: https://github.com/gwen001/github-endpoints, install: "go install github.com/gwen001/github-endpoints@latest"}
+  - {id: wordlists, name: "assetnote/wordlists", type: tool, domain: web, bundled: false, status: active,
+     capability: "Large auto-generated and manual wordlists incl. parameter wordlists; high-quality input for hidden parameter brute-forcing.",
+     when_to_use: "Wordlist / payload corpus that feeds content-discovery, parameter and fuzzing tools.",
+     source: https://github.com/assetnote/wordlists, install: "git clone https://github.com/assetnote/wordlists"}
+  - {id: fuzzdb, name: "fuzzdb", type: tool, domain: web, bundled: false, status: slowed,
+     capability: "Attack-pattern and resource-discovery dictionaries including parameter/attack payload lists used for parameter fuzzing and fault injection.",
+     when_to_use: "Wordlist / payload corpus that feeds content-discovery, parameter and fuzzing tools.",
+     source: https://github.com/fuzzdb-project/fuzzdb, install: "git clone https://github.com/fuzzdb-project/fuzzdb"}
+  - {id: schemathesis, name: "schemathesis/schemathesis", type: tool, domain: web, bundled: false, status: active,
+     capability: "Property-based API testing/fuzzing tool that generates test cases from OpenAPI and GraphQL schemas to find spec violations and server crashes.",
+     when_to_use: "Fuzz / security-test a REST or GraphQL API from its OpenAPI/Swagger/GraphQL schema (property-based or mutation) on an authorized target.",
+     source: https://github.com/schemathesis/schemathesis, install: "pip install schemathesis"}
+  - {id: cats, name: "Endava/cats", type: tool, domain: web, bundled: false, status: active,
+     capability: "CATS: REST API fuzzer and negative-testing tool for OpenAPI endpoints; auto-generates, runs and reports self-healing tests with minimal config.",
+     when_to_use: "Fuzz / security-test a REST or GraphQL API from its OpenAPI/Swagger/GraphQL schema (property-based or mutation) on an authorized target.",
+     source: https://github.com/Endava/cats, install: "brew install cats  # or download release jar from GitHub"}
+  - {id: apifuzzer, name: "KissPeter/APIFuzzer", type: tool, domain: web, bundled: false, status: active,
+     capability: "APIFuzzer: fuzz-tests an application using its OpenAPI/Swagger definition with no coding required, mutating fields and reporting failures.",
+     when_to_use: "Fuzz / security-test a REST or GraphQL API from its OpenAPI/Swagger/GraphQL schema (property-based or mutation) on an authorized target.",
+     source: https://github.com/KissPeter/APIFuzzer, install: "pip install APIFuzzer"}
+  - {id: fuzzapi, name: "Fuzzapi/fuzzapi", type: tool, domain: web, bundled: false, status: slowed,
+     capability: "fuzzapi: Rails-based UI tool for REST API pentesting, built on the API_Fuzzer gem.",
+     when_to_use: "Fuzz / security-test a REST or GraphQL API from its OpenAPI/Swagger/GraphQL schema (property-based or mutation) on an authorized target.",
+     source: https://github.com/Fuzzapi/fuzzapi, install: "git clone https://github.com/Fuzzapi/fuzzapi && bundle install && rake db:setup"}
+  - {id: vulnapi, name: "cerberauth/vulnapi", type: tool, domain: web, bundled: false, status: active,
+     capability: "VulnAPI: open-source API security vulnerability scanner (auth, JWT, BOLA, etc.) driven by OpenAPI/cURL/Postman input.",
+     when_to_use: "Fuzz / security-test a REST or GraphQL API from its OpenAPI/Swagger/GraphQL schema (property-based or mutation) on an authorized target.",
+     source: https://github.com/cerberauth/vulnapi, install: "go install github.com/cerberauth/vulnapi@latest"}
+  - {id: astra, name: "flipkart-incubator/Astra", type: tool, domain: web, bundled: false, status: active,
+     capability: "Astra: automated security testing for REST APIs, consuming Postman/collection input to detect OWASP API-class issues in CI.",
+     when_to_use: "Discover hidden API endpoints/routes (OpenAPI/Swagger-derived wordlists) on an authorized target when plain dir-busting misses API paths.",
+     source: https://github.com/flipkart-incubator/Astra, install: "git clone https://github.com/flipkart-incubator/Astra && pip install -r requirements.txt"}
+  - {id: automatic-api-attack-tool, name: "imperva/automatic-api-attack-tool", type: tool, domain: web, bundled: false, status: slowed,
+     capability: "Imperva's customizable API attack tool: takes an API spec as input, generates and runs spec-derived attacks against the API.",
+     when_to_use: "Fuzz / security-test a REST or GraphQL API from its OpenAPI/Swagger/GraphQL schema (property-based or mutation) on an authorized target.",
+     source: https://github.com/imperva/automatic-api-attack-tool, install: "git clone https://github.com/imperva/automatic-api-attack-tool && pip install -r requirements.txt"}
+  - {id: sj, name: "BishopFox/sj", type: tool, domain: web, bundled: false, status: active,
+     capability: "Swagger Jacker (sj): audits endpoints defined in exposed Swagger/OpenAPI definition files, generating requests for each operation.",
+     when_to_use: "Discover hidden API endpoints/routes (OpenAPI/Swagger-derived wordlists) on an authorized target when plain dir-busting misses API paths.",
+     source: https://github.com/BishopFox/sj, install: "go install github.com/BishopFox/sj@latest"}
+  - {id: apikit, name: "API-Security/APIKit", type: tool, domain: web, bundled: false, status: active,
+     capability: "APIKit: all-in-one toolkit for API discovery, scanning and auditing across multiple spec formats.",
+     when_to_use: "Discover hidden API endpoints/routes (OpenAPI/Swagger-derived wordlists) on an authorized target when plain dir-busting misses API paths.",
+     source: https://github.com/API-Security/APIKit, install: "git clone https://github.com/API-Security/APIKit"}
+  - {id: graphql-cop, name: "dolevf/graphql-cop", type: tool, domain: web, bundled: false, status: active,
+     capability: "GraphQL Cop: security auditor for GraphQL APIs that runs a battery of common misconfiguration and DoS checks.",
+     when_to_use: "Fuzz / security-test a REST or GraphQL API from its OpenAPI/Swagger/GraphQL schema (property-based or mutation) on an authorized target.",
+     source: https://github.com/dolevf/graphql-cop, install: "pip install graphql-cop"}
+  - {id: inql, name: "doyensec/inql", type: tool, domain: web, bundled: false, status: active,
+     capability: "InQL: Burp Suite extension for advanced GraphQL testing with introspection parsing, scan generation and vulnerability detection.",
+     when_to_use: "Fuzz / security-test a REST or GraphQL API from its OpenAPI/Swagger/GraphQL schema (property-based or mutation) on an authorized target.",
+     source: https://github.com/doyensec/inql, install: "git clone https://github.com/doyensec/inql  # load via Burp BApp/Jython"}
+  - {id: clairvoyance, name: "nikitastupin/clairvoyance", type: tool, domain: web, bundled: false, status: active,
+     capability: "Clairvoyance: recovers a GraphQL API schema by abusing field suggestions even when introspection is disabled.",
+     when_to_use: "Fuzz / security-test a REST or GraphQL API from its OpenAPI/Swagger/GraphQL schema (property-based or mutation) on an authorized target.",
+     source: https://github.com/nikitastupin/clairvoyance, install: "pip install clairvoyance"}
+  - {id: graphqler, name: "omar2535/GraphQLer", type: tool, domain: web, bundled: false, status: active,
+     capability: "GraphQLer: context-aware GraphQL API fuzzing tool that builds object dependency graphs to drive stateful fuzzing.",
+     when_to_use: "Fuzz / security-test a REST or GraphQL API from its OpenAPI/Swagger/GraphQL schema (property-based or mutation) on an authorized target.",
+     source: https://github.com/omar2535/GraphQLer, install: "pip install GraphQLer"}
+  - {id: graphw00f, name: "dolevf/graphw00f", type: tool, domain: web, bundled: false, status: active,
+     capability: "graphw00f: GraphQL server engine fingerprinting utility to identify the technology behind a GraphQL endpoint before testing.",
+     when_to_use: "Fuzz / security-test a REST or GraphQL API from its OpenAPI/Swagger/GraphQL schema (property-based or mutation) on an authorized target.",
+     source: https://github.com/dolevf/graphw00f, install: "git clone https://github.com/dolevf/graphw00f"}
+  - {id: rest-api-fuzz-testing, name: "microsoft/rest-api-fuzz-testing", type: tool, domain: web, bundled: false, status: slowed,
+     capability: "RAFT: self-hosted REST API Fuzz Testing service (Azure) bundling RESTler and other tools to embed API fuzzing into CI/CD.",
+     when_to_use: "Fuzz / security-test a REST or GraphQL API from its OpenAPI/Swagger/GraphQL schema (property-based or mutation) on an authorized target.",
+     source: https://github.com/microsoft/rest-api-fuzz-testing, install: "git clone https://github.com/microsoft/rest-api-fuzz-testing"}
