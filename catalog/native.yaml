@@ -94,7 +94,7 @@ entries:
      capability: "Agent Skills pack for CTF: ctf-web, ctf-pwn (ROP/heap/kernel), ctf-crypto, ctf-reverse (custom VMs, WASM, anti-debug, Frida), ctf-forensics, ctf-osint, ctf-malware, ctf-misc, ctf-ai-ml.",
      when_to_use: "You're solving a CTF challenge and want a category-routed skill pack — pwn ROP/heap/kernel, crypto, reverse (VM/WASM/anti-debug), web, forensics, OSINT, or ML — to pull the right playbook per challenge.",
      source: https://github.com/ljagiello/ctf-skills, install: "git clone https://github.com/ljagiello/ctf-skills"}
-  - {id: reverse-skill-router, name: "reverse-skill", type: skill, domain: framework, bundled: false, status: active,
+  - {id: reverse-skill-router, name: "reverse-skill", type: skill, domain: native, bundled: false, status: active,
      capability: "AI skill-router pack for RE/pentest/CTF: APK RE+Frida, IDA Pro/radare2 workflows, JS web RE, firmware OWASP FSTM, bindiff, exploit dev, EDR bypass, nmap/nuclei/sqlmap recon, patch-diff N-day, with MCP integration.",
      when_to_use: "You want a broad skill-router covering many RE/pentest domains (APK+Frida, IDA/r2, JS web RE, firmware, bindiff, EDR bypass, recon, N-day patch-diff) and need the agent to dispatch to the right sub-skill per task.",
      source: https://github.com/zhaoxuya520/reverse-skill, install: "git clone https://github.com/zhaoxuya520/reverse-skill"}
@@ -138,11 +138,11 @@ entries:
      capability: "Command-line Ghidra-powered binary diffing engine; headless, scriptable, emits markdown/JSON diffs of functions/symbols for patch analysis at scale (CI-friendly).",
      when_to_use: "You want patch-diffing of two binaries without the IDA/Diaphora license, or need to automate diffs in a pipeline—e.g. batch-diff Patch Tuesday DLLs and get a markdown report of changed functions.",
      source: https://github.com/clearbluejar/ghidriff, install: "pip install ghidriff"}
-  - {id: ghidrathon, name: "Ghidrathon", type: tool, domain: native, bundled: false, status: active,
+  - {id: ghidrathon, name: "Ghidrathon", type: tool, domain: native, bundled: false, status: archived,
      capability: "FLARE Ghidra extension adding modern Python 3 scripting (replaces Jython), enabling capa/angr/unicorn/pip-installed libs to run inside Ghidra's scripting environment.",
      when_to_use: "You're scripting Ghidra and need real Python 3 with pip packages (e.g. run capa, angr, or numpy against the current program) instead of Ghidra's stock Jython 2.",
      source: https://github.com/mandiant/Ghidrathon, install: "git clone https://github.com/mandiant/Ghidrathon"}
-  - {id: unipacker, name: "unipacker", type: tool, domain: windows, bundled: false, status: active,
+  - {id: unipacker, name: "unipacker", type: tool, domain: native, bundled: false, status: active,
      capability: "Automatic platform-independent emulation-based unpacker for Windows PE; uses Unicorn to run packed samples (UPX, ASPack, PEtite, FSG, MEW, MPRESS, YODA) and dumps a rebuilt binary at OEP with fixed imports.",
      when_to_use: "You have a packed Windows .exe (UPX/ASPack/etc.) and want an automatic unpacked dump at the original entry point without manual OEP-finding in a debugger.",
      source: https://github.com/unipacker/unipacker, install: "pip install unipacker"}
@@ -166,7 +166,7 @@ entries:
      capability: "MIT-licensed bug-bounty-ready offensive+defensive AI agent framework with Agents/Tools/Handoffs/Patterns/HITL/tracing primitives for building security automation.",
      when_to_use: "You want a programmable agentic framework to build/run custom offensive or defensive security workflows (bug bounty recon, multi-agent handoffs) with human-in-the-loop control and tracing.",
      source: https://github.com/aliasrobotics/cai, install: "pip install cai-framework"}
-  - {id: vulnhuntr, name: "vulnhuntr", type: tool, domain: web, bundled: false, status: active,
+  - {id: vulnhuntr, name: "vulnhuntr", type: tool, domain: native, bundled: false, status: active,
      capability: "LLM + static analysis that traces remote-user-input-to-sink call chains (LFI/RCE/SSRF/XSS/IDOR/SQLi) across Python codebases to surface complex multi-step 0-day vulns.",
      when_to_use: "You have a Python web/app codebase and want automated discovery of input-to-dangerous-sink vulnerability chains beyond what grep/regex SAST finds.",
      source: https://github.com/protectai/vulnhuntr, install: "pip install vulnhuntr"}
@@ -190,15 +190,15 @@ entries:
      capability: "Google framework that uses LLMs to auto-generate and auto-fix fuzz harnesses for C/C++/Java/Python and benchmark them against OSS-Fuzz; has found 30+ new bugs.",
      when_to_use: "You want LLM-assisted automatic fuzz-target generation for a C/C++/Java/Python library (improve coverage, find new crashes) integrated with the OSS-Fuzz workflow.",
      source: https://github.com/google/oss-fuzz-gen, install: "git clone https://github.com/google/oss-fuzz-gen"}
-  - {id: awesome-ai-hacking-agents, name: "Awesome AI Hacking Agents", type: platform, domain: framework, bundled: false, status: active,
+  - {id: awesome-ai-hacking-agents, name: "Awesome AI Hacking Agents", type: platform, domain: native, bundled: false, status: active,
      capability: "Curated catalog (88+ open-source) of AI/agentic hacking, pentest and vuln-research projects including MCP servers; a discovery index, not a runnable tool.",
      when_to_use: "You need to discover existing AI/agentic offensive-security tools or MCP servers for a task and want a curated starting list rather than a specific capability.",
      source: https://github.com/EvanThomasLuke/Awesome-AI-Hacking-Agents}
-  - {id: awesome-mcp-servers, name: "Awesome MCP Servers", type: platform, domain: framework, bundled: false, status: active,
+  - {id: awesome-mcp-servers, name: "Awesome MCP Servers", type: platform, domain: native, bundled: false, status: active,
      capability: "The largest curated index of Model Context Protocol servers across every category; primary source for mining MCP integrations.",
      when_to_use: "You need to find an existing MCP server for a given integration/capability (RE, scanning, data source) and want the broadest curated index to search.",
      source: https://github.com/punkpeye/awesome-mcp-servers}
-  - {id: awesome-ai-reverse, name: "Awesome AI Reverse", type: platform, domain: framework, bundled: false, status: active,
+  - {id: awesome-ai-reverse, name: "Awesome AI Reverse", type: platform, domain: native, bundled: false, status: active,
      capability: "Curated index of AI-driven RE tooling: MCP servers, Cursor/Claude skills, IDE plugins for JS/binary/Android/traffic reverse engineering.",
      when_to_use: "You need to discover an MCP server, Claude/Cursor skill, or IDE plugin for an AI-assisted RE task and want a meta-index to browse; not a runnable tool itself.",
      source: https://github.com/darbra/awesome-ai-reverse}
@@ -226,7 +226,7 @@ entries:
      capability: "Claude Skills plus custom tooling for hybrid IoT pentesting (firmware/hardware/network).",
      when_to_use: "Task is IoT device pentest — firmware extraction, hardware/network attack surface — and you want a Claude skill harness purpose-built for IoT.",
      source: https://github.com/BrownFineSecurity/iothackbot, install: "git clone https://github.com/BrownFineSecurity/iothackbot"}
-  - {id: secskills, name: "DaoYiSec SecSkills", type: skill, domain: framework, bundled: false, status: active,
+  - {id: secskills, name: "DaoYiSec SecSkills", type: skill, domain: native, bundled: false, status: active,
      capability: "Curated collection of cybersecurity Claude Skills and MCP servers for pentest, vuln scanning, code audit, CTF, RE, and security research.",
      when_to_use: "You need to find a security-focused Claude Skill or MCP for pentest/CTF/code-audit/RE and want a curated index to pull from.",
      source: https://github.com/DaoYiSec/SecSkills, install: "git clone https://github.com/DaoYiSec/SecSkills"}
@@ -234,15 +234,15 @@ entries:
      capability: "Portable RE skill driving IDA + WPeGPT plugin for automated PE/ELF analysis in light/full/vuln modes with generated reports.",
      when_to_use: "You have a PE/ELF binary and IDA available and want an agent skill to auto-run IDA analysis (light triage, full decompile, or vuln hunt) and produce a report.",
      source: https://github.com/WPeace-HcH/WPeGPT-Analyzer, install: "git clone https://github.com/WPeace-HcH/WPeGPT-Analyzer"}
-  - {id: kali-pentest, name: "Kali Pentest Skill", type: skill, domain: framework, bundled: false, status: active,
+  - {id: kali-pentest, name: "Kali Pentest Skill", type: skill, domain: native, bundled: false, status: active,
      capability: "Kali Linux pentest skill for AI agents: 200+ CLI tools, 15 scenario playbooks, autonomous attack-path planning with human approval gates.",
      when_to_use: "You want an agent to drive Kali CLI tooling through scenario playbooks for a full pentest with approval gates; routes general Kali-based offensive tasks.",
      source: https://github.com/x-glacier/kali-pentest, install: "git clone https://github.com/x-glacier/kali-pentest"}
-  - {id: pownie, name: "Pownie", type: skill, domain: framework, bundled: false, status: active,
+  - {id: pownie, name: "Pownie", type: skill, domain: native, bundled: false, status: active,
      capability: "Claude Code plugin (skills + hooks + memory) tuned as an autonomous offsec/CTF agent harness.",
      when_to_use: "You want a Claude Code harness with hooks and persistent memory specialized for autonomous pentest/CTF workflows.",
      source: https://github.com/d0gesec/pownie, install: "git clone https://github.com/d0gesec/pownie"}
-  - {id: cybersec-toolkit, name: "Cybersec Toolkit", type: skill, domain: framework, bundled: false, status: active,
+  - {id: cybersec-toolkit, name: "Cybersec Toolkit", type: skill, domain: native, bundled: false, status: active,
      capability: "One-command installer for 580+ security tools (Linux/Termux) plus authorization-gated MCP and 870+ Claude Code skills for CTF/pentest/bug-bounty/DFIR/red-blue team.",
      when_to_use: "You need to bulk-install a large security toolset and a broad skill+MCP suite for CTF/pentest/bug-bounty/DFIR on Linux or Termux.",
      source: https://github.com/26zl/cybersec-toolkit, install: "git clone https://github.com/26zl/cybersec-toolkit"}
@@ -252,7 +252,7 @@ entries:
      capability: "Curated index of reverse-engineering tools that ship MCP servers, spanning binary RE and network/traffic-analysis MCPs.",
      when_to_use: "You need to discover additional RE or traffic-analysis MCP servers beyond this catalog — use as a lookup index of MCP-enabled RE tooling.",
      source: https://github.com/crowdere/Awesome-RE-MCP}
-  - {id: awesome-osint-mcp-soxoj, name: "awesome-osint-mcp-servers", type: platform, domain: web, bundled: false, status: active,
+  - {id: awesome-osint-mcp-soxoj, name: "awesome-osint-mcp-servers", type: platform, domain: native, bundled: false, status: active,
      capability: "Curated list of OSINT MCP servers, maintained by the author of Maigret/OSINT tooling.",
      when_to_use: "You need to find an OSINT-focused MCP server (username/domain/people recon) to wire into an agent — use as a discovery index.",
      source: https://github.com/soxoj/awesome-osint-mcp-servers}
@@ -260,7 +260,7 @@ entries:
      capability: "Curated list of cybersecurity MCP servers covering offensive, recon, OSINT and exploitation tooling.",
      when_to_use: "You want a broad index of security MCP servers across offense/recon/exploit to pick a backend for an agentic workflow.",
      source: https://github.com/CyberSecurityUP/awesome-cybersecurity-MCP}
-  - {id: pentestagent-sojalsec, name: "PentestAgent (0xSojalSec)", type: agent, domain: web, bundled: false, status: active,
+  - {id: pentestagent-sojalsec, name: "PentestAgent (0xSojalSec)", type: agent, domain: native, bundled: false, status: active,
      capability: "All-in-one offensive AI agent with MCP architecture integrating Nmap, Metasploit, FFUF and SQLMap, plus RAG-based reporting.",
      when_to_use: "You want an end-to-end offensive agent that chains Nmap, Metasploit, FFUF and SQLMap and auto-writes a RAG-backed report for an authorized engagement.",
      source: https://github.com/0xSojalSec/PentestAgent, install: "git clone https://github.com/0xSojalSec/PentestAgent"}
@@ -272,7 +272,7 @@ entries:
      capability: "Agent skill collection including a /ghidra skill that drives the Ghidra headless analyzer for binary RE, plus assorted developer/agent skills.",
      when_to_use: "You want a lightweight /ghidra skill to run Ghidra's headless analyzer over a binary from an agent without setting up a full Ghidra MCP server.",
      source: https://github.com/mitsuhiko/agent-stuff, install: "git clone https://github.com/mitsuhiko/agent-stuff"}
-  - {id: briiirussell-cybersecurity-skills, name: "cybersecurity-skills (briiirussell)", type: skill, domain: web, bundled: false, status: active,
+  - {id: briiirussell-cybersecurity-skills, name: "cybersecurity-skills (briiirussell)", type: skill, domain: native, bundled: false, status: active,
      capability: "29 cybersecurity skills for AI agents across 7 families: recon, osint-recon, web-pentest (9 OWASP phases), red-team-engagement; offensive skills gate on explicit authorization.",
      when_to_use: "When you want a structured multi-phase web-pentest/recon/red-team skill pack for an AI coding agent that walks the OWASP testing phases and enforces an authorization gate.",
      source: https://github.com/briiirussell/cybersecurity-skills, install: "git clone https://github.com/briiirussell/cybersecurity-skills"}
@@ -324,7 +324,7 @@ entries:
      capability: "AI-powered pentest assistant (BerylliumSec) that wraps recon/exploitation tools (nmap, etc.) and uses an LLM to suggest and run next offensive actions.",
      when_to_use: "Want an LLM copilot that orchestrates standard recon/exploit CLI tools and recommends next steps during an authorized pentest engagement.",
      source: https://github.com/berylliumsec/nebula, install: "pip install nebula-ai"}
-  - {id: xvulnhuntr-compass, name: "xvulnhuntr", type: tool, domain: native, bundled: false, status: active,
+  - {id: xvulnhuntr-compass, name: "xvulnhuntr", type: tool, domain: native, bundled: false, status: archived,
      capability: "Compass Security fork of Vulnhuntr doing zero-shot multi-step LLM vuln discovery with context-fetching that scales to large repos without giant context windows.",
      when_to_use: "Scanning a large codebase for vulns with an LLM where the original Vulnhuntr's context limits fail; need iterative context-fetching analysis.",
      source: https://github.com/CompassSecurity/xvulnhuntr, install: "git clone https://github.com/CompassSecurity/xvulnhuntr && pip install -r requirements.txt"}
@@ -360,11 +360,11 @@ entries:
      capability: "Definitive malware-analysis index: sandboxes, unpackers, honeypots, IOC/threat-intel feeds and debugging tools.",
      when_to_use: "Hunting for malware-analysis tooling (sandboxes, unpackers, IOC/threat-intel sources) or building an analysis pipeline; canonical malware-RE reference list.",
      source: https://github.com/rshipp/awesome-malware-analysis}
-  - {id: hesreallyhim-awesome-claude-code, name: "awesome-claude-code", type: platform, domain: framework, bundled: false, status: active,
+  - {id: hesreallyhim-awesome-claude-code, name: "awesome-claude-code", type: platform, domain: native, bundled: false, status: active,
      capability: "Curated index of Claude Code skills, hooks, slash-commands, agent orchestrators and plugins.",
      when_to_use: "Looking for existing Claude Code skills/hooks/slash-commands/plugins to reuse or to mine for RE/security skill ideas; Claude Code ecosystem discovery hub.",
      source: https://github.com/hesreallyhim/awesome-claude-code}
-  - {id: voltagent-awesome-agent-skills, name: "awesome-agent-skills", type: platform, domain: framework, bundled: false, status: active,
+  - {id: voltagent-awesome-agent-skills, name: "awesome-agent-skills", type: platform, domain: native, bundled: false, status: active,
      capability: "Index of 1000+ agent skills from official teams (Anthropic, Trail of Bits, etc.) and community, designed to be cross-CLI compatible.",
      when_to_use: "Sourcing reusable agent skills (including security/RE skills from Trail of Bits etc.) to drop into a Claude/agent CLI; large cross-CLI skill marketplace index.",
      source: https://github.com/VoltAgent/awesome-agent-skills}
@@ -388,7 +388,7 @@ entries:
      capability: "CISA/INL Dockerized NTA suite: full PCAP capture, Zeek logs, Suricata alerts, OpenSearch/Arkime dashboards for heavyweight network forensics.",
      when_to_use: "Standing up a full network-forensics platform (PCAP + Zeek + Suricata + Arkime/OpenSearch dashboards) for large-scale traffic investigation, not a quick single-file analysis.",
      source: https://github.com/cisagov/Malcolm, install: "git clone https://github.com/cisagov/Malcolm"}
-  - {id: assetstudio, name: "AssetStudio", type: tool, domain: native, bundled: false, status: active,
+  - {id: assetstudio, name: "AssetStudio", type: tool, domain: native, bundled: false, status: archived,
      capability: "GUI tool to explore, extract, and export Unity engine assets and AssetBundles — textures, meshes, audio, text, fonts, shaders, sprites.",
      when_to_use: "You're reversing a Unity mobile/PC game and need to extract or browse its assets/AssetBundles (resource ripping, locating embedded data/strings).",
      source: https://github.com/Perfare/AssetStudio, install: "Download release from https://github.com/Perfare/AssetStudio/releases"}

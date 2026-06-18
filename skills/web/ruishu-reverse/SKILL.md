@@ -342,6 +342,7 @@ captured/
 | [references/ast_methodology.md](references/ast_methodology.md) | AST decompilation 4-step pipeline + 14 tools + method comparison |
 | [references/vm_hook_cookbook.md](references/vm_hook_cookbook.md) | 7 VM injection techniques + console side-channel export |
 | [references/suffix_analysis.md](references/suffix_analysis.md) | URL suffix 88B/120B structure + SHA-1 signature + existing approaches |
+| [references/DEEP_DIVE.md](references/DEEP_DIVE.md) | Full end-to-end methodology long-form (3-layer VM, complete walkthrough) |
 
 ### Executable Scripts
 

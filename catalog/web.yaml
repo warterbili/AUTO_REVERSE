@@ -73,7 +73,7 @@ entries:
      capability: "Go SDK automating Akamai, Incapsula, Kasada, DataDome challenge/sensor generation via hosted API.",
      when_to_use: "Need browserless Akamai/Incapsula/Kasada/DataDome token generation from Go via a paid API; multi-anti-bot anchor for Go pipelines.",
      source: https://github.com/Hyper-Solutions/hyper-sdk-go, install: "go get github.com/Hyper-Solutions/hyper-sdk-go"}
-  - {id: kpsdk-solver, name: "Kasada KPSDK Solver", type: tool, domain: web, bundled: false, status: active,
+  - {id: kpsdk-solver, name: "Kasada KPSDK Solver", type: tool, domain: web, bundled: false, status: archived,
      capability: "Playwright-based solver for Kasada bot defense generating x-kpsdk-ct/x-kpsdk-cd tokens and proof-of-work.",
      when_to_use: "Target sends Kasada x-kpsdk-ct/x-kpsdk-cd headers or KPSDK proof-of-work challenge and you need to solve it via browser automation.",
      source: https://github.com/0x6a69616e/kpsdk-solver, install: "git clone https://github.com/0x6a69616e/kpsdk-solver"}
@@ -181,7 +181,7 @@ entries:
      capability: "AI-driven JS reverse-engineering skill: crypto-key recovery, obfuscation analysis, dynamic-cookie generation, WASM RE and protocol countermeasures executed via Node.js, for Claude Code/Claude.ai.",
      when_to_use: "Routing a generic web JS-reversing task (deobfuscate JS, recover crypto keys, regenerate dynamic cookies, analyze WASM) inside a Claude agent.",
      source: https://github.com/WhiteNightShadow/hello_js_reverse_skill, install: "git clone https://github.com/WhiteNightShadow/hello_js_reverse_skill"}
-  - {id: bilibili-api-collect, name: "bilibili-API-collect", type: script, domain: web, bundled: false, status: active,
+  - {id: bilibili-api-collect, name: "bilibili-API-collect", type: script, domain: web, bundled: false, status: archived,
      capability: "Curated Bilibili API docs + multi-language reference impls of auth/sign algorithms: WBI signing (w_rid/wts), buvid3/buvid4 generation.",
      when_to_use: "Bilibili web/app request needs a w_rid + wts WBI signature or a buvid3/buvid4 fingerprint cookie and you need the algorithm spec or reference code.",
      source: https://github.com/SocialSisterYi/bilibili-API-collect, install: "git clone https://github.com/SocialSisterYi/bilibili-API-collect"}
@@ -233,10 +233,10 @@ entries:
      capability: "Go WhatsApp Web multidevice library: full Noise-protocol auth, Signal E2EE and binary protocol; powers mautrix-whatsapp.",
      when_to_use: "Building a WhatsApp Web multidevice client in Go needing Noise auth + Signal E2EE.",
      source: https://github.com/tulir/whatsmeow, install: "go get go.mau.fi/whatsmeow"}
-  - {id: linkedin-voyager-api, name: "linkedin-api (Voyager)", type: tool, domain: web, bundled: false, status: active,
+  - {id: linkedin-voyager-api, name: "linkedin-api (Voyager)", type: tool, domain: web, bundled: false, status: slowed,
      capability: "Python wrapper for LinkedIn's internal Voyager API; reverses web auth (cookies/CSRF, x-li-* headers) to fetch profiles, companies, connections, messages.",
      when_to_use: "Need to call LinkedIn's internal Voyager API with cookie/CSRF + x-li-* headers for profile/company/messaging data.",
-     source: https://github.com/tomquirk/linkedin-api, install: "pip install linkedin-api"}
+     source: https://pypi.org/project/linkedin-api/, install: "pip install linkedin-api", note: "GitHub repo tomquirk/linkedin-api removed; PyPI package still installs"}
   - {id: discord-py-self, name: "discord.py-self", type: tool, domain: web, bundled: false, status: active,
      capability: "Async Python fork of discord.py for user (self) accounts; reverses x-super-properties, x-fingerprint, sessions, experiments and protobuf user settings.",
      when_to_use: "Driving a Discord user/self account via the reversed user API needing x-super-properties / x-fingerprint headers.",
@@ -441,7 +441,7 @@ entries:
      capability: "Documentation of ArkoseLabs FunCaptcha browser-fingerprint (fp/bda) fields, their meanings, and collection logic — a RE reference, not runnable code.",
      when_to_use: "Reversing ArkoseLabs FunCaptcha and need to understand the bda/fp fingerprint field layout and what each enc-key value means before forging it.",
      source: https://github.com/AzureFlow/arkose-fp-docs}
-  - {id: unfuncaptcha-bda, name: "unfuncaptcha/bda", type: tool, domain: web, bundled: false, status: active,
+  - {id: unfuncaptcha-bda, name: "unfuncaptcha/bda", type: tool, domain: web, bundled: false, status: archived,
      capability: "Tool to decrypt, view, edit, and repackage Arkose Labs FunCaptcha 'bda' encrypted fingerprint blobs (AES key derived from time + userAgent).",
      when_to_use: "Target sends Arkose FunCaptcha 'bda' encrypted fingerprint payload and you need to decode/modify/re-encrypt it to forge a valid device fingerprint.",
      source: https://github.com/unfuncaptcha/bda, install: "git clone https://github.com/unfuncaptcha/bda"}
@@ -526,12 +526,12 @@ entries:
   - {id: perimeterx-node-express, name: "PerimeterX/perimeterx-node-express", type: tool, domain: web, bundled: false, status: active,
      capability: "Official PerimeterX (HUMAN) server-side enforcer middleware for Node/Express: shows _px cookie decryption, risk-score validation, first-party sensor collection and block logic from the defender side.",
      when_to_use: "Read when reversing PerimeterX to understand exactly how the backend validates _px2/_px3 cookies and what server-side checks a forged payload must satisfy; defender-side ground truth complementing px-reverse.",
-     source: https://github.com/PerimeterX/perimeterx-node-express, install: "npm install perimeterx-node-express"}
+     source: https://github.com/HumanSecurity/perimeterx-node-express, install: "npm install perimeterx-node-express"}
   - {id: bypass-datadome-ellisfan, name: "ellisfan/bypass-datadome", type: script, domain: web, bundled: false, status: active,
      capability: "Python + Go example for bypassing DataDome: parses tags.js, builds the payload and generates the datadome cookie.",
      when_to_use: "Use as a worked example when generating a DataDome cookie from tags.js / interstitial challenge; cross-check against datadome-generator and datadome-vm when this older sample's payload shape drifts from the live script.",
      source: https://github.com/ellisfan/bypass-datadome, install: "git clone https://github.com/ellisfan/bypass-datadome"}
-  - {id: cf-clearance-vvanglro, name: "vvanglro/cf-clearance", type: tool, domain: web, bundled: false, status: active,
+  - {id: cf-clearance-vvanglro, name: "vvanglro/cf-clearance", type: tool, domain: web, bundled: false, status: archived,
      capability: "Playwright-driven solver that obtains the cf_clearance cookie by passing Cloudflare's JS/5-second interstitial challenge in a real browser context.",
      when_to_use: "Use when you hit a Cloudflare JS-challenge / 'Checking your browser' interstitial and need a usable cf_clearance cookie via Playwright; for managed/headless service alternatives see flaresolverr or cf-clearance-scraper.",
      source: https://github.com/vvanglro/cf-clearance, install: "pip install cf-clearance"}
@@ -583,10 +583,6 @@ entries:
      capability: "Dingxiang (顶象) captcha pure-protocol algo restoration for sense/slider/click/icon/puzzle: ak, appKey, greenseer, ac, token params, high-concurrency",
      when_to_use: "Target uses Dingxiang (顶象) captcha — cap.dingxiang-inc.com, params ak/appKey/greenseer/ac/token across 无感/滑块/点选/图标/拼图 modes — and you need the encrypted params reproduced protocol-only",
      source: https://github.com/decodecaptcha/DingxiangCaptchaBreak, install: "git clone https://github.com/decodecaptcha/DingxiangCaptchaBreak"}
-  - {id: shumei-server, name: "ShuMeiServer", type: script, domain: web, bundled: false, status: active,
-     capability: "ShuMei (数美) captcha recognition service: slider, text-click, icon-click, word-order click, spatial-reasoning solving (includes Xiaohongshu)",
-     when_to_use: "Target uses ShuMei (数美) captcha — captcha-*.fengkongcloud.com, register/conf/check endpoints, slider/文字点选/图标点选/语序/空间推理 challenges (incl. Xiaohongshu) — and you need an image-recognition solver service",
-     source: https://github.com/kekewind/ShuMeiServer, install: "git clone https://github.com/kekewind/ShuMeiServer"}
   - {id: slider-cracker-mengpengfei, name: "SliderCracker", type: script, domain: web, bundled: false, status: active,
      capability: "Multi-vendor pure-JS slider captcha cracking collection: Geetest2, Meituan, Anjuke, JD, YiDun, Yunpian, ShuMei, Ctrip, Sohu, Huya, iQiyi",
      when_to_use: "Need a worked pure-JS slider-captcha example for a specific Chinese vendor (极验2/美团/安居客/京东/易盾/云片/数美/携程/搜狐/虎牙/爱奇艺) as a reference implementation",
@@ -823,7 +819,7 @@ entries:
      capability: "Akamai sensor_data generator that synthesizes human-like activity (mouse/touch/timing) within Akamai's constraints to build the payload.",
      when_to_use: "When an Akamai Bot Manager web target rejects requests lacking realistic sensor_data and you need a generator that fabricates plausible behavioral telemetry. Web (not mobile BMP) sensor path.",
      source: https://github.com/HypePhilosophy/Akamai_Sensor_Generator, install: "git clone https://github.com/HypePhilosophy/Akamai_Sensor_Generator"}
-  - {id: akamai-collector-nsigel, name: "nsigel/akamai-collector", type: tool, domain: web, bundled: false, status: active,
+  - {id: akamai-collector-nsigel, name: "nsigel/akamai-collector", type: tool, domain: web, bundled: false, status: archived,
      capability: "Akamai sensor-data collector service with API and database backing for storing/serving generated sensor payloads.",
      when_to_use: "When you need an Akamai web sensor_data producer exposed as an API with DB persistence (caching/serving sensors at scale) rather than an inline generator. Service-shaped Akamai sensor component.",
      source: https://github.com/nsigel/akamai-collector, install: "git clone https://github.com/nsigel/akamai-collector"}
@@ -907,7 +903,7 @@ entries:
      capability: "Node library that solves hCaptcha image challenges programmatically and returns a token for use in form submission/automation.",
      when_to_use: "Need an hCaptcha h-captcha-response token in a Node scraper; site embeds hCaptcha (data-sitekey, hcaptcha.com/1/api.js) and you want a drop-in JS solver rather than a paid service.",
      source: https://github.com/JimmyLaurent/hcaptcha-solver, install: "npm install hcaptcha-solver"}
-  - {id: hektcaptcha-extension, name: "hektCaptcha-extension", type: tool, domain: web, bundled: false, status: active,
+  - {id: hektcaptcha-extension, name: "hektCaptcha-extension", type: tool, domain: web, bundled: false, status: archived,
      capability: "Browser extension that auto-solves hCaptcha visual challenges in-page using bundled ONNX AI models, no external API.",
      when_to_use: "Browser-based (Playwright/Puppeteer/Selenium) flow hits an hCaptcha widget and you want a loadable extension that clicks/solves the challenge locally via AI image classification.",
      source: https://github.com/Wikidepia/hektCaptcha-extension, install: "git clone https://github.com/Wikidepia/hektCaptcha-extension (load unpacked in Chrome)"}
@@ -931,7 +927,7 @@ entries:
      capability: "Desktop tool that logs all browser-fingerprint/risk-control property accesses; full logs can be fed to an AI to auto-generate JS env-patching (补环境) code.",
      when_to_use: "Building a Node 补环境 and need to know exactly which navigator/screen/canvas/WebGL properties the target reads; capture the access log to enumerate every fingerprint surface to stub.",
      source: https://github.com/LoseNine/Firefox-FingerPrint-Analyzer, install: "git clone https://github.com/LoseNine/Firefox-FingerPrint-Analyzer"}
-  - {id: de4js, name: "de4js", type: tool, domain: web, bundled: false, status: active,
+  - {id: de4js, name: "de4js", type: tool, domain: web, bundled: false, status: archived,
      capability: "Web-based JavaScript deobfuscator and unpacker handling eval, Dean Edwards packer, _Number/array, urlencode, JSFuck, AAEncode, JJEncode formats.",
      when_to_use: "Quick one-off unpack of packed/encoded JS (eval(function(p,a,c,k,e,d)…, JSFuck, AAEncode); paste into a browser tool to get readable source without a build step.",
      source: https://github.com/lelinhtinh/de4js, install: "git clone https://github.com/lelinhtinh/de4js (or use hosted page)"}
@@ -939,7 +935,7 @@ entries:
      capability: "AST-based restorer for obfuscator.io (OB)-protected JS: decodes the string-array/rotate decoder, inlines wrappers, simplifies control flow and recovers identifiers.",
      when_to_use: "Source shows the obfuscator.io fingerprint (_0x array decoder, string-array rotation, control-flow flattening, dead-code) and you want it reverted to readable JS.",
      source: https://github.com/DingZaiHub/ob-decrypt, install: "git clone https://github.com/DingZaiHub/ob-decrypt"}
-  - {id: akamai-deobfuscator-voidstar0, name: "akamai-deobfuscator", type: tool, domain: web, bundled: false, status: active,
+  - {id: akamai-deobfuscator-voidstar0, name: "akamai-deobfuscator", type: tool, domain: web, bundled: false, status: archived,
      capability: "Deobfuscator specifically for Akamai Bot Manager sensor-collection scripts, untangling their bespoke obfuscation into analyzable code.",
      when_to_use: "Reversing Akamai _abck/sensor_data generation and the bmak script is heavily obfuscated; run this to recover readable Akamai bot-detection logic.",
      source: https://github.com/voidstar0/akamai-deobfuscator, install: "git clone https://github.com/voidstar0/akamai-deobfuscator"}
@@ -1169,7 +1165,7 @@ entries:
      capability: "js 补环境框架（jsVmEnv），Leviathangk 个人实现。NEW.",
      when_to_use: "Want a VM/sandbox-based (vm2 / isolated-vm) 补环境 framework to host obfuscated site JS with controlled globals and a harder-to-detect proxy than plain ES6 Proxy.",
      source: https://github.com/Leviathangk/jsVmEnv, install: "git clone https://github.com/Leviathangk/jsVmEnv"}
-  - {id: -complementary-environmental-framework-env, name: "Leviathangk/-Complementary-Environmental-Framework", type: tool, domain: web, bundled: false, status: slowed,
+  - {id: complementary-environmental-framework-env, name: "Leviathangk/-Complementary-Environmental-Framework", type: tool, domain: web, bundled: false, status: slowed,
      capability: "跟着志远大佬学做的补环境框架，学习型实现。Low-star personal NEW.",
      when_to_use: "jsdom-based 补环境 framework for hosting site JS headlessly; alternative to node-bridge-build.",
      source: https://github.com/Leviathangk/-Complementary-Environmental-Framework, install: "git clone https://github.com/Leviathangk/-Complementary-Environmental-Framework"}

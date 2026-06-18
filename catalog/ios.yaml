@@ -133,7 +133,7 @@ entries:
      capability: "Facebook library to dynamically rebind (hook) C/libc symbol references in Mach-O binaries at runtime, similar to dyld interposing.",
      when_to_use: "When you need to hook a C library symbol (e.g. open, SSL_write) in an iOS/macOS Mach-O at runtime from your own injected code rather than Objective-C method swizzling.",
      source: https://github.com/facebook/fishhook, install: "git clone https://github.com/facebook/fishhook"}
-  - {id: passionfruit, name: "passionfruit", type: tool, domain: ios, bundled: false, status: active,
+  - {id: passionfruit, name: "passionfruit", type: tool, domain: ios, bundled: false, status: archived,
      capability: "Frida-based iOS app analysis web dashboard (Chaitin): file/keychain browsing, class-dump, module list, runtime method hooking via a GUI.",
      when_to_use: "When you want a point-and-click web UI over Frida to explore a jailbroken iOS app's files, keychain, classes and hooks instead of writing Frida scripts by hand.",
      source: https://github.com/chaitin/passionfruit, install: "npm install -g passionfruit"}

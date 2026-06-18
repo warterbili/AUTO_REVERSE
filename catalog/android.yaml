@@ -19,7 +19,7 @@ entries:
      capability: "jadx/Vineflower decompilation + Kotlin/R8 name recovery + modern-framework API extraction (Retrofit/Ktor/Apollo)",
      when_to_use: "When the target is Kotlin / heavily R8-obfuscated, or when batch-extracting API endpoints + call chains",
      source: https://github.com/SimoneAvogadro/android-reverse-engineering-skill, note: "Can be upgraded for free to the Vineflower 1.12+ engine"}
-  - {id: android-unpacking, name: Android Unpacking, type: skill, domain: android, bundled: true, status: active,
+  - {id: android-unpacking, name: Android Unpacking, type: skill, domain: android, bundled: true, status: archived,
      capability: "frida-dexdump in-memory DEX dumping",
      when_to_use: "When jadx shows only the packer stub and not the real business code (packed/hardened apps)",
      source: https://github.com/hluwa/frida-dexdump, note: "frida-dexdump is archived; for newer packers prefer frida_dex_dump below"}
@@ -126,7 +126,7 @@ entries:
      capability: "Systemless root and Zygisk module framework; foundation for RE workstations enabling root, module injection, and DenyList root hiding on real devices.",
      when_to_use: "You need root on a real Android device for RE (run frida-server, load Zygisk/LSPosed modules) while hiding root from app detection.",
      source: https://github.com/topjohnwu/Magisk, install: "git clone https://github.com/topjohnwu/Magisk"}
-  - {id: lsposed, name: "LSPosed", type: platform, domain: android, bundled: false, status: active,
+  - {id: lsposed, name: "LSPosed", type: platform, domain: android, bundled: false, status: archived,
      capability: "Zygisk-based Xposed framework for ART method hooking; runtime base for RE/bypass modules (root hiding, anti-detection, arbitrary Java method hooks).",
      when_to_use: "You want persistent Java-layer method hooks via an Xposed module (e.g. SSL-unpinning, anti-detection, behavior patching) on a Magisk-rooted device without rewriting the APK.",
      source: https://github.com/LSPosed/LSPosed, install: "git clone https://github.com/LSPosed/LSPosed"}
@@ -150,7 +150,7 @@ entries:
      capability: "Zygisk module that dumps il2cpp metadata and method/type info at runtime from memory, defeating packed/encrypted global-metadata.dat and stripped headers in Unity IL2CPP games.",
      when_to_use: "A Unity IL2CPP Android game has encrypted/packed global-metadata.dat so static Il2CppDumper fails; load this Zygisk module to dump the il2cpp structures from process memory at runtime.",
      source: https://github.com/Perfare/Zygisk-Il2CppDumper, install: "git clone https://github.com/Perfare/Zygisk-Il2CppDumper"}
-  - {id: wallbreaker, name: "Wallbreaker", type: tool, domain: android, bundled: false, status: active,
+  - {id: wallbreaker, name: "Wallbreaker", type: tool, domain: android, bundled: false, status: archived,
      capability: "Frida/objection plugin that enumerates loaded Java classes, dumps an object's runtime field values, and restores/reconstructs class structures from live memory; supports search_class/search_method/object inspection.",
      when_to_use: "You have a running Android process and need to enumerate or dump in-memory Java classes/objects (e.g. find an obfuscated signing class, read a decrypted field at runtime, list classes matching a keyword) rather than static-decompile; works as an objection/Frida plugin.",
      source: https://github.com/hluwa/Wallbreaker, install: "git clone https://github.com/hluwa/Wallbreaker"}
@@ -232,11 +232,11 @@ entries:
      capability: "Single index covering both Android and iOS security: tutorials, tools, Frida scripts, labs and writeups.",
      when_to_use: "Want one combined Android+iOS mobile-security index (tutorials, Frida scripts, vulnerable labs, writeups) rather than a platform-specific list; discovery hub.",
      source: https://github.com/vaib25vicky/awesome-mobile-security}
-  - {id: zentracer, name: "ZenTracer", type: tool, domain: android, bundled: false, status: active,
+  - {id: zentracer, name: "ZenTracer", type: tool, domain: android, bundled: false, status: archived,
      capability: "Frida-based Android method-tracing GUI that traces Java method calls at runtime with a visual interface.",
      when_to_use: "You want to visually trace which Android Java methods fire during an app action (find the call path to a sign/encrypt routine) without hand-writing Frida tracing scripts.",
      source: https://github.com/hluwa/ZenTracer, install: "git clone https://github.com/hluwa/ZenTracer"}
-  - {id: hluwa-patchs, name: "Patchs (strongR-frida)", type: script, domain: android, bundled: false, status: active,
+  - {id: hluwa-patchs, name: "Patchs (strongR-frida)", type: script, domain: android, bundled: false, status: archived,
      capability: "Patch set (strongR-frida) that rebuilds frida-server with default detection signatures removed to bypass anti-Frida checks.",
      when_to_use: "An Android app detects stock frida-server (string/symbol scanning, port 27042, named pipes) and crashes/exits; use these patches to produce a stealthier frida-server build.",
      source: https://github.com/hluwa/Patchs, install: "git clone https://github.com/hluwa/Patchs"}
@@ -248,11 +248,11 @@ entries:
      capability: "Reverse-engineering case/scripts for Alibaba JAQ security's libsgmain (sgmain) native sign library.",
      when_to_use: "Your target uses Alibaba/Aliyun JAQ (聚安全) native protection — libsgmain / sgmain sign generation — and you want a worked reversing reference for that .so.",
      source: https://github.com/r0ysue/crack_libsgmain, install: "git clone https://github.com/r0ysue/crack_libsgmain"}
-  - {id: smartdone-frida-scripts, name: "Frida-Scripts (smartdone)", type: script, domain: android, bundled: false, status: active,
+  - {id: smartdone-frida-scripts, name: "Frida-Scripts (smartdone)", type: script, domain: android, bundled: false, status: archived,
      capability: "Collection of practical Frida scripts for common Android hooking tasks.",
      when_to_use: "You need ready-made Frida hook snippets for routine Android RE tasks (hooking common APIs/crypto/utility methods) instead of writing them from scratch.",
      source: https://github.com/smartdone/Frida-Scripts, install: "git clone https://github.com/smartdone/Frida-Scripts"}
-  - {id: smartdone-dexdump, name: "dexdump (smartdone)", type: tool, domain: android, bundled: false, status: active,
+  - {id: smartdone-dexdump, name: "dexdump (smartdone)", type: tool, domain: android, bundled: false, status: archived,
      capability: "Xposed plugin that quickly unpacks first-generation Android packers by dumping released DEX from memory.",
      when_to_use: "jadx shows only a packer stub and the app uses a first-gen (whole-DEX-release) shell; use this Xposed plugin to dump the real DEX. Needs Xposed/LSPosed environment.",
      source: https://github.com/smartdone/dexdump, install: "git clone https://github.com/smartdone/dexdump"}

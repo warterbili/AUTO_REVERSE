@@ -240,7 +240,7 @@ hard-codes it into the hM decoder. Unchanged in 3 years.
 
 Copy the source straight from the SDK (the hM function + the alphabet constant); no need to
 rewrite. AI_re already has a Node version:
-[`../../../revers/payload.js`](../../../revers/payload.js).
+[`../revers/payload.js`](../revers/payload.js).
 
 Or read it from the SDK yourself:
 

@@ -1,0 +1,18 @@
+# Normalize line endings: text files stored LF in the repo, checked out per-platform.
+* text=auto eol=lf
+
+# Binaries — never normalize/diff
+*.apk binary
+*.aab binary
+*.xapk binary
+*.apks binary
+*.so  binary
+*.dex binary
+*.jar binary
+*.png binary
+*.jpg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.dat binary

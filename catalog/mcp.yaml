@@ -95,7 +95,7 @@ entries:
      capability: "MCP server over the REMnux malware-analysis distro: auto-suggests appropriate tools, fetches their help, and runs full analysis tool-chains for an LLM.",
      when_to_use: "You run the REMnux distro and want an agent to pick and chain its malware-analysis tools automatically on a sample.",
      source: https://github.com/REMnux/remnux-mcp-server, install: "git clone https://github.com/REMnux/remnux-mcp-server"}
-  - {id: mcp-for-security-cyproxio, name: "MCP for Security", type: mcp, domain: web, bundled: false, status: active,
+  - {id: mcp-for-security-cyproxio, name: "MCP for Security", type: mcp, domain: web, bundled: false, status: archived,
      capability: "Collection of MCP servers wrapping Nmap, Masscan, SQLMap, FFUF and more for AI-driven pentest workflows including active network recon and live host/port scanning.",
      when_to_use: "You need an agent to run network/web pentest tooling (Nmap host discovery, Masscan high-rate scans, SQLMap, FFUF) over MCP for authorized recon and scanning.",
      source: https://github.com/cyproxio/mcp-for-security, install: "git clone https://github.com/cyproxio/mcp-for-security"}
@@ -195,7 +195,7 @@ entries:
      capability: "MCP server to parse and query HAR (HTTP Archive) files for AI inspection of captured network traffic, with built-in redaction of sensitive auth headers.",
      when_to_use: "You have a .har export from browser devtools or a proxy and want an AI to inspect the captured requests/responses without running a live proxy.",
      source: https://github.com/tjamet/har-mcp, install: "git clone https://github.com/tjamet/har-mcp"}
-  - {id: playwright-min-network-mcp, name: "Playwright Min Network MCP", type: mcp, domain: web, bundled: false, status: active,
+  - {id: playwright-min-network-mcp, name: "Playwright Min Network MCP", type: mcp, domain: web, bundled: false, status: archived,
      capability: "Minimal 3-tool MCP that captures, filters and analyzes browser network traffic via CDP during Playwright automation, letting an LLM query XHR/fetch flows in real time.",
      when_to_use: "You are driving a page with Playwright and just need lightweight live capture/filter of its XHR/fetch requests to discover API endpoints, without a heavy proxy stack.",
      source: https://github.com/bun913/playwright-min-network-mcp, install: "npm i playwright-min-network-mcp"}
@@ -409,7 +409,7 @@ entries:
      capability: "Python stdio MCP exposing 50+ PCAP-analysis tools across 8 categories: core packet analysis, recon, HTTP/web analysis, attack-timeline reconstruction, C2 detection, IoC enrichment, protocol decode, and HTML reporting.",
      when_to_use: "You have a .pcap/.pcapng capture and want an AI agent to do SOC/DFIR triage on it — reconstruct attack timelines, flag C2 beacons, enrich IoCs, or auto-generate an HTML report. POC-grade, not actively maintained.",
      source: https://github.com/0xhackerfren/Pcap-Analysis-MCP, install: "git clone https://github.com/0xhackerfren/Pcap-Analysis-MCP"}
-  - {id: nmap-mcp-phialsbasement, name: "nmap-mcp-server (PhialsBasement)", type: mcp, domain: web, bundled: false, status: active,
+  - {id: nmap-mcp-phialsbasement, name: "nmap-mcp-server (PhialsBasement)", type: mcp, domain: web, bundled: false, status: archived,
      capability: "MCP server exposing a run_nmap_scan tool so AI assistants can launch live Nmap scans: host discovery, port scanning, service/version detection.",
      when_to_use: "You need an AI agent to actively probe a live host/subnet (discover hosts, open ports, running services) during recon; requires nmap installed locally.",
      source: https://github.com/PhialsBasement/nmap-mcp-server, install: "git clone https://github.com/PhialsBasement/nmap-mcp-server"}
@@ -425,7 +425,7 @@ entries:
      capability: "MCP server that extracts and analyzes sensitive info (secrets, API keys, tokens) from HTTP traffic and surfaces structured findings to AI assistants for risk assessment.",
      when_to_use: "You have captured app HTTP traffic and want to auto-mine leaked secrets — API keys, tokens, credentials — out of requests/responses via an AI agent (HaE-style regex extraction over MCP).",
      source: https://github.com/Archhisha/HaE_mcp, install: "git clone https://github.com/Archhisha/HaE_mcp"}
-  - {id: sec-httpx-mcp, name: "sec-httpx-mcp", type: mcp, domain: web, bundled: false, status: active,
+  - {id: sec-httpx-mcp, name: "sec-httpx-mcp", type: mcp, domain: web, bundled: false, status: archived,
      capability: "MCP server wrapping ProjectDiscovery's httpx: probes hosts and extracts status codes, page titles, headers, detected technologies, and HTTP response metadata.",
      when_to_use: "You have a host/URL list and want an AI agent to fingerprint the HTTP API surface — which hosts are live, their tech stack, titles, and headers — before deeper reversing.",
      source: https://github.com/schwarztim/sec-httpx-mcp, install: "git clone https://github.com/schwarztim/sec-httpx-mcp"}
