@@ -1,23 +1,23 @@
-# 注入模式：控制台 / 油猴 / mitm 网络层注入
+# Injection patterns: console / Tampermonkey / mitm network-layer injection
 
-RPC 能不能稳，一半取决于"客户端怎么进到目标环境、待多久、能不能在反调试下活着"。三种从轻到重的注入方式。
+Half of whether RPC is reliable comes down to "how the client gets into the target environment, how long it stays, and whether it can survive anti-debugging". Three injection methods, from lightest to heaviest.
 
-## 1. 控制台手动注入（最快、最不稳）
+## 1. Manual console injection (fastest, least stable)
 
-适合一次性验证、找函数入口。
+Suitable for one-off validation and finding function entries.
 
-1. 打开目标站点，F12 控制台。
-2. 粘贴 `JsEnv_Dev.js` 全文（定义 `HlClient`）。
-3. `var c = new HlClient("ws://127.0.0.1:12080/ws?group=demo")`。
-4. `c.regAction("sign", (r,p)=>r(window.getSign(p)))`。
+1. Open the target site, F12 console.
+2. Paste the entire `JsEnv_Dev.js` (defines `HlClient`).
+3. `var c = new HlClient("ws://127.0.0.1:12080/ws?group=demo")`.
+4. `c.regAction("sign", (r,p)=>r(window.getSign(p)))`.
 
-缺点：**刷新即失效**；很多站点有反调试（`debugger` 死循环 / 检测 devtools），一开 F12 就崩。控制台注入仅用于探路。
+Drawbacks: **lost on refresh**; many sites have anti-debugging (`debugger` infinite loops / devtools detection) that crashes the moment you open F12. Console injection is only for probing.
 
-> 探路技巧：函数入口未知时，先用 `/execjs` 在真实环境里跑表达式定位（`(function(){return typeof window.getSign})()`），确认后再 `regAction`。
+> Probing tip: when the function entry is unknown, first use `/execjs` to run an expression in the real environment to locate it (`(function(){return typeof window.getSign})()`), then `regAction` once confirmed.
 
-## 2. 油猴脚本注入（推荐，持久）
+## 2. Tampermonkey script injection (recommended, persistent)
 
-把客户端固化成 Tampermonkey 脚本，页面一加载就自动连 + 注册，免去每次手粘、且能赶在站点反调试之前。
+Bake the client into a Tampermonkey script so the page auto-connects + registers as soon as it loads, avoiding repeated manual pasting and getting in ahead of the site's anti-debugging.
 
 ```javascript
 // ==UserScript==
@@ -27,11 +27,11 @@ RPC 能不能稳，一半取决于"客户端怎么进到目标环境、待多久
 // @grant        none
 // ==/UserScript==
 (function () {
-    // —— 此处粘贴 JsEnv_Dev.js 全文（HlClient 定义）——
+    // —— Paste the entire JsEnv_Dev.js here (HlClient definition) ——
 
     function boot() {
         var c = new HlClient("ws://127.0.0.1:12080/ws?group=demo&clientId=tab-"+Date.now());
-        // 等目标算法挂到 window 后再注册（有的算法异步加载）
+        // Wait until the target algorithm is attached to window before registering (some algorithms load asynchronously)
         var t = setInterval(function () {
             if (window.getSign) {
                 clearInterval(t);
@@ -43,37 +43,37 @@ RPC 能不能稳，一半取决于"客户端怎么进到目标环境、待多久
 })();
 ```
 
-要点：
-- `@run-at document-start` 抢在站点脚本前注入，规避部分 devtools/断点检测。
-- 算法函数可能**异步加载**或藏在闭包里——用轮询等它出现，或 hook 到对应模块后再注册。
-- 闭包里的私有函数取不到时：在油猴里 hook 定义处（改写 webpack chunk / `Function.prototype` / 目标对象属性），把私有函数引用提到外层再 `regAction`。
+Key points:
+- `@run-at document-start` injects ahead of the site's scripts, evading some devtools/breakpoint detection.
+- The algorithm function may **load asynchronously** or hide inside a closure — poll until it appears, or register after hooking the corresponding module.
+- When you can't reach a private function inside a closure: hook at the definition site within Tampermonkey (rewrite the webpack chunk / `Function.prototype` / the target object's property), lift the private function reference out to an outer scope, then `regAction`.
 
-## 3. mitm 网络层注入（最强，可绕反调试 + 复用登录态）
+## 3. mitm network-layer injection (most powerful, bypasses anti-debugging + reuses login state)
 
-本项目作者 `warterbili/BossZhipin_reverse` 的 **mitm-rpc** 模式：在网络层用 mitmproxy patch 掉反调试 JS，并把 RPC poller 注入页面，让 Python 远程驱动**已登录的真实浏览器**发请求。
+The **mitm-rpc** pattern from this project author's `warterbili/BossZhipin_reverse`: at the network layer, use mitmproxy to patch out the anti-debugging JS and inject the RPC poller into the page, letting Python remotely drive an **already-logged-in real browser** to send requests.
 
 ```
-你的脚本 ──HTTP──▶ 本地 FastAPI ──任务队列──▶ 浏览器(已登录) ──fetch──▶ 目标站点
+Your script ──HTTP──▶ local FastAPI ──task queue──▶ browser (logged in) ──fetch──▶ target site
                        ▲
-                 mitm 在网络层 patch 反调试 JS + 注入 RPC poller
+                 mitm patches anti-debugging JS + injects the RPC poller at the network layer
 ```
 
-适用与优势：
-- 站点有**强反调试**（`debugger`/devtools 检测）——网络层在 JS 落地前就改写它，比控制台/油猴更隐蔽。
-- 需要**真实 TLS 指纹 + sec-ch-ua + cookie 漂移 + 登录态**全部原生处理（如 BOSS `__zp_stoken__`、瑞数 URL 后缀）——直接让真浏览器 `fetch`，不伪造任何东西。
-- 与本仓库 `mitm-capture` / `cdp-browser` skill 组合使用：mitm 负责注入/patch，cdp 负责驱动真实 Chrome。
+When to use it and its advantages:
+- The site has **strong anti-debugging** (`debugger`/devtools detection) — the network layer rewrites it before the JS lands, more covert than the console/Tampermonkey.
+- You need **real TLS fingerprint + sec-ch-ua + cookie drift + login state** all handled natively (e.g. BOSS `__zp_stoken__`, the Ruishu URL suffix) — just let the real browser `fetch`, forging nothing.
+- Used in combination with this repo's `mitm-capture` / `cdp-browser` skills: mitm handles injection/patching, cdp drives the real Chrome.
 
-代价：搭建复杂（mitm CA 证书、脚本注入规则、任务队列），但一旦跑通最稳、可扩展到任意站点（写一个 `sites/<name>/` 插件即可）。
+Cost: complex to set up (mitm CA certificate, script injection rules, task queue), but once it works it is the most stable and can be extended to any site (just write a `sites/<name>/` plugin).
 
-## 4. Android 注入（Sekiro）
+## 4. Android injection (Sekiro)
 
-- **frida**（推荐，免改包）：frida 脚本里 `new SekiroClient({sekiroGroup, clientId})` + `registerAction`，在 `Java.perform` 里调 hook 到的真方法。走 Frida Socket API，不需 USB relay。
-- **Xposed**（需 root/虚拟框架）：模块里 `new SekiroClient(group, uuid).setupSekiroRequestInitializer(...).start()`，`registerSekiroHandler` 注册 `ActionHandler`。
-- 注入时机：等目标类加载完（attach 到目标进程 / 在合适 hook 点再注册），避免方法未初始化就被调用。
+- **frida** (recommended, no repackaging): in the frida script `new SekiroClient({sekiroGroup, clientId})` + `registerAction`, calling the hooked real method inside `Java.perform`. Uses the Frida Socket API, no USB relay needed.
+- **Xposed** (requires root/virtual framework): in the module `new SekiroClient(group, uuid).setupSekiroRequestInitializer(...).start()`, registering an `ActionHandler` via `registerSekiroHandler`.
+- Injection timing: wait until the target class is loaded (attach to the target process / register at an appropriate hook point) to avoid the method being called before it is initialized.
 
-## 选型一句话
+## Selection in one sentence
 
-- 探路 / CTF 一次性 → 控制台。
-- 长期稳定单站 → 油猴 `document-start`。
-- 强反调试 + 复用登录态 + 多站扩展 → mitm 网络层注入（BossZhipin_reverse 模式）。
-- Android → Sekiro frida（优先）/ Xposed。
+- Probing / one-off CTF → console.
+- Long-term stable single site → Tampermonkey `document-start`.
+- Strong anti-debugging + reuse login state + multi-site extension → mitm network-layer injection (BossZhipin_reverse pattern).
+- Android → Sekiro frida (preferred) / Xposed.

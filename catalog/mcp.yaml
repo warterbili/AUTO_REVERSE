@@ -164,8 +164,8 @@ entries:
      when_to_use: "You have Burp Suite proxying a web target and want an AI agent to query proxy history, replay/modify requests, drive Intruder/Repeater, or launch race-condition attacks programmatically.",
      source: https://github.com/c0tton-fluff/burp-mcp-server, install: "git clone https://github.com/c0tton-fluff/burp-mcp-server"}
   - {id: ddddocr-mcp-server, name: "ddddocr MCP Server", type: mcp, domain: web, bundled: false, status: active,
-     capability: "MCP server fronting ddddocr: text/captcha OCR, object detection, and slider-gap (滑块缺口) position matching for captcha solving directly inside an AI pipeline.",
-     when_to_use: "A target shows a text captcha or slider-puzzle (滑块验证) blocking an API/login flow and you need the AI to OCR the captcha or compute the slider gap offset to pass it.",
+     capability: "MCP server fronting ddddocr: text/captcha OCR, object detection, and slider-gap position matching for captcha solving directly inside an AI pipeline.",
+     when_to_use: "A target shows a text captcha or slider-puzzle blocking an API/login flow and you need the AI to OCR the captcha or compute the slider gap offset to pass it.",
      source: https://github.com/ymeng98/ddddocr-mcp-server, install: "git clone https://github.com/ymeng98/ddddocr-mcp-server"}
   - {id: wireshark-mcp, name: "Wireshark MCP", type: mcp, domain: native, bundled: false, status: active,
      capability: "Drop a .pcap and query it in plain English over 40+ tshark-backed tools: packet/field extraction, protocol deep-dives, statistics, credential scanning, threat-intel and live capture (dumpcap/capinfos/mergecap/editcap).",
@@ -215,9 +215,9 @@ entries:
      capability: "IDA Pro plugin exposing an SSE-protocol MCP server so an LLM can drive automated reverse engineering inside IDA.",
      when_to_use: "You run IDA Pro and want LLM-driven automated RE over an SSE MCP transport (r0ysue's plugin) on a native binary/.so.",
      source: https://github.com/r0ysue/r0idamcp, install: "git clone https://github.com/r0ysue/r0idamcp"}
-  - {id: ruishu-mcp, name: "瑞数 Ruishu MCP", type: mcp, domain: web, bundled: false, status: active,
-     capability: "MCP tool built for AI agents that cleans/normalizes Ruishu (瑞数) anti-bot traffic, actively maintained for the latest Ruishu versions.",
-     when_to_use: "Target site is protected by Ruishu 瑞数 (dynamic obfuscated JS, FSSBBIl1UgzbN7N80S cookies, 412 challenges) and you want an AI agent to purify/handle the protected traffic.",
+  - {id: ruishu-mcp, name: "Ruishu MCP", type: mcp, domain: web, bundled: false, status: active,
+     capability: "MCP tool built for AI agents that cleans/normalizes Ruishu anti-bot traffic, actively maintained for the latest Ruishu versions.",
+     when_to_use: "Target site is protected by Ruishu (dynamic obfuscated JS, FSSBBIl1UgzbN7N80S cookies, 412 challenges) and you want an AI agent to purify/handle the protected traffic.",
      source: https://github.com/xuange520/ruishu-mcp, install: "git clone https://github.com/xuange520/ruishu-mcp"}
   - {id: ida-no-mcp, name: "IDA-NO-MCP", type: mcp, domain: native, bundled: false, status: active,
      capability: "Streamlined, lightweight IDA Pro MCP server that avoids the verbose/laggy interaction model of mainstream IDA MCPs; popular high-star alternative.",
@@ -435,7 +435,7 @@ entries:
      source: https://github.com/justinritchie/aliexpress-mcp-server, install: "git clone https://github.com/justinritchie/aliexpress-mcp-server"}
   - {id: wexin-read-mcp, name: "wexin-read-mcp", type: mcp, domain: web, bundled: false, status: active,
      capability: "MCP server that drives a browser to fetch and clean WeChat public-account (mp.weixin.qq.com) articles, bypassing their anti-scraping so an LLM can read the full text.",
-     when_to_use: "Need to pull readable text from WeChat 公众号 mp.weixin.qq.com article URLs that block plain HTTP fetches; route here when a task involves scraping/summarizing 微信公众号 articles via an agent.",
+     when_to_use: "Need to pull readable text from WeChat public-account mp.weixin.qq.com article URLs that block plain HTTP fetches; route here when a task involves scraping/summarizing WeChat public-account articles via an agent.",
      source: https://github.com/Bwkyd/wexin-read-mcp, install: "git clone https://github.com/Bwkyd/wexin-read-mcp"}
   - {id: frida-game-hacking-mcp, name: "frida-game-hacking-mcp", type: mcp, domain: native, bundled: false, status: active,
      capability: "Frida-based MCP server emulating Cheat Engine features (memory scan/freeze/patch) so an AI agent can perform game hacking and runtime memory manipulation.",

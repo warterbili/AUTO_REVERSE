@@ -1,54 +1,54 @@
-# 安装指南 (INSTALL)
+# Installation Guide (INSTALL)
 
-> auto_reverse 的理念是 **collect + route，按需取用**：不需要一次装全部工具。
-> 先装好基础运行时，再用 `fetch.py` 按需把单个工具下载到项目目录内（不污染全局）。
+> The philosophy of auto_reverse is **collect + route, fetch on demand**: you do not need to install every tool at once.
+> First set up the base runtimes, then use `fetch.py` to download individual tools into the project directory on demand (without polluting the global environment).
 
-## 1. 基础运行时（手动装，一次性）
+## 1. Base Runtimes (install manually, one-time)
 
-这些是大量工具的前置依赖，需自行安装并加入 PATH：
+These are prerequisites for a large number of tools; install them yourself and add them to PATH:
 
-| 运行时 | 最低版本 | 用途 | 下载 |
+| Runtime | Minimum Version | Purpose | Download |
 |---|---|---|---|
-| **Python** | 3.10+（3.14 实测可用） | pip 工具、adapters、`fetch.py`/`doctor.py` | https://www.python.org/downloads/ |
-| **JDK** | 17+（Ghidra 12 需 JDK 21） | jadx / apktool / ghidra / unidbg | https://adoptium.net/ |
-| **Node.js** | 18+ | apk-mitm / playwright / frida-il2cpp-bridge / 补环境框架 | https://nodejs.org/ |
-| **adb / platform-tools** | 最新 | Android 设备交互、抓包、frida-server 推送 | https://developer.android.com/tools/releases/platform-tools |
+| **Python** | 3.10+ (3.14 verified working) | pip tools, adapters, `fetch.py`/`doctor.py` | https://www.python.org/downloads/ |
+| **JDK** | 17+ (Ghidra 12 requires JDK 21) | jadx / apktool / ghidra / unidbg | https://adoptium.net/ |
+| **Node.js** | 18+ | apk-mitm / playwright / frida-il2cpp-bridge / environment-supplementation frameworks | https://nodejs.org/ |
+| **adb / platform-tools** | latest | Android device interaction, traffic capture, frida-server push | https://developer.android.com/tools/releases/platform-tools |
 
-校验：
+Verify:
 ```bash
 python --version && java -version && node --version && adb version
 ```
 
-> 完整运行时清单与检测命令见 `tools/registry.yaml`。
+> See `tools/registry.yaml` for the full runtime list and detection commands.
 
-## 2. 工具安装目录
+## 2. Tool Installation Directory
 
-工具落在项目内，互不污染全局：
-- pip 工具 → `<project>/.venv`
-- npm / jar / zip 工具 → `<project>/tools/bin/<id>/`
+Tools land inside the project, keeping the global environment clean:
+- pip tools → `<project>/.venv`
+- npm / jar / zip tools → `<project>/tools/bin/<id>/`
 
-可选：设环境变量 `AUTO_REVERSE_TOOLS` 指向一个统一的工具目录（见 `config/default.yaml` 的 `paths.tools_root_env`）。不设则默认用 `tools/bin/`。
+Optional: set the environment variable `AUTO_REVERSE_TOOLS` to point to a unified tools directory (see `paths.tools_root_env` in `config/default.yaml`). If unset, it defaults to `tools/bin/`.
 
-## 3. 按需拉取工具（fetch.py）
+## 3. Fetch Tools On Demand (fetch.py)
 
 ```bash
-python tools/fetch.py --list          # 列出所有可拉取工具
-python tools/fetch.py jadx            # 下载 jadx 到 tools/bin/jadx/
-python tools/fetch.py mitmproxy       # 装进项目 .venv
+python tools/fetch.py --list          # List all fetchable tools
+python tools/fetch.py jadx            # Download jadx to tools/bin/jadx/
+python tools/fetch.py mitmproxy       # Install into the project .venv
 ```
-`fetch.py` 零三方依赖（仅用标准库 urllib/zipfile/lzma/venv），只下你要用的那一个。
+`fetch.py` has zero third-party dependencies (uses only the standard library: urllib/zipfile/lzma/venv) and downloads only the one tool you need.
 
-## 4. 体检（doctor.py）
+## 4. Health Check (doctor.py)
 
 ```bash
-python tools/doctor.py                # 全量体检：已装/缺失
-python tools/doctor.py --missing      # 只看缺失 + 对应 fetch 命令
+python tools/doctor.py                # Full health check: installed/missing
+python tools/doctor.py --missing      # Show only missing + corresponding fetch commands
 python tools/doctor.py --domain android
-python tools/doctor.py --json         # 给 brain/脚本消费
+python tools/doctor.py --json         # For consumption by the brain/scripts
 ```
-解析顺序：项目 `.venv` → 项目 `tools/bin` → 系统 PATH（已存在则不重复下载）。
+Resolution order: project `.venv` → project `tools/bin` → system PATH (skips re-downloading if already present).
 
-## 5. 生成 .mcp.json（一键）
+## 5. Generate .mcp.json (one-click)
 
 ```powershell
 # Windows
@@ -58,10 +58,10 @@ python tools/doctor.py --json         # 给 brain/脚本消费
 # macOS / Linux
 ./setup.sh
 ```
-脚本读取 `mcp/mcp.template.json`，把 `${PYTHON}` / `${TOOLS_ROOT}` 占位符替换为本机实际路径，写出根目录 `.mcp.json`，并自动跑一次 `doctor.py`。
+The script reads `mcp/mcp.template.json`, replaces the `${PYTHON}` / `${TOOLS_ROOT}` placeholders with the actual local paths, writes out `.mcp.json` in the root directory, and automatically runs `doctor.py` once.
 
-## 各 OS 注意点
+## Per-OS Notes
 
-- **Windows**：用 PowerShell 跑 `setup.ps1`；frida-server 需匹配设备 abi（本机记录见 `config/default.yaml`）。
-- **macOS / Linux**：用 `setup.sh`；adb/fastboot 经包管理器装。
-- **iOS 逆向**：需越狱设备或 sideload 工具（trollstore/sidestore），见 `catalog/ios.yaml`。
+- **Windows**: run `setup.ps1` with PowerShell; frida-server must match the device abi (local records in `config/default.yaml`).
+- **macOS / Linux**: use `setup.sh`; install adb/fastboot via your package manager.
+- **iOS reversing**: requires a jailbroken device or sideload tooling (trollstore/sidestore), see `catalog/ios.yaml`.

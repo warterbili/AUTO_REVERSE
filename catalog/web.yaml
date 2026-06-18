@@ -22,19 +22,19 @@ entries:
      when_to_use: "Target sends X-Castle-Request-Token / x-castle-client-id / __cuid, loads castle.browser.js, calls Castle.createRequestToken(), or bundles io.castle.android; need to decode or reproduce the token",
      source: "skills/web/castle-reverse"}
   - {id: node-bridge-build, name: Node Bridge (jsdom env-patching), type: skill, domain: web, bundled: true, status: active,
-     capability: "jsdom + 11 env-patching modules + Python curl_cffi orchestrator: build a 补环境 fallback bridge for anti-bot SDKs (PerimeterX/Akamai/etc.) without a real browser; ports ifood/ templates to new sites",
+     capability: "jsdom + 11 env-patching modules + Python curl_cffi orchestrator: build an environment-patching fallback bridge for anti-bot SDKs (PerimeterX/Akamai/etc.) without a real browser; ports ifood/ templates to new sites",
      when_to_use: "Plan-B when a pure-algo generator breaks after an SDK upgrade, a 30-min spike on a new site, or a high-bar endpoint where pure-algo scoring is insufficient; escalate to sdenv (pysunday) when the jsdom ceiling is hit",
      source: "skills/web/node-bridge-build", alt_to: [px-reverse], note: "first-party, imported from warterbili/PerimeterX_RE node_bridge/skill"}
-  - {id: jsrpc-universal, name: "JsRpc 通杀 (RPC 远程调用)", type: skill, domain: web, bundled: true, status: active,
+  - {id: jsrpc-universal, name: "JsRpc Universal Bypass (RPC remote calling)", type: skill, domain: web, bundled: true, status: active,
      capability: "Expose a real in-page/in-app JS or native algorithm over WebSocket/HTTP RPC so Python calls the real environment remotely — no code-extraction / env-patching / pure-algo. Browser route (jxhczhl/JsRpc: HlClient+regAction+/go/execjs) + Android route (yint-tech/sekiro-open: SekiroClient register via frida/Xposed); group/clientId routing, pseudo-concurrency via multiple clients, keep-alive",
-     when_to_use: "Algorithm too hard or drifts too fast, strongly depends on runtime env (window/DOM/canvas fingerprint, app native context), or you must reuse a logged-in session / real TLS fingerprint, at low-to-mid QPS. Triggers: jsrpc, 通杀, HlClient, regAction, execjs, 黑脸怪, sekiro, SekiroClient, frida rpc. Sekiro for Android/cluster, JsRpc for single-box browser",
+     when_to_use: "Algorithm too hard or drifts too fast, strongly depends on runtime env (window/DOM/canvas fingerprint, app native context), or you must reuse a logged-in session / real TLS fingerprint, at low-to-mid QPS. Triggers: jsrpc, universal bypass, HlClient, regAction, execjs, heiliangguai, sekiro, SekiroClient, frida rpc. Sekiro for Android/cluster, JsRpc for single-box browser",
      source: "skills/web/jsrpc-universal", alt_to: [px-reverse, ruishu-reverse, node-bridge-build]}
-  - {id: akamai-reverse, name: "Akamai Bot Manager 逆向", type: skill, domain: web, bundled: true, status: active,
+  - {id: akamai-reverse, name: "Akamai Bot Manager Reverse", type: skill, domain: web, bundled: true, status: active,
      capability: "Identify + reverse Akamai Bot Manager (BMP): fingerprint by _abck/bm_sz/ak_bmsc/sbsd + sensor_data POST; split Web sensor_data vs mobile BMP; the _abck handshake state machine (~-1~-1 invalid vs ~0~ valid); routes mobile to xvertile/akamai-bmp-generator (pipe protocol + RSA/AES/HMAC + PoW + version pin), Web to a per-target methodology",
      when_to_use: "Target sends Akamai fingerprints: _abck / bm_sz / ak_bmsc / sbsd / bm_sv cookie, sensor_data or akamai-bm-telemetry POST, /_bm/ path, 403 re-issuing _abck=...~-1~-1. Mobile app/API to akamai-bmp-generator; site to methodology. Counter: _px3->px-reverse, datadome->DataDome, cf_clearance->Cloudflare, X-Castle-Request-Token->castle-reverse",
      source: "skills/web/akamai-reverse"}
-  - {id: env-supplement-proxy, name: "Proxy 自动补环境", type: skill, domain: web, bundled: true, status: active,
-     capability: "Recursive ES6 Proxy + access-logging to AUTO-patch the browser env (自动补环境/吐环境): wrap globalThis/window/navigator/document in a recursive Proxy, trap get/set/has/getOwnPropertyDescriptor, log accessed-but-undefined paths, and run an AI loop (run -> catch 'X is not defined' -> stub -> re-run -> diff vs real browser). Covers detection pitfalls (toString [native code] integrity, descriptor getter-vs-value, fingerprint self-consistency, Proxy leaks) + framework selection (sdenv/qxVm/NodeSandbox/boda_jsEnv/js-sandbox-env-framework/Browser-Env)",
+  - {id: env-supplement-proxy, name: "Proxy Auto Environment-Patching", type: skill, domain: web, bundled: true, status: active,
+     capability: "Recursive ES6 Proxy + access-logging to AUTO-patch the browser env (auto environment-patching / env-dumping): wrap globalThis/window/navigator/document in a recursive Proxy, trap get/set/has/getOwnPropertyDescriptor, log accessed-but-undefined paths, and run an AI loop (run -> catch 'X is not defined' -> stub -> re-run -> diff vs real browser). Covers detection pitfalls (toString [native code] integrity, descriptor getter-vs-value, fingerprint self-consistency, Proxy leaks) + framework selection (sdenv/qxVm/NodeSandbox/boda_jsEnv/js-sandbox-env-framework/Browser-Env)",
      when_to_use: "Need to run obfuscated anti-bot/sign JS headlessly in Node at scale, the algorithm is too costly to fully reverse, and a real browser/RPC is too slow; JS throws window/navigator/document is not defined and you want the env built semi-automatically instead of hand-stubbing. Escalate to cdp-browser / jsrpc-universal when the Proxy/jsdom ceiling is hit",
      source: "skills/web/env-supplement-proxy", alt_to: [node-bridge-build, jsrpc-universal]}
 
@@ -137,15 +137,15 @@ entries:
      capability: "Node.js/TypeScript binding to curl-impersonate (the JS counterpart of curl_cffi) for sending requests with browser TLS/JA3/HTTP2 fingerprints.",
      when_to_use: "Working in Node/TS and hitting JA3/TLS-fingerprint blocking; you want a fetch-like client that impersonates Chrome/Safari TLS handshakes without spinning up a browser.",
      source: https://github.com/lexiforest/impers, install: "npm i impit"}
-  - {id: spider-reverse-cases, name: "spider_reverse 案例合集", type: script, domain: web, bundled: false, status: active,
-     capability: "Large collection of Chinese-site JS reverse cases with reproduction code: 瑞数/网易易盾/加速乐 acw_sc__v2/极验滑块/雪球/Boss直聘/同花顺/TLS指纹 — a target->technique map.",
-     when_to_use: "Reversing a known Chinese target (瑞数 Ruishu, 网易易盾 yidun, 加速乐 jsl acw_sc__v2, 极验 geetest, 雪球, Boss直聘, 同花顺) and want existing reference reproduction code for that exact site.",
+  - {id: spider-reverse-cases, name: "spider_reverse case collection", type: script, domain: web, bundled: false, status: active,
+     capability: "Large collection of Chinese-site JS reverse cases with reproduction code: Ruishu / NetEase Yidun / Jiasule (acw_sc__v2) / Geetest slider / Xueqiu / Boss Zhipin / Tonghuashun / TLS fingerprint — a target->technique map.",
+     when_to_use: "Reversing a known Chinese target (Ruishu, NetEase Yidun, Jiasule jsl acw_sc__v2, Geetest, Xueqiu, Boss Zhipin, Tonghuashun) and want existing reference reproduction code for that exact site.",
      source: https://github.com/ChenZixinn/spider_reverse, install: "git clone https://github.com/ChenZixinn/spider_reverse"}
-  - {id: kgspider-crawler, name: "K哥爬虫 crawler", type: script, domain: web, bundled: false, status: active,
+  - {id: kgspider-crawler, name: "K-ge Crawler", type: script, domain: web, bundled: false, status: active,
      capability: "Shared crawler code and JS reverse-engineering case studies (encryption-param reproduction) for many Chinese sites, paired with tutorial write-ups.",
-     when_to_use: "Looking for worked JS-reverse case studies / sample code for a Chinese website's encrypted request params; companion code to the K哥爬虫 tutorial series.",
+     when_to_use: "Looking for worked JS-reverse case studies / sample code for a Chinese website's encrypted request params; companion code to the K-ge Crawler tutorial series.",
      source: https://github.com/kgspider/crawler, install: "git clone https://github.com/kgspider/crawler"}
-  - {id: crawler-js-hook-framework, name: "JS Hook 框架", type: tool, domain: web, bundled: false, status: active,
+  - {id: crawler-js-hook-framework, name: "JS Hook Framework", type: tool, domain: web, bundled: false, status: active,
      capability: "Browser-side JS hook toolkit: injects hooks on Cookie set/get, JSON.parse/stringify, Function constructor, eval, and property access to locate the encryption entry point.",
      when_to_use: "Need to find where a site computes its encrypted/signature param in obfuscated JS — inject Cookie/header/property hooks to break on the call site and trace the crypto entry.",
      source: https://github.com/JSREI/crawler-js-hook-framework-public, install: "git clone https://github.com/JSREI/crawler-js-hook-framework-public"}
@@ -153,17 +153,17 @@ entries:
      capability: "Babel-AST automated JS deobfuscator (string-array decode, control-flow unflatten, dead-code removal, constant folding) with online playground, CLI, and programmable API.",
      when_to_use: "Faced with obfuscator.io-style obfuscated JS (string array + control-flow flattening) and need to mechanically restore readable source before analyzing the algorithm.",
      source: https://github.com/kuizuo/js-deobfuscator, install: "npm i @kuizuo/js-deobfuscator"}
-  - {id: sdenv, name: "sdenv 补环境框架", type: tool, domain: web, bundled: false, status: active,
-     capability: "Browser-environment emulation (补环境) framework that supplies window/document/navigator stubs to run site JS in Node, claiming 通杀 of 瑞数 (Ruishu) VMP challenges.",
-     when_to_use: "Running 瑞数/Ruishu (or similar VMP) challenge JS outside a browser and hitting 'window/document is not defined' env-detection — need a ready 补环境 framework to host the VMP.",
+  - {id: sdenv, name: "sdenv environment-patching framework", type: tool, domain: web, bundled: false, status: active,
+     capability: "Browser-environment emulation (environment-patching) framework that supplies window/document/navigator stubs to run site JS in Node, claiming universal bypass of Ruishu VMP challenges.",
+     when_to_use: "Running Ruishu (or similar VMP) challenge JS outside a browser and hitting 'window/document is not defined' env-detection — need a ready environment-patching framework to host the VMP.",
      source: https://github.com/pysunday/sdenv, install: "git clone https://github.com/pysunday/sdenv"}
   - {id: rs-reverse, name: "rs-reverse", type: script, domain: web, bundled: false, status: active,
-     capability: "Pure-algorithm reverse of 瑞数 (Ruishu) VMP producing the dynamic cookies, with detailed methodology; the basis for the sdenv env-patching framework.",
-     when_to_use: "Target uses 瑞数 Ruishu protection (dynamic Fuckyou.js, MmEwMD/$_ts cookies, 5th/6th-gen VMP) and you want a pure-algo reproduction instead of running the VMP via env-patching.",
+     capability: "Pure-algorithm reverse of Ruishu VMP producing the dynamic cookies, with detailed methodology; the basis for the sdenv env-patching framework.",
+     when_to_use: "Target uses Ruishu protection (dynamic Fuckyou.js, MmEwMD/$_ts cookies, 5th/6th-gen VMP) and you want a pure-algo reproduction instead of running the VMP via env-patching.",
      source: https://github.com/pysunday/rs-reverse, install: "git clone https://github.com/pysunday/rs-reverse"}
   - {id: geetest-crack, name: "geetest-crack", type: script, domain: web, bundled: false, status: active,
-     capability: "Step-by-step 极验 (Geetest) reverse: decrypts the click/slide captcha encrypted params (w param, track/gt/challenge) from the JS layer.",
-     when_to_use: "Target uses Geetest 极验 captcha (gt/challenge, slide or click-word, encrypted 'w' param) and you want a methodology + code to reproduce the validation parameters.",
+     capability: "Step-by-step Geetest reverse: decrypts the click/slide captcha encrypted params (w param, track/gt/challenge) from the JS layer.",
+     when_to_use: "Target uses Geetest captcha (gt/challenge, slide or click-word, encrypted 'w' param) and you want a methodology + code to reproduce the validation parameters.",
      source: https://github.com/yanglbme/geetest-crack, install: "git clone https://github.com/yanglbme/geetest-crack"}
   - {id: tiktok-douyin-crawler, name: "TiktokDouyinCrawler", type: script, domain: web, bundled: false, status: active,
      capability: "Web-end sign-algo restoration for TikTok + Douyin crawlers: full reproduction of a-bogus and x-bogus signature algorithms.",
@@ -253,49 +253,49 @@ entries:
      capability: "In-depth canonical methodology reference dissecting commercial bot-protection stacks (Akamai, DataDome, PerimeterX, Incapsula): how they fingerprint via Canvas/WebGL/audio/font/TLS, detect headless/automation, and concrete countermeasures.",
      when_to_use: "You face an unknown commercial anti-bot (Akamai/DataDome/PerimeterX/Incapsula) and need the high-level detection vectors and bypass strategy before picking a specific solver; also when hardening a stealth browser against fingerprint leaks.",
      source: https://github.com/niespodd/browser-fingerprinting}
-  - {id: spider-reverse-allenchen, name: "spider_reverse (爬虫逆向案例合集)", type: script, domain: web, bundled: false, status: active,
-     capability: "Chinese spider-reversing case collection with worked solutions: TLS fingerprint, 瑞数(Ruishu), 易盾(Yidun), 同花顺, RPC 解密, 加速乐(jsl/acw), 极验(Geetest) slider, Boss直聘, 企查查, QQ音乐, 雪球 acw_sc__v2, 1688.",
-     when_to_use: "Target is one of these named CN sites/protections (同花顺, 企查查, 雪球 acw_sc__v2, 加速乐, 易盾, 1688, Boss直聘) and you want an existing reversed example to copy the algorithm/flow from.",
+  - {id: spider-reverse-allenchen, name: "spider_reverse (crawler reverse-engineering case collection)", type: script, domain: web, bundled: false, status: active,
+     capability: "Chinese spider-reversing case collection with worked solutions: TLS fingerprint, Ruishu, Yidun, Tonghuashun, RPC decryption, Jiasule (jsl/acw), Geetest slider, Boss Zhipin, Qichacha, QQ Music, Xueqiu acw_sc__v2, 1688.",
+     when_to_use: "Target is one of these named CN sites/protections (Tonghuashun, Qichacha, Xueqiu acw_sc__v2, Jiasule, Yidun, 1688, Boss Zhipin) and you want an existing reversed example to copy the algorithm/flow from.",
      source: https://github.com/0xAllenChen/spider_reverse, install: "git clone https://github.com/0xAllenChen/spider_reverse"}
   - {id: geekedtest-geetest-v4, name: "GeekedTest (Geetest v4 solver)", type: tool, domain: web, bundled: false, status: active,
-     capability: "Pure-Python Geetest v4 solver handling slide, icon, and gobang (五子棋) challenge types with built-in AI recognition; no browser required, reproduces the protocol/params directly.",
+     capability: "Pure-Python Geetest v4 solver handling slide, icon, and gobang (Gomoku) challenge types with built-in AI recognition; no browser required, reproduces the protocol/params directly.",
      when_to_use: "Target serves a Geetest v4 (gcaptcha4) challenge — slide/icon/gobang — and you need a headless Python solver that emits lot_number/payload/w without driving a browser.",
      source: https://github.com/xKiian/GeekedTest, install: "git clone https://github.com/xKiian/GeekedTest"}
-  - {id: icp-spider, name: "ICP-spider (工信部备案查询)", type: tool, domain: web, bundled: false, status: active,
-     capability: "MIIT ICP filing (工信部 ICP 备案) query crawler that solves the Geetest captcha gating it using yolov8 + a Siamese network for high-accuracy click/icon matching.",
-     when_to_use: "You need to query China MIIT ICP/备案 records programmatically and must pass the Geetest click captcha guarding beian.miit.gov.cn; or want a yolov8+Siamese captcha-recognition reference.",
+  - {id: icp-spider, name: "ICP-spider (MIIT ICP filing lookup)", type: tool, domain: web, bundled: false, status: active,
+     capability: "MIIT ICP filing query crawler that solves the Geetest captcha gating it using yolov8 + a Siamese network for high-accuracy click/icon matching.",
+     when_to_use: "You need to query China MIIT ICP filing records programmatically and must pass the Geetest click captcha guarding beian.miit.gov.cn; or want a yolov8+Siamese captcha-recognition reference.",
      source: https://github.com/ravizhan/ICP-spider, install: "git clone https://github.com/ravizhan/ICP-spider"}
-  - {id: geetest-ast-deob, name: "Geetest-AST (极验 JS 反混淆)", type: tool, domain: web, bundled: false, status: active,
-     capability: "One-click AST-based deobfuscation/restoration of Geetest (极验) obfuscated JS across all known versions, recovering readable control flow and string literals.",
+  - {id: geetest-ast-deob, name: "Geetest-AST (Geetest JS deobfuscation)", type: tool, domain: web, bundled: false, status: active,
+     capability: "One-click AST-based deobfuscation/restoration of Geetest obfuscated JS across all known versions, recovering readable control flow and string literals.",
      when_to_use: "You have grabbed obfuscated Geetest JS (gt.js / gcaptcha) full of string-array/control-flow obfuscation and need it AST-deobfuscated to read the signing/challenge logic.",
      source: https://github.com/jiyulany/Geetest-AST-, install: "git clone https://github.com/jiyulany/Geetest-AST-"}
-  - {id: ruishu-bypass-netprisoner, name: "RuishuBypass (瑞数 bypass)", type: script, domain: web, bundled: false, status: active,
-     capability: "Ruishu (瑞数) anti-bot bypass covering multiple versions — reproduces the dynamic cookie generation/VM logic to pass 瑞数 challenge pages.",
-     when_to_use: "Target returns a 瑞数(Ruishu) 412/dynamic-cookie challenge page (rotating obfuscated JS, MmEwMD/FSSBBIl1UgzbN7N80T cookies) and you need a working bypass implementation.",
+  - {id: ruishu-bypass-netprisoner, name: "RuishuBypass (Ruishu bypass)", type: script, domain: web, bundled: false, status: active,
+     capability: "Ruishu anti-bot bypass covering multiple versions — reproduces the dynamic cookie generation/VM logic to pass Ruishu challenge pages.",
+     when_to_use: "Target returns a Ruishu 412/dynamic-cookie challenge page (rotating obfuscated JS, MmEwMD/FSSBBIl1UgzbN7N80T cookies) and you need a working bypass implementation.",
      source: https://github.com/netpr1s0ner/RuishuBypass, install: "git clone https://github.com/netpr1s0ner/RuishuBypass"}
-  - {id: geetest-v3-click-crack, name: "geetest-v3-click-crack (极验三代点选)", type: tool, domain: web, bundled: false, status: active,
-     capability: "Pure-Python crack of Geetest v3 word/text click (文字点选) captcha — recognizes target characters and produces click coordinates; actively maintained.",
-     when_to_use: "Target serves a Geetest v3 word-click (文字点选) captcha and you need a headless Python solver for the click positions and w parameter.",
+  - {id: geetest-v3-click-crack, name: "geetest-v3-click-crack (Geetest v3 click-select)", type: tool, domain: web, bundled: false, status: active,
+     capability: "Pure-Python crack of Geetest v3 word/text click captcha — recognizes target characters and produces click coordinates; actively maintained.",
+     when_to_use: "Target serves a Geetest v3 word-click captcha and you need a headless Python solver for the click positions and w parameter.",
      source: https://github.com/ravizhan/geetest-v3-click-crack, install: "git clone https://github.com/ravizhan/geetest-v3-click-crack"}
-  - {id: ruishu-reverse-walkthrough, name: "ruishu-re (瑞数逆向 skill)", type: skill, domain: web, bundled: false, status: active,
-     capability: "End-to-end Ruishu (瑞数) anti-bot reverse skill: pure-algorithm Cookie T derivation plus JsRpc 通杀 approach, full methodology and AI-ready docs tying JsRpc + env restoration together.",
-     when_to_use: "Reversing 瑞数(Ruishu) Cookie T / dynamic challenge and you want a guided skill walkthrough (pure-algo vs JsRpc通杀) rather than a raw bypass dump.",
+  - {id: ruishu-reverse-walkthrough, name: "ruishu-re (Ruishu reverse skill)", type: skill, domain: web, bundled: false, status: active,
+     capability: "End-to-end Ruishu anti-bot reverse skill: pure-algorithm Cookie T derivation plus JsRpc universal-bypass approach, full methodology and AI-ready docs tying JsRpc + env restoration together.",
+     when_to_use: "Reversing Ruishu Cookie T / dynamic challenge and you want a guided skill walkthrough (pure-algo vs JsRpc universal-bypass) rather than a raw bypass dump.",
      source: https://github.com/warterbili/ruishu-re, install: "git clone https://github.com/warterbili/ruishu-re"}
-  - {id: jd-captcha-cycz, name: "JdCaptcha (京东滑块)", type: script, domain: web, bundled: false, status: active,
-     capability: "Crack of JD (京东) jdSlideCaptcha slider verification — gap detection plus encrypted slide-trajectory/params generation.",
-     when_to_use: "Target is JD/京东 and triggers jdSlideCaptcha (slider) — you need gap distance and the encrypted slide params to pass it.",
+  - {id: jd-captcha-cycz, name: "JdCaptcha (JD slider)", type: script, domain: web, bundled: false, status: active,
+     capability: "Crack of JD jdSlideCaptcha slider verification — gap detection plus encrypted slide-trajectory/params generation.",
+     when_to_use: "Target is JD and triggers jdSlideCaptcha (slider) — you need gap distance and the encrypted slide params to pass it.",
      source: https://github.com/cycz/JdCaptcha, install: "git clone https://github.com/cycz/JdCaptcha"}
-  - {id: geetest-captcha-break-decode, name: "GeetestCaptchaBreak (极验全代协议还原)", type: script, domain: web, bundled: false, status: active,
+  - {id: geetest-captcha-break-decode, name: "GeetestCaptchaBreak (full Geetest protocol restoration)", type: script, domain: web, bundled: false, status: active,
      capability: "Pure-protocol/algorithm restoration of Geetest v3/v4 slide/click/icon captchas, generating captcha_id, lot_number, payload, w params; built for high concurrency.",
      when_to_use: "Need a high-concurrency, browserless Geetest (v3 or v4) solver that emits the raw protocol params (lot_number/payload/w) by algorithm rather than AI-on-browser.",
      source: https://github.com/decodecaptcha/GeetestCaptchaBreak, install: "git clone https://github.com/decodecaptcha/GeetestCaptchaBreak"}
-  - {id: tencent-captcha-break, name: "TencentCaptchaBreak (腾讯防水墙)", type: script, domain: web, bundled: false, status: active,
-     capability: "Reverses Tencent slider/防水墙 captcha encrypted params (collect, pow_answer, vData, eks/ekl) by hand-disassembling its jsvmp VM — pure protocol/algorithm.",
-     when_to_use: "Target uses Tencent 防水墙/captcha (t.captcha.qq.com) and you must reproduce collect / pow_answer / vData / eks via its jsvmp logic.",
+  - {id: tencent-captcha-break, name: "TencentCaptchaBreak (Tencent Waterproof Wall)", type: script, domain: web, bundled: false, status: active,
+     capability: "Reverses Tencent slider/Waterproof Wall captcha encrypted params (collect, pow_answer, vData, eks/ekl) by hand-disassembling its jsvmp VM — pure protocol/algorithm.",
+     when_to_use: "Target uses Tencent Waterproof Wall/captcha (t.captcha.qq.com) and you must reproduce collect / pow_answer / vData / eks via its jsvmp logic.",
      source: https://github.com/decodecaptcha/TencentCaptchaBreak, install: "git clone https://github.com/decodecaptcha/TencentCaptchaBreak"}
   - {id: acw-sc-v2-wangyihang, name: "acw_sc__v2 generator", type: script, domain: web, bundled: false, status: active,
      capability: "Reimplements the Aliyun-shield acw_sc__v2 cookie algorithm (arg1 hex-unshuffle + custom logic) with matching JS/Python/Go versions.",
-     when_to_use: "Site returns the acw_sc__v2 / arg1 JS challenge (阿里盾/加速乐-style) and you need to compute the acw_sc__v2 cookie to get past the second request.",
+     when_to_use: "Site returns the acw_sc__v2 / arg1 JS challenge (Aliyun Shield/Jiasule-style) and you need to compute the acw_sc__v2 cookie to get past the second request.",
      source: https://github.com/WangYihang/acw-sc-v2.js, install: "git clone https://github.com/WangYihang/acw-sc-v2.js"}
   - {id: tiktok-downloader-joeanamier, name: "TikTokDownloader", type: tool, domain: web, bundled: false, status: active,
      capability: "Douyin/TikTok data-collection & downloader with built-in web signature generation: msToken, a_bogus, X-Bogus — the most-referenced open-source impl of Douyin web protocol params.",
@@ -303,27 +303,27 @@ entries:
      source: https://github.com/JoeanAmier/TikTokDownloader, install: "pip install -e git+https://github.com/JoeanAmier/TikTokDownloader.git#egg=tiktokdownloader"}
   - {id: shilonglee-crawler-api, name: "Crawler multi-platform API server", type: tool, domain: web, bundled: false, status: active,
      capability: "Dockerized multi-platform crawler API server with current signatures for Douyin (latest a_bogus), Kuaishou, Bilibili, Xiaohongshu, Taobao, JD, Weibo.",
-     when_to_use: "You need an up-to-date a_bogus (latest version) or signed-request service for Douyin/Kuaishou/B站/小红书/淘宝/京东/微博 deployable as a one-click Docker API.",
+     when_to_use: "You need an up-to-date a_bogus (latest version) or signed-request service for Douyin/Kuaishou/Bilibili/Xiaohongshu/Taobao/JD/Weibo deployable as a one-click Docker API.",
      source: https://github.com/ShilongLee/Crawler, install: "git clone https://github.com/ShilongLee/Crawler"}
-  - {id: xhs-spider-xhs996, name: "xhs_spider (小红书全参签名)", type: tool, domain: web, bundled: false, status: active,
+  - {id: xhs-spider-xhs996, name: "xhs_spider (Xiaohongshu full-param signing)", type: tool, domain: web, bundled: false, status: active,
      capability: "Full Xiaohongshu signing suite: xsec_token, x-legacy-* / x-mini-* / xy-common-params / main_hmac, web algorithm and App shield algorithm, Token/Cookie generation.",
      when_to_use: "Target is Xiaohongshu (xiaohongshu.com / xhs App) requiring xsec_token, xy-common-params, x-mini-* or main_hmac signatures, including App shield params.",
      source: https://github.com/xhs996/xhs_spider, install: "git clone https://github.com/xhs996/xhs_spider"}
-  - {id: yuncaiji-api, name: "yuncaiji/API (多App逆向接口)", type: tool, domain: web, bundled: false, status: active,
-     capability: "Reverse-engineered crawler data APIs with signing for Douyin, Xiaohongshu, Kuaishou, JD, Meituan, Ele.me, Dianping, Dewu (得物).",
-     when_to_use: "Target is Meituan/美团, 饿了么, 大众点评, or 得物 (Dewu) and you need an existing signed-API implementation for that platform.",
+  - {id: yuncaiji-api, name: "yuncaiji/API (multi-App reversed APIs)", type: tool, domain: web, bundled: false, status: active,
+     capability: "Reverse-engineered crawler data APIs with signing for Douyin, Xiaohongshu, Kuaishou, JD, Meituan, Ele.me, Dianping, Dewu.",
+     when_to_use: "Target is Meituan, Ele.me, Dianping, or Dewu and you need an existing signed-API implementation for that platform.",
      source: https://github.com/yuncaiji/API, install: "git clone https://github.com/yuncaiji/API"}
-  - {id: xianyu-apis, name: "XianYuApis (闲鱼算法逆向)", type: tool, domain: web, bundled: false, status: active,
-     capability: "Xianyu (闲鱼) algorithm reversing: signed API access, websocket auto-operation, AI-agent base — the most popular Xianyu protocol repo.",
-     when_to_use: "Target is Xianyu/闲鱼 (Goofish) — you need its request signing, websocket protocol, or an automation/agent base for the platform.",
+  - {id: xianyu-apis, name: "XianYuApis (Xianyu algorithm reversing)", type: tool, domain: web, bundled: false, status: active,
+     capability: "Xianyu algorithm reversing: signed API access, websocket auto-operation, AI-agent base — the most popular Xianyu protocol repo.",
+     when_to_use: "Target is Xianyu (Goofish) — you need its request signing, websocket protocol, or an automation/agent base for the platform.",
      source: https://github.com/cv-cat/XianYuApis, install: "git clone https://github.com/cv-cat/XianYuApis"}
-  - {id: crack-js-spider-losenine, name: "Crack-JS-Spider (JS逆向合集)", type: script, domain: web, bundled: false, status: active,
-     capability: "JS-reversing case collection of CN signature params: Pinduoduo anti_content, Boss直聘 zp_token (zp_stoken), Zhihu x-zse-96, Kugou, Vipshop, Taobao password, Weibo login.",
-     when_to_use: "Target needs PDD anti_content, Boss直聘 zp_token/zp_stoken, Zhihu x-zse-96, Vipshop, or Weibo-login params and you want a worked JS-reversed example.",
+  - {id: crack-js-spider-losenine, name: "Crack-JS-Spider (JS reverse collection)", type: script, domain: web, bundled: false, status: active,
+     capability: "JS-reversing case collection of CN signature params: Pinduoduo anti_content, Boss Zhipin zp_token (zp_stoken), Zhihu x-zse-96, Kugou, Vipshop, Taobao password, Weibo login.",
+     when_to_use: "Target needs PDD anti_content, Boss Zhipin zp_token/zp_stoken, Zhihu x-zse-96, Vipshop, or Weibo-login params and you want a worked JS-reversed example.",
      source: https://github.com/LoseNine/Crack-JS-Spider, install: "git clone https://github.com/LoseNine/Crack-JS-Spider"}
-  - {id: lxspider, name: "lxSpider (爬虫案例合集)", type: script, domain: web, bundled: false, status: active,
+  - {id: lxspider, name: "lxSpider (crawler case collection)", type: script, domain: web, bundled: false, status: active,
      capability: "Broad crawler case collection with signatures/collection for Taobao, JD, Tmall, Douyin, Kuaishou, Weibo, WeChat, Aliyun, Toutiao, PDD, Xiaohongshu, Dianping.",
-     when_to_use: "You want a broad index of worked CN crawler/signature examples across many platforms (淘宝/京东/天猫/头条/微信 etc.) to find a starting point for a given target.",
+     when_to_use: "You want a broad index of worked CN crawler/signature examples across many platforms (Taobao/JD/Tmall/Toutiao/WeChat etc.) to find a starting point for a given target.",
      source: https://github.com/lixi5338619/lxSpider, install: "git clone https://github.com/lixi5338619/lxSpider"}
   - {id: abck-zedd3v, name: "abck (Akamai _abck generator)", type: script, domain: web, bundled: false, status: active,
      capability: "TypeScript reference library that simplifies generating Akamai Bot Manager _abck cookies (sensor data payload construction).",
@@ -450,20 +450,20 @@ entries:
      when_to_use: "You located the encryption/sign function in the browser but it depends on full window env; instead of porting it, call it live via RPC — sign/encrypt params by hitting an HTTP endpoint backed by the running browser.",
      source: https://github.com/jxhczhl/JsRpc, install: "git clone https://github.com/jxhczhl/JsRpc"}
   - {id: qxvm, name: "qxVm", type: tool, domain: web, bundled: false, status: active,
-     capability: "Pure-JS browser-environment emulation (补环境) framework providing window/document/navigator/location stubs so protected anti-bot JS runs under Node without a real browser.",
-     when_to_use: "Extracted anti-bot JS throws on window/document/navigator under Node and you need a 补环境 shim to run the encryption logic headlessly.",
+     capability: "Pure-JS browser-environment emulation (environment-patching) framework providing window/document/navigator/location stubs so protected anti-bot JS runs under Node without a real browser.",
+     when_to_use: "Extracted anti-bot JS throws on window/document/navigator under Node and you need an environment-patching shim to run the encryption logic headlessly.",
      source: https://github.com/ylw00/qxVm, install: "git clone https://github.com/ylw00/qxVm"}
   - {id: nodesandbox, name: "NodeSandbox", type: tool, domain: web, bundled: false, status: active,
-     capability: "Node-based browser-environment sandbox (补环境) for executing protected/obfuscated site JS, supplying DOM/BOM globals and a controlled VM context.",
-     when_to_use: "Need to run a site's obfuscated sign/cookie JS under Node with a faked browser environment (补环境) and want a ready sandbox harness rather than building stubs by hand.",
+     capability: "Node-based browser-environment sandbox (environment-patching) for executing protected/obfuscated site JS, supplying DOM/BOM globals and a controlled VM context.",
+     when_to_use: "Need to run a site's obfuscated sign/cookie JS under Node with a faked browser environment (environment-patching) and want a ready sandbox harness rather than building stubs by hand.",
      source: https://github.com/bnmgh1/NodeSandbox, install: "git clone https://github.com/bnmgh1/NodeSandbox"}
   - {id: boda-jsenv, name: "boda_jsEnv", type: tool, domain: web, bundled: false, status: active,
-     capability: "JS 补环境 framework (boda) emulating the browser environment in Node/JS so extracted anti-bot scripts execute and produce signatures off-browser.",
-     when_to_use: "Doing JS reverse where the encryption script needs a browser env; want a boda 补环境 template to fill in missing window/navigator/document properties.",
+     capability: "JS environment-patching framework (boda) emulating the browser environment in Node/JS so extracted anti-bot scripts execute and produce signatures off-browser.",
+     when_to_use: "Doing JS reverse where the encryption script needs a browser env; want a boda environment-patching template to fill in missing window/navigator/document properties.",
      source: https://github.com/xuxiaobo-bobo/boda_jsEnv, install: "git clone https://github.com/xuxiaobo-bobo/boda_jsEnv"}
   - {id: js-sandbox-env-framework, name: "js-sandbox-env-framework", type: tool, domain: web, bundled: false, status: active,
-     capability: "JS-reverse 补环境 framework using recursive Proxy proxying to auto-detect accessed env properties, with env injection and AI-assisted patching of missing browser globals.",
-     when_to_use: "Anti-bot JS keeps tripping on undefined env props; want a Proxy-based 补环境 that auto-logs which window/navigator fields the script reads so you can fill them iteratively.",
+     capability: "JS-reverse environment-patching framework using recursive Proxy proxying to auto-detect accessed env properties, with env injection and AI-assisted patching of missing browser globals.",
+     when_to_use: "Anti-bot JS keeps tripping on undefined env props; want a Proxy-based environment-patching framework that auto-logs which window/navigator fields the script reads so you can fill them iteratively.",
      source: https://github.com/lasawang/js-sandbox-env-framework, install: "git clone https://github.com/lasawang/js-sandbox-env-framework"}
   - {id: webcrack, name: "webcrack", type: tool, domain: web, bundled: false, status: active,
      capability: "Modern AST deobfuscator that reverses obfuscator.io transforms (string arrays, control-flow flattening, dead code), unminifies, and unpacks webpack/browserify bundles back into separate modules.",
@@ -556,36 +556,36 @@ entries:
      when_to_use: "Use when facing an Arkose Labs / FunCaptcha that offers an audio fallback and you want a no-browser speech-recognition solve path; for visual/image FunCaptcha or BDA token generation see unfuncaptcha-bda.",
      source: https://github.com/useragents/Funcaptcha-Audio-Solver, install: "git clone https://github.com/useragents/Funcaptcha-Audio-Solver"}
   - {id: spider-js-reverse-annyfee, name: "Annyfee/spider-js-reverse", type: script, domain: web, bundled: false, status: active,
-     capability: "Curated JS-reverse case studies with detailed write-ups covering env-patching (补环境), 扣JS extraction, webpack module recovery and 瑞数 (Ruishu)难点.",
+     capability: "Curated JS-reverse case studies with detailed write-ups covering env-patching, JS code extraction, webpack module recovery and Ruishu pain points.",
      when_to_use: "Use as a learning/reference corpus when you need concrete worked examples of browser-env patching, webpack-bundle deobfuscation or Ruishu-style challenges for a Chinese-site JS reversing task.",
      source: https://github.com/Annyfee/spider-js-reverse, install: "git clone https://github.com/Annyfee/spider-js-reverse"}
   - {id: js-reverse-luzhisheng, name: "luzhisheng/js_reverse", type: script, domain: web, bundled: false, status: active,
-     capability: "Broad Chinese crawler-RE collection spanning JS逆向, app逆向, packet capture, captcha cracking, encryption algorithms, browser automation and ML-assisted recognition.",
+     capability: "Broad Chinese crawler-RE collection spanning JS reversing, app reversing, packet capture, captcha cracking, encryption algorithms, browser automation and ML-assisted recognition.",
      when_to_use: "Browse as a grab-bag reference of Chinese-ecosystem reversing techniques when you need example code across JS/app/captcha/encryption domains rather than a single targeted tool.",
      source: https://github.com/luzhisheng/js_reverse, install: "git clone https://github.com/luzhisheng/js_reverse"}
   - {id: geetest-v4-slide-crack, name: "ravizhan/geetest-v4-slide-crack", type: tool, domain: web, bundled: false, status: active,
      capability: "Pure-Python Geetest v4 slider-captcha solver: YOLO gap detection plus humanized trajectory fitting to produce the slide distance/path.",
-     when_to_use: "Use when a site uses 极验四代 (Geetest v4) slider captcha and you need a no-browser Python solve for the gap distance and motion track; for v4 click/word-select use Geetest4_yolov8 instead.",
+     when_to_use: "Use when a site uses Geetest v4 slider captcha and you need a no-browser Python solve for the gap distance and motion track; for v4 click/word-select use Geetest4_yolov8 instead.",
      source: https://github.com/ravizhan/geetest-v4-slide-crack, install: "git clone https://github.com/ravizhan/geetest-v4-slide-crack"}
   - {id: geetest4-yolov8, name: "YoTro/Geetest4_yolov8", type: tool, domain: web, bundled: false, status: active,
      capability: "Geetest v4 word-click captcha solver: YOLOv8 character detection + TrOCR/PaddleOCR recognition + Hungarian-algorithm matching to order the click points.",
-     when_to_use: "Use when a site shows 极验四代 文字点选 (Geetest v4 text/icon-click) captcha and you need detected click coordinates in the required order; the click-type counterpart to geetest-v4-slide-crack.",
+     when_to_use: "Use when a site shows Geetest v4 text-click (Geetest v4 text/icon-click) captcha and you need detected click coordinates in the required order; the click-type counterpart to geetest-v4-slide-crack.",
      source: https://github.com/YoTro/Geetest4_yolov8, install: "git clone https://github.com/YoTro/Geetest4_yolov8"}
   - {id: 163dun-crack, name: "163dun-crack", type: script, domain: web, bundled: false, status: active,
-     capability: "NetEase YiDun (易盾) click-select captcha solver: YOLOv3 + CNN recognition plus reversed YiDun JS encryption, ~70%+ success rate",
-     when_to_use: "Target shows NetEase YiDun (网易易盾) click/点选 captcha — dun.163.com, c.dun.163.com, fp/cb/get-token endpoints — and you need YOLO+CNN icon/text recognition with the YiDun JS crypto already reversed",
+     capability: "NetEase YiDun click-select captcha solver: YOLOv3 + CNN recognition plus reversed YiDun JS encryption, ~70%+ success rate",
+     when_to_use: "Target shows NetEase YiDun click-select captcha — dun.163.com, c.dun.163.com, fp/cb/get-token endpoints — and you need YOLO+CNN icon/text recognition with the YiDun JS crypto already reversed",
      source: https://github.com/supervipcard/163dun-crack, install: "git clone https://github.com/supervipcard/163dun-crack"}
   - {id: tencent-captcha-break-aiden, name: "TencentCaptchaBreak (aiden2048)", type: script, domain: web, bundled: false, status: active,
-     capability: "Pure-protocol/pure-algo restoration of Tencent slider/防水墙 (TDC) encrypted params: collect, vData, eks/ekl, hand-decompiled jsvmp",
-     when_to_use: "Reversing Tencent captcha / 防水墙 traffic (captcha.gtimg.com / turing.captcha.qcloud.com) where you must regenerate collect/vData/eks/ekl params from jsvmp without a browser",
+     capability: "Pure-protocol/pure-algo restoration of Tencent slider/Waterproof Wall (TDC) encrypted params: collect, vData, eks/ekl, hand-decompiled jsvmp",
+     when_to_use: "Reversing Tencent captcha / Waterproof Wall traffic (captcha.gtimg.com / turing.captcha.qcloud.com) where you must regenerate collect/vData/eks/ekl params from jsvmp without a browser",
      source: https://github.com/aiden2048/TencentCaptchaBreak, install: "git clone https://github.com/aiden2048/TencentCaptchaBreak"}
   - {id: dingxiang-captcha-break, name: "DingxiangCaptchaBreak", type: script, domain: web, bundled: false, status: active,
-     capability: "Dingxiang (顶象) captcha pure-protocol algo restoration for sense/slider/click/icon/puzzle: ak, appKey, greenseer, ac, token params, high-concurrency",
-     when_to_use: "Target uses Dingxiang (顶象) captcha — cap.dingxiang-inc.com, params ak/appKey/greenseer/ac/token across 无感/滑块/点选/图标/拼图 modes — and you need the encrypted params reproduced protocol-only",
+     capability: "Dingxiang captcha pure-protocol algo restoration for sense/slider/click/icon/puzzle: ak, appKey, greenseer, ac, token params, high-concurrency",
+     when_to_use: "Target uses Dingxiang captcha — cap.dingxiang-inc.com, params ak/appKey/greenseer/ac/token across sense/slider/click/icon/puzzle modes — and you need the encrypted params reproduced protocol-only",
      source: https://github.com/decodecaptcha/DingxiangCaptchaBreak, install: "git clone https://github.com/decodecaptcha/DingxiangCaptchaBreak"}
   - {id: slider-cracker-mengpengfei, name: "SliderCracker", type: script, domain: web, bundled: false, status: active,
      capability: "Multi-vendor pure-JS slider captcha cracking collection: Geetest2, Meituan, Anjuke, JD, YiDun, Yunpian, ShuMei, Ctrip, Sohu, Huya, iQiyi",
-     when_to_use: "Need a worked pure-JS slider-captcha example for a specific Chinese vendor (极验2/美团/安居客/京东/易盾/云片/数美/携程/搜狐/虎牙/爱奇艺) as a reference implementation",
+     when_to_use: "Need a worked pure-JS slider-captcha example for a specific Chinese vendor (Geetest2/Meituan/Anjuke/JD/YiDun/Yunpian/ShuMei/Ctrip/Sohu/Huya/iQiyi) as a reference implementation",
      source: https://github.com/mengpengfei/SliderCracker, install: "git clone https://github.com/mengpengfei/SliderCracker"}
   - {id: tiktok-signature-5ime, name: "Tiktok_Signature (5ime)", type: tool, domain: web, bundled: false, status: active,
      capability: "Douyin/TikTok web signature service generating X-Bogus, msToken, and ttwid for API requests",
@@ -613,19 +613,19 @@ entries:
      source: https://github.com/vsmutok/Puzzle-Captcha-Solver, install: "git clone https://github.com/vsmutok/Puzzle-Captcha-Solver"}
   - {id: cy-jsvmp, name: "cy_jsvmp", type: tool, domain: web, bundled: false, status: active,
      capability: "JSVMP encryption/restoration experiment: translates ES5 (partial ES6) into VMP bytecode for studying and countering jsvmp protection",
-     when_to_use: "Learning how JSVMP/虚拟机保护 is built so you can reverse a target jsvmp interpreter — a sandbox to compile JS into VMP and study the dispatch loop",
+     when_to_use: "Learning how JSVMP/VM-based protection is built so you can reverse a target jsvmp interpreter — a sandbox to compile JS into VMP and study the dispatch loop",
      source: https://github.com/2833844911/cy_jsvmp, install: "git clone https://github.com/2833844911/cy_jsvmp"}
   - {id: wbi-miuzarte, name: "Wbi (Miuzarte)", type: tool, domain: web, bundled: false, status: active,
      capability: "Bilibili WBI authentication signature library: mixinKey shuffle + md5 producing w_rid/wts",
      when_to_use: "Calling Bilibili web APIs that require WBI signing (w_rid + wts, mixinKey-shuffled img_key/sub_key) and you want a native library implementation",
      source: https://github.com/Miuzarte/Wbi, install: "git clone https://github.com/Miuzarte/Wbi"}
   - {id: redcrack-cialle, name: "RedCrack (Cialle)", type: script, domain: web, bundled: false, status: active,
-     capability: "Xiaohongshu (小红书) full-site encrypted-param Python pure-algo reversal: xsec_token, a1, webId, shield, x-s/x-t",
+     capability: "Xiaohongshu full-site encrypted-param Python pure-algo reversal: xsec_token, a1, webId, shield, x-s/x-t",
      when_to_use: "Reversing Xiaohongshu web request signatures — params x-s, x-t, xsec_token, a1, webId, shield — and you want a pure-Python algo reproduction",
      source: https://github.com/Cialle/RedCrack, install: "git clone https://github.com/Cialle/RedCrack"}
   - {id: pdd-merchant-service-yunzhiyike, name: "pdd-merchant-serivce (YunzhiYike)", type: script, domain: web, bundled: false, status: active,
      capability: "Pinduoduo merchant-backend API reversal: Anti-Content encryption and login-password encryption implementations",
-     when_to_use: "Automating Pinduoduo merchant (商家后台) APIs that need Anti-Content plus encrypted login password regenerated",
+     when_to_use: "Automating Pinduoduo merchant-backend APIs that need Anti-Content plus encrypted login password regenerated",
      source: https://github.com/YunzhiYike/pdd-merchant-serivce, install: "git clone https://github.com/YunzhiYike/pdd-merchant-serivce"}
   - {id: a-bogus-douyin-jackluson, name: "a_bogus_douyin (jackluson)", type: tool, domain: web, bundled: false, status: active,
      capability: "Douyin a_bogus parameter pure-algo implementation, focused solely on the a_bogus signature field",
@@ -696,8 +696,8 @@ entries:
      when_to_use: "Alternative HAR-to-OpenAPI extractor: point it at recorded app traffic HARs to produce API docs/spec when the jonluca lib doesn't fit your workflow.",
      source: https://github.com/dcarr178/har2openapi, install: "git clone https://github.com/dcarr178/har2openapi"}
   - {id: sdenv-extend, name: "sdenv-extend", type: tool, domain: web, bundled: false, status: active,
-     capability: "Extension package for sdenv enabling shared browser/node code for JS environment patching (补环境).",
-     when_to_use: "You're using sdenv to 补环境 (patch browser globals) for running scraped anti-bot/JS code, and need code shared between browser and Node runtimes.",
+     capability: "Extension package for sdenv enabling shared browser/node code for JS environment patching.",
+     when_to_use: "You're using sdenv to patch the browser environment (patch browser globals) for running scraped anti-bot/JS code, and need code shared between browser and Node runtimes.",
      source: https://github.com/pysunday/sdenv-extend, install: "npm install sdenv-extend"}
   - {id: jsvmp-repository, name: "jsvmp-repository", type: script, domain: web, bundled: false, status: active,
      capability: "Collection of real jsvmp (JS virtual-machine-protection) algorithm samples from Chinese websites, used as reference material for jsvmp reversing.",
@@ -705,18 +705,18 @@ entries:
      source: https://github.com/xiaoweigege/jsvmp-repository, install: "git clone https://github.com/xiaoweigege/jsvmp-repository"}
   - {id: geetest-break-yinhao, name: "yinhao0214/geetest_break", type: script, domain: web, bundled: false, status: active,
      capability: "GeeTest captcha cracking source code plus accompanying handbook/manual covering the break workflow.",
-     when_to_use: "When studying GeeTest (极验) bypass end-to-end and you want a worked source+manual reference; pair with dedicated v3/v4 solvers when targeting a specific GeeTest version.",
+     when_to_use: "When studying GeeTest bypass end-to-end and you want a worked source+manual reference; pair with dedicated v3/v4 solvers when targeting a specific GeeTest version.",
      source: https://github.com/yinhao0214/geetest_break, install: "git clone https://github.com/yinhao0214/geetest_break"}
   - {id: behavior-captcha-cracker-yujunjie, name: "yujunjiex/behavior_captcha_cracker", type: script, domain: web, bundled: false, status: active,
      capability: "Deep-learning behavioral-captcha cracker covering slider and click(point-select) types for GeeTest, NetEase Yidun and Yunpian.",
-     when_to_use: "When you face a slider or click-to-select behavioral captcha from GeeTest/Yidun(易盾)/Yunpian(云片) and want a CNN-based image+trajectory solver reference rather than a single-vendor protocol break.",
+     when_to_use: "When you face a slider or click-to-select behavioral captcha from GeeTest/Yidun/Yunpian and want a CNN-based image+trajectory solver reference rather than a single-vendor protocol break.",
      source: https://github.com/yujunjiex/behavior_captcha_cracker, install: "git clone https://github.com/yujunjiex/behavior_captcha_cracker"}
   - {id: geetest-crack-zhiying, name: "zhiying8710/geetest_crack", type: tool, domain: web, bundled: false, status: active,
-     capability: "GeeTest gen-2 slide, gen-3 slide and Chinese-character click(汉字点选) captcha breaking implementation.",
+     capability: "GeeTest gen-2 slide, gen-3 slide and Chinese-character click captcha breaking implementation.",
      when_to_use: "When the target uses GeeTest v2 slider, v3 slider, or the Chinese-character click-order captcha and you need a ready cracking library for those specific modes.",
      source: https://github.com/zhiying8710/geetest_crack, install: "git clone https://github.com/zhiying8710/geetest_crack"}
   - {id: sijiyo-projects, name: "sijiyo/projects", type: script, domain: web, bundled: false, status: active,
-     capability: "Reverse-engineering case collection spanning JD(京东), Yunpian(云片), GeeTest(极验) and Shumei(数美).",
+     capability: "Reverse-engineering case collection spanning JD, Yunpian, GeeTest and Shumei.",
      when_to_use: "When you want worked reverse cases for JD/Yunpian/GeeTest/Shumei in one repo as starting-point references for those Chinese platforms' risk-control and captcha flows.",
      source: https://github.com/sijiyo/projects, install: "git clone https://github.com/sijiyo/projects"}
   - {id: crack-geetest-cycyup, name: "cycyup/crack_geetest", type: tool, domain: web, bundled: false, status: active,
@@ -724,44 +724,44 @@ entries:
      when_to_use: "When the target shows the GeeTest v3 spatial/3D-reasoning captcha specifically (not the standard slider or icon-select) and you need a solver tailored to that mode.",
      source: https://github.com/cycyup/crack_geetest, install: "git clone https://github.com/cycyup/crack_geetest"}
   - {id: 10jqka-api-atomat, name: "atomat/10jqka-API", type: tool, domain: web, bundled: false, status: active,
-     capability: "Reverse-engineered THS / 10jqka (同花顺) stock-trading API client.",
-     when_to_use: "When you need to programmatically drive Tonghuashun(同花顺, 10jqka) stock trading endpoints and want a reversed API wrapper for the trading interface.",
+     capability: "Reverse-engineered THS / 10jqka (Tonghuashun) stock-trading API client.",
+     when_to_use: "When you need to programmatically drive Tonghuashun (10jqka) stock trading endpoints and want a reversed API wrapper for the trading interface.",
      source: https://github.com/atomat/10jqka-API, install: "git clone https://github.com/atomat/10jqka-API"}
   - {id: browser-env-decodecaptcha, name: "decodecaptcha/Browser-Env", type: tool, domain: web, bundled: false, status: active,
-     capability: "Crawler framework that executes inside a real browser with patched JS so you skip env-faking (补环境) and defeat JS encryption generically.",
-     when_to_use: "When you'd otherwise have to reconstruct a browser environment (补环境) to run a site's obfuscated JS crypto, and prefer running it inside a real patched browser to bypass JS encryption without rebuilding window/navigator.",
+     capability: "Crawler framework that executes inside a real browser with patched JS so you skip env-faking (environment-patching) and defeat JS encryption generically.",
+     when_to_use: "When you'd otherwise have to reconstruct a browser environment (environment-patching) to run a site's obfuscated JS crypto, and prefer running it inside a real patched browser to bypass JS encryption without rebuilding window/navigator.",
      source: https://github.com/decodecaptcha/Browser-Env, install: "git clone https://github.com/decodecaptcha/Browser-Env"}
   - {id: rotate-captcha-angle-prediction, name: "decodecaptcha/Rotate-Captcha-Angle-Prediction", type: tool, domain: web, bundled: false, status: active,
      capability: "Rotate-captcha bypass that predicts the rotation angle from an image feature library.",
      when_to_use: "When the challenge is a rotate-the-image captcha (drag a dial/slider to upright an image) and you need an angle-prediction solver based on image feature matching.",
      source: https://github.com/decodecaptcha/Rotate-Captcha-Angle-Prediction, install: "git clone https://github.com/decodecaptcha/Rotate-Captcha-Angle-Prediction"}
   - {id: 10jqka-login-wangh00, name: "wangh00/10jqka_login", type: script, domain: web, bundled: false, status: active,
-     capability: "Full Tonghuashun(同花顺) login reverse including the cookie 'v' value generation; actively maintained.",
-     when_to_use: "When you specifically need to authenticate against Tonghuashun(同花顺, 10jqka) and must generate the cookie v value for login; a maintained companion to the 10jqka trading API.",
+     capability: "Full Tonghuashun login reverse including the cookie 'v' value generation; actively maintained.",
+     when_to_use: "When you specifically need to authenticate against Tonghuashun (10jqka) and must generate the cookie v value for login; a maintained companion to the 10jqka trading API.",
      source: https://github.com/wangh00/10jqka_login, install: "git clone https://github.com/wangh00/10jqka_login"}
   - {id: ruishu6-yaojianju-ctl456, name: "ctl456/ruishu6-yaojianju", type: script, domain: web, bundled: false, status: active,
-     capability: "Ruishu(瑞数) v6 env-reconstruction (补环境) for the NMPA(药监局) drug-query API, a recent real-world Ruishu6 case.",
-     when_to_use: "When you hit Ruishu(瑞数) v6 protection on the NMPA drug-lookup site (药监局/查询) and need a worked 补环境 example for generating Ruishu6 dynamic cookies.",
+     capability: "Ruishu v6 env-reconstruction (environment-patching) for the NMPA drug-query API, a recent real-world Ruishu6 case.",
+     when_to_use: "When you hit Ruishu v6 protection on the NMPA drug-lookup site (drug administration/lookup) and need a worked environment-patching example for generating Ruishu6 dynamic cookies.",
      source: https://github.com/ctl456/ruishu6-yaojianju, install: "git clone https://github.com/ctl456/ruishu6-yaojianju"}
   - {id: spider-captcha-windseason, name: "WindSeason666/Spider_Captcha", type: script, domain: web, bundled: false, status: active,
      capability: "Breaks mainstream captchas: GeeTest click/slide/word-order/grid and NetEase Yidun text/icon/slide/scrambled-jigsaw.",
-     when_to_use: "When you need solvers across many GeeTest and NetEase Yidun(易盾) modes at once (click, slide, word-order, 9-grid, scrambled jigsaw) and want a multi-mode case collection.",
+     when_to_use: "When you need solvers across many GeeTest and NetEase Yidun modes at once (click, slide, word-order, 9-grid, scrambled jigsaw) and want a multi-mode case collection.",
      source: https://github.com/WindSeason666/Spider_Captcha, install: "git clone https://github.com/WindSeason666/Spider_Captcha"}
   - {id: bypass-captcha-examples-moterhaker, name: "MoterHaker/bypass-captcha-examples", type: script, domain: web, bundled: false, status: active,
      capability: "Worked complex-captcha bypass examples for Steam, Netflix, DataDome, Adobe and similar Western targets.",
      when_to_use: "When you need concrete bypass references for specific Western-site captcha integrations (Steam, Netflix, DataDome, Adobe) rather than a generic vendor solver.",
      source: https://github.com/MoterHaker/bypass-captcha-examples, install: "git clone https://github.com/MoterHaker/bypass-captcha-examples"}
   - {id: opencv-iconselect-taisuii, name: "taisuii/OpenCV_IconSelect", type: script, domain: web, bundled: false, status: active,
-     capability: "Shumei(数美) icon-select(点选) captcha recognition/solver using OpenCV.",
-     when_to_use: "When the target uses the Shumei(数美) click-the-icons captcha and you want an OpenCV-based icon-matching solver specialized for it.",
+     capability: "Shumei icon-select (click-select) captcha recognition/solver using OpenCV.",
+     when_to_use: "When the target uses the Shumei click-the-icons captcha and you want an OpenCV-based icon-matching solver specialized for it.",
      source: https://github.com/taisuii/OpenCV_IconSelect, install: "git clone https://github.com/taisuii/OpenCV_IconSelect"}
   - {id: yidun-captcha-break-decode, name: "decodecaptcha/YidunCaptchaBreak", type: script, domain: web, bundled: false, status: active,
-     capability: "NetEase Yidun(易盾) captcha pure-protocol / pure-algorithm break (no browser).",
-     when_to_use: "When you want to defeat NetEase Yidun(易盾) captcha purely at the protocol/algorithm level (generating valid tokens without driving a browser), from the decodecaptcha series.",
+     capability: "NetEase Yidun captcha pure-protocol / pure-algorithm break (no browser).",
+     when_to_use: "When you want to defeat NetEase Yidun captcha purely at the protocol/algorithm level (generating valid tokens without driving a browser), from the decodecaptcha series.",
      source: https://github.com/decodecaptcha/YidunCaptchaBreak, install: "git clone https://github.com/decodecaptcha/YidunCaptchaBreak"}
   - {id: acw-sc-v2-py-wangyihang, name: "WangYihang/acw-sc-v2-py", type: script, domain: web, bundled: false, status: active,
-     capability: "Python requests.HTTPAdapter implementing the Aliyun(阿里盾) acw_sc__v2 cookie algorithm.",
-     when_to_use: "When a site returns the acw_sc__v2 challenge cookie (Aliyun WAF/阿里盾) and you want a drop-in Python requests HTTPAdapter that solves it transparently for your session.",
+     capability: "Python requests.HTTPAdapter implementing the Aliyun Shield acw_sc__v2 cookie algorithm.",
+     when_to_use: "When a site returns the acw_sc__v2 challenge cookie (Aliyun WAF/Aliyun Shield) and you want a drop-in Python requests HTTPAdapter that solves it transparently for your session.",
      source: https://github.com/WangYihang/acw-sc-v2-py, install: "git clone https://github.com/WangYihang/acw-sc-v2-py"}
   - {id: captcha-source-robin-ohp, name: "Robin-OHP/captcha-source", type: script, domain: web, bundled: false, status: active,
      capability: "Collected captcha/risk-control source: Tencent tdc/collect, Aliyun 228/227/bx-et, Kuaishou, Pinduoduo, Douyin, GeeTest, Yidun, Dingxiang slider.",
@@ -769,7 +769,7 @@ entries:
      source: https://github.com/Robin-OHP/captcha-source, install: "git clone https://github.com/Robin-OHP/captcha-source"}
   - {id: doubao-2api-lza6, name: "lza6/doubao-2api", type: tool, domain: web, bundled: false, status: active,
      capability: "Playwright headless-browser reverse of Doubao a_bogus risk signature, static device fingerprint, dynamic msToken refresh and anti-detection disguise.",
-     when_to_use: "When you need to call ByteDance Doubao(豆包) web endpoints and must produce valid a_bogus signatures plus refreshing msToken/device fingerprint, using a real Playwright browser to dodge detection.",
+     when_to_use: "When you need to call ByteDance Doubao web endpoints and must produce valid a_bogus signatures plus refreshing msToken/device fingerprint, using a real Playwright browser to dodge detection.",
      source: https://github.com/lza6/doubao-2api, install: "git clone https://github.com/lza6/doubao-2api"}
   - {id: bytedance-a-bogus-hzhertz, name: "HZhertz/ByteDance-a_bogus-parameter", type: script, domain: web, bundled: false, status: active,
      capability: "Generates the ByteDance a_bogus web-signature parameter across multiple ByteDance product lines.",
@@ -777,7 +777,7 @@ entries:
      source: https://github.com/HZhertz/ByteDance-a_bogus-parameter, install: "git clone https://github.com/HZhertz/ByteDance-a_bogus-parameter"}
   - {id: a-bogus-dengmin, name: "dengmin/a-bogus", type: script, domain: web, bundled: false, status: active,
      capability: "Pure-JS implementation of Douyin's a_bogus signature parameter; standalone reference port of the algorithm.",
-     when_to_use: "Need to generate the a_bogus query parameter for Douyin/抖音 web API requests (douyin.com aweme endpoints returning blank/risk responses without it). Pure-JS port runnable in Node; cross-check with TikTokApi_aBogus_Test for version coverage.",
+     when_to_use: "Need to generate the a_bogus query parameter for Douyin web API requests (douyin.com aweme endpoints returning blank/risk responses without it). Pure-JS port runnable in Node; cross-check with TikTokApi_aBogus_Test for version coverage.",
      source: https://github.com/dengmin/a-bogus, install: "git clone https://github.com/dengmin/a-bogus"}
   - {id: tiktok-abogus-test-superheroff, name: "Superheroff/TikTokApi_aBogus_Test", type: tool, domain: web, bundled: false, status: active,
      capability: "Multi-version availability test harness for aBogus 1.0.1.1 through 1.0.1.20, tracking which a_bogus algorithm versions still pass.",
@@ -785,15 +785,15 @@ entries:
      source: https://github.com/Superheroff/TikTokApi_aBogus_Test, install: "git clone https://github.com/Superheroff/TikTokApi_aBogus_Test"}
   - {id: douyin-signs-ohpder, name: "ohpder/douyin", type: tool, domain: web, bundled: false, status: active,
      capability: "Extractor for Douyin web signatures a_bogus, __ac_signature, _signature, X-Bogus, web cookies, plus research on the six 'shen' native params (X-Argus/Gorgon/Helios/Khronos/Ladon/Medusa).",
-     when_to_use: "When reversing Douyin and you need multiple web-side signature fields at once (__ac_signature gating page load, X-Bogus/_signature on XHR) rather than a single param; also references the native 六神 header set for app traffic.",
+     when_to_use: "When reversing Douyin and you need multiple web-side signature fields at once (__ac_signature gating page load, X-Bogus/_signature on XHR) rather than a single param; also references the native 'Liushen' (six-gods) header set for app traffic.",
      source: https://github.com/ohpder/douyin, install: "git clone https://github.com/ohpder/douyin"}
   - {id: selfshore-spiders, name: "selfshore/spiders", type: script, domain: web, bundled: false, status: active,
      capability: "Crawler-RE case collection: Xiaohongshu, NetEase Yidun slider captcha, and Zhihu login reversing examples.",
-     when_to_use: "Browse when you need worked examples for Xiaohongshu scraping, NetEase 易盾 slider captcha bypass, or Zhihu login flow reversing. Case-study collection, not a single-target library.",
+     when_to_use: "Browse when you need worked examples for Xiaohongshu scraping, NetEase Yidun slider captcha bypass, or Zhihu login flow reversing. Case-study collection, not a single-target library.",
      source: https://github.com/selfshore/spiders, install: "git clone https://github.com/selfshore/spiders"}
   - {id: xhs-spider-xxxxspider, name: "xxxxspider/xhs_spider", type: tool, domain: web, bundled: false, status: active,
      capability: "Xiaohongshu data-collection toolkit generating the full param set: tokens/cookies, xsec_token, app shield algorithm, xy-platform-info and main_hmac.",
-     when_to_use: "When XHS (xiaohongshu.com / 小红书) requests need xsec_token, xy-platform-info or main_hmac signing and you want a kit covering the whole shield/token chain rather than a single field. Pair with xhs_unidbg_sign for the native sign.",
+     when_to_use: "When XHS (xiaohongshu.com / Xiaohongshu) requests need xsec_token, xy-platform-info or main_hmac signing and you want a kit covering the whole shield/token chain rather than a single field. Pair with xhs_unidbg_sign for the native sign.",
      source: https://github.com/xxxxspider/xhs_spider, install: "git clone https://github.com/xxxxspider/xhs_spider"}
   - {id: weiboapis-cv-cat, name: "cv-cat/WeiboApis", type: script, domain: web, bundled: false, status: active,
      capability: "Weibo algorithm reversing with packaged API wrappers for signed Weibo web requests.",
@@ -801,15 +801,15 @@ entries:
      source: https://github.com/cv-cat/WeiboApis, install: "git clone https://github.com/cv-cat/WeiboApis"}
   - {id: meituan-mtgsig-eleme-bx-yeweilin, name: "yeweilin666/meituan-mtgsig-elema-bx-et", type: script, domain: web, bundled: false, status: active,
      capability: "Continuously-updated signature algorithms for Meituan mtgsig and Eleme bx-et.",
-     when_to_use: "When you need Meituan mtgsig or Eleme/饿了么 bx-et signing and want an actively-maintained algorithm reference covering both. Use when on-device or unidbg routes are overkill and a pure algorithm port is preferred.",
+     when_to_use: "When you need Meituan mtgsig or Eleme bx-et signing and want an actively-maintained algorithm reference covering both. Use when on-device or unidbg routes are overkill and a pure algorithm port is preferred.",
      source: https://github.com/yeweilin666/meituan-mtgsig-elema-bx-et, install: "git clone https://github.com/yeweilin666/meituan-mtgsig-elema-bx-et"}
   - {id: mt-ast-deob-alohahahahaha, name: "Alohahahahaha/mt_ast", type: tool, domain: web, bundled: false, status: active,
      capability: "AST-based deobfuscator for Meituan's mtgsig param JS: literal restoration and VMP-style if-to-switch control-flow recovery.",
-     when_to_use: "When the Meituan mtgsig JS is obfuscated with hidden literals and flattened/VMP control flow and you need to clean it before extracting the algorithm. Use as a Babel-AST 反混淆 worked example for mtgsig specifically.",
+     when_to_use: "When the Meituan mtgsig JS is obfuscated with hidden literals and flattened/VMP control flow and you need to clean it before extracting the algorithm. Use as a Babel-AST deobfuscation worked example for mtgsig specifically.",
      source: https://github.com/Alohahahahaha/mt_ast, install: "git clone https://github.com/Alohahahahaha/mt_ast"}
   - {id: maotai-grab-jjjack230, name: "jjjack230/maotai", type: tool, domain: web, bundled: false, status: active,
-     capability: "Multi-platform purchase/grab scripts (i茅台, JD, Tmall, Taobao, Xianyu, Pinduoduo) bundling each app's protocol and request signing.",
-     when_to_use: "When you need worked, current protocol+signing examples for i茅台 or major CN e-commerce apps (JD/Tmall/Taobao/闲鱼/PDD) and prefer a multi-app reference. Grab-script framing but useful as a signature/protocol cookbook.",
+     capability: "Multi-platform purchase/grab scripts (i-Moutai, JD, Tmall, Taobao, Xianyu, Pinduoduo) bundling each app's protocol and request signing.",
+     when_to_use: "When you need worked, current protocol+signing examples for i-Moutai or major CN e-commerce apps (JD/Tmall/Taobao/Xianyu/PDD) and prefer a multi-app reference. Grab-script framing but useful as a signature/protocol cookbook.",
      source: https://github.com/jjjack230/maotai, install: "git clone https://github.com/jjjack230/maotai"}
   - {id: decryptlogin-charlespikachu, name: "CharlesPikachu/DecryptLogin", type: tool, domain: web, bundled: false, status: active,
      capability: "requests-based login library for many sites (Weibo, QQ, NetEase, etc.) with the per-site login-password/signature encryption reversed in.",
@@ -919,13 +919,13 @@ entries:
      capability: "Python JSRPC that auto-registers the RPC client into a page via Chrome DevTools Protocol, removing manual hook injection from the JSRPC workflow.",
      when_to_use: "Doing JSRPC against a site but tired of pasting injection scripts; attach to a running Chrome over CDP and have RPC hooks installed automatically before calling page functions.",
      source: https://github.com/winezer0/jsrpc_by_cdp_python, install: "git clone https://github.com/winezer0/jsrpc_by_cdp_python"}
-  - {id: node-sandbox-bnmgh1, name: "node-sandbox (魔改 buhuanjing)", type: tool, domain: web, bundled: false, status: active,
+  - {id: node-sandbox-bnmgh1, name: "node-sandbox (modified buhuanjing)", type: tool, domain: web, bundled: false, status: active,
      capability: "Modified Node.js sandbox/env-patching framework that fakes browser globals (window/document/navigator/location) so extracted anti-bot JS runs under Node.",
-     when_to_use: "Running a site's encryption/anti-bot JS standalone in Node and hitting ReferenceError on window/document/navigator; need a 补环境 shim to make the script execute headless.",
+     when_to_use: "Running a site's encryption/anti-bot JS standalone in Node and hitting ReferenceError on window/document/navigator; need an environment-patching shim to make the script execute headless.",
      source: https://github.com/bnmgh1/node-sandbox, install: "git clone https://github.com/bnmgh1/node-sandbox"}
   - {id: firefox-fingerprint-analyzer-losenine, name: "Firefox-FingerPrint-Analyzer", type: tool, domain: web, bundled: false, status: active,
-     capability: "Desktop tool that logs all browser-fingerprint/risk-control property accesses; full logs can be fed to an AI to auto-generate JS env-patching (补环境) code.",
-     when_to_use: "Building a Node 补环境 and need to know exactly which navigator/screen/canvas/WebGL properties the target reads; capture the access log to enumerate every fingerprint surface to stub.",
+     capability: "Desktop tool that logs all browser-fingerprint/risk-control property accesses; full logs can be fed to an AI to auto-generate JS env-patching code.",
+     when_to_use: "Building a Node environment-patching setup and need to know exactly which navigator/screen/canvas/WebGL properties the target reads; capture the access log to enumerate every fingerprint surface to stub.",
      source: https://github.com/LoseNine/Firefox-FingerPrint-Analyzer, install: "git clone https://github.com/LoseNine/Firefox-FingerPrint-Analyzer"}
   - {id: de4js, name: "de4js", type: tool, domain: web, bundled: false, status: archived,
      capability: "Web-based JavaScript deobfuscator and unpacker handling eval, Dean Edwards packer, _Number/array, urlencode, JSFuck, AAEncode, JJEncode formats.",
@@ -963,17 +963,17 @@ entries:
      capability: "Encodes arbitrary JavaScript using only the six characters [ ] ( ) ! + (modern, maintained JSFuck-style encoder) and runs the result in browsers/Node.",
      when_to_use: "Need to produce or understand six-character JSFuck-style payloads (only []()!+ visible); use to encode/test such code or as reference when reversing JSFuck-encoded scripts.",
      source: https://github.com/fasttime/JScrewIt, install: "npm install jscrewit"}
-  - {id: charles-hello-ast-antibot-228, name: "Charles-Hello 228 (AST + 通杀 devtool + env-patching)", type: script, domain: web, bundled: false, status: active,
-     capability: "Broad anti-bot toolkit: full AST course, a modified Chromium that defeats devtools detection, a Douyin jsvmp interpreter, reCAPTCHA/Cloudflare/Aliyun x82y slider algos, 瑞数 456 VMP notes, and a DOM env-patching framework.",
-     when_to_use: "Need worked examples across many targets at once (Douyin jsvmp, Aliyun slider x82y, 瑞数 VMP, reCAPTCHA/CF) or a Chromium build that bypasses devtools-detection traps during JS reversing.",
+  - {id: charles-hello-ast-antibot-228, name: "Charles-Hello 228 (AST + universal-bypass devtool + env-patching)", type: script, domain: web, bundled: false, status: active,
+     capability: "Broad anti-bot toolkit: full AST course, a modified Chromium that defeats devtools detection, a Douyin jsvmp interpreter, reCAPTCHA/Cloudflare/Aliyun x82y slider algos, Ruishu 4/5/6 VMP notes, and a DOM env-patching framework.",
+     when_to_use: "Need worked examples across many targets at once (Douyin jsvmp, Aliyun slider x82y, Ruishu VMP, reCAPTCHA/CF) or a Chromium build that bypasses devtools-detection traps during JS reversing.",
      source: https://github.com/Charles-Hello/-228-, install: "git clone https://github.com/Charles-Hello/-228-"}
   - {id: commercial-bot-detectors, name: "commercial-bot-detectors", type: script, domain: web, bundled: false, status: active,
      capability: "Corpus of collected JS from many commercial bot-detection/fingerprinting vendors, some with accompanying string-deobfuscators, for comparative analysis.",
      when_to_use: "Want a reference library of real vendor anti-bot/fingerprinting scripts to compare signatures or study env/AST techniques across multiple commercial detectors at once.",
      source: https://github.com/chris124567/commercial-bot-detectors, install: "git clone https://github.com/chris124567/commercial-bot-detectors"}
   - {id: bosszhipin-reverse-warterbili, name: "BossZhipin_reverse", type: script, domain: web, bundled: false, status: active,
-     capability: "Boss直聘 anti-crawler bypass using an RPC scheme to enable one-click resume delivery and large-scale job-listing scraping.",
-     when_to_use: "Scraping zhipin.com (Boss直聘) jobs or automating resume submission and hitting its strong anti-crawler/encryption; RPC-based approach.",
+     capability: "Boss Zhipin anti-crawler bypass using an RPC scheme to enable one-click resume delivery and large-scale job-listing scraping.",
+     when_to_use: "Scraping zhipin.com (Boss Zhipin) jobs or automating resume submission and hitting its strong anti-crawler/encryption; RPC-based approach.",
      source: https://github.com/warterbili/BossZhipin_reverse, install: "git clone https://github.com/warterbili/BossZhipin_reverse"}
   - {id: px3cookie-warterbili, name: "px3cookie", type: tool, domain: web, bundled: false, status: active,
      capability: "PerimeterX _px3 cookie generator, the productized companion output of warterbili's PerimeterX reversing work.",
@@ -981,109 +981,109 @@ entries:
      source: https://github.com/warterbili/px3cookie, install: "git clone https://github.com/warterbili/px3cookie"}
   - {id: shopee-food-reverse-warterbili, name: "shopee_food_reverse", type: script, domain: web, bundled: false, status: active,
      capability: "Pure-algorithm reconstruction of Shopee Food Vietnam request signing (no browser/RPC, native signature reimplementation).",
-     when_to_use: "Generating valid request signatures for Shopee Food VN APIs and want a pure-algo (纯算) sign implementation to call directly.",
+     when_to_use: "Generating valid request signatures for Shopee Food VN APIs and want a pure-algorithm sign implementation to call directly.",
      source: https://github.com/warterbili/shopee_food_reverse, install: "git clone https://github.com/warterbili/shopee_food_reverse"}
   - {id: node-crawler-env-utils-warterbili, name: "node-crawler-env-utils", type: tool, domain: web, bundled: false, status: active,
-     capability: "Node.js crawler 补环境 utilities: environment patching/dumping (吐环境) and proxy helpers for running browser-derived JS outside a browser.",
-     when_to_use: "Patching the missing browser environment (window/navigator/document) so scraped/obfuscated site JS runs under Node for 纯算 sign reproduction.",
+     capability: "Node.js crawler environment-patching utilities: environment patching/dumping (env-dumping) and proxy helpers for running browser-derived JS outside a browser.",
+     when_to_use: "Patching the missing browser environment (window/navigator/document) so scraped/obfuscated site JS runs under Node for pure-algorithm sign reproduction.",
      source: https://github.com/warterbili/node-crawler-env-utils, install: "git clone https://github.com/warterbili/node-crawler-env-utils"}
 
-  # ── batch-added: Proxy 自动补环境/吐环境 frameworks (collect-proxy-auto-env, bundled:false) ──
+  # ── batch-added: Proxy auto environment-patching/env-dumping frameworks (collect-proxy-auto-env, bundled:false) ──
   - {id: youzi-mask-env, name: "happy1256/Youzi-Mask", type: tool, domain: web, bundled: false, status: active,
-     capability: "Youzi-Mask 全新模块化补环境框架。README confirms a recursive-proxy toggle: IS_RECURSION_PROXY (递归代理监听开关，用于深入观察多层对象访问) plus a first-level IS_PROXY switch (一级 Proxy 监听 to observe which env fields the target code directly accesses). Aims to pass 瑞数6/Cloudflare/小红书 x_s/抖音 a_b. Newest active rewrite by this author.",
-     when_to_use: "Running obfuscated anti-bot/sign JS headless in Node; want a recursive-Proxy 补环境 framework that auto-intercepts and reveals which window/navigator/document fields the target code reads. Drive it with the env-supplement-proxy skill.",
+     capability: "Youzi-Mask brand-new modular environment-patching framework. README confirms a recursive-proxy toggle: IS_RECURSION_PROXY (recursive-proxy monitoring switch, for deep observation of multi-level object access) plus a first-level IS_PROXY switch (first-level Proxy monitoring to observe which env fields the target code directly accesses). Aims to pass Ruishu6/Cloudflare/Xiaohongshu x_s/Douyin a_b. Newest active rewrite by this author.",
+     when_to_use: "Running obfuscated anti-bot/sign JS headless in Node; want a recursive-Proxy environment-patching framework that auto-intercepts and reveals which window/navigator/document fields the target code reads. Drive it with the env-supplement-proxy skill.",
      source: https://github.com/happy1256/Youzi-Mask, install: "git clone https://github.com/happy1256/Youzi-Mask"}
   - {id: youzi-js-env-env, name: "happy1256/youzi_js_env", type: tool, domain: web, bundled: false, status: active,
-     capability: "Predecessor of Youzi-Mask. js补环境框架，通杀某数/某书/某音/某多, '强大而简洁'. Proxy-based env interception framework; the higher-star earlier version of the same lineage.",
-     when_to_use: "Running obfuscated anti-bot/sign JS headless in Node; want a recursive-Proxy 补环境 framework that auto-intercepts and reveals which window/navigator/document fields the target code reads. Drive it with the env-supplement-proxy skill.",
+     capability: "Predecessor of Youzi-Mask. A JS environment-patching framework, universal bypass of 'a certain shu'/'a certain shu (book)'/'a certain yin'/'a certain duo' (Ruishu/Xiaohongshu/Douyin/Pinduoduo), 'powerful yet concise'. Proxy-based env interception framework; the higher-star earlier version of the same lineage.",
+     when_to_use: "Running obfuscated anti-bot/sign JS headless in Node; want a recursive-Proxy environment-patching framework that auto-intercepts and reveals which window/navigator/document fields the target code reads. Drive it with the env-supplement-proxy skill.",
      source: https://github.com/happy1256/youzi_js_env, install: "git clone https://github.com/happy1256/youzi_js_env"}
   - {id: xbsjsenv-env, name: "lwjjike/xbsJsEnv", type: tool, domain: web, bundled: false, status: active,
-     capability: "小博士(xbs) node 补环境框架. README: 自动拦截全局对象的属性访问/赋值/查询/删除/枚举/define/getOwnPropertyDescriptor, plus BOM/DOM method-call interception via explicit globalGetter/globalSetter handlers (not transparent recursive Proxy, but full property-access interception/logging). Actively maintained, mid-star.",
-     when_to_use: "Headless JS 补环境 where you want the framework to LOG accessed-but-undefined env paths (吐环境) and locate them by call stack, so you iteratively complete the environment. Pairs with env-supplement-proxy.",
+     capability: "Xiaoboshi (xbs) node environment-patching framework. README: automatically intercepts global-object property access/assignment/query/deletion/enumeration/define/getOwnPropertyDescriptor, plus BOM/DOM method-call interception via explicit globalGetter/globalSetter handlers (not transparent recursive Proxy, but full property-access interception/logging). Actively maintained, mid-star.",
+     when_to_use: "Headless JS environment-patching where you want the framework to LOG accessed-but-undefined env paths (env-dumping) and locate them by call stack, so you iteratively complete the environment. Pairs with env-supplement-proxy.",
      source: https://github.com/lwjjike/xbsJsEnv, install: "git clone https://github.com/lwjjike/xbsJsEnv"}
   - {id: js-env-env, name: "RuoShui-0014/js-env", type: tool, domain: web, bundled: false, status: active,
-     capability: "基于 isolated-vm 魔改虚拟机的 js 环境框架，封装了一套非 js 标准的代理(proxy)和 native 函数创建方法. Provides rsvm.get()/rsvm.set() to read/write properties 不触发访问器 (undetectable proxy access). Notable higher-star NEW entry combining custom proxy + isolated-vm DOM construction.",
-     when_to_use: "Want a VM/sandbox-based (vm2 / isolated-vm) 补环境 framework to host obfuscated site JS with controlled globals and a harder-to-detect proxy than plain ES6 Proxy.",
+     capability: "A JS environment framework based on a modified isolated-vm virtual machine, wrapping a set of non-standard-JS proxy and native-function creation methods. Provides rsvm.get()/rsvm.set() to read/write properties without triggering accessors (undetectable proxy access). Notable higher-star NEW entry combining custom proxy + isolated-vm DOM construction.",
+     when_to_use: "Want a VM/sandbox-based (vm2 / isolated-vm) environment-patching framework to host obfuscated site JS with controlled globals and a harder-to-detect proxy than plain ES6 Proxy.",
      source: https://github.com/RuoShui-0014/js-env, install: "git clone https://github.com/RuoShui-0014/js-env"}
   - {id: isolated-rsvm-env, name: "RuoShui-0014/isolated-rsvm", type: tool, domain: web, bundled: false, status: active,
-     capability: "Secure & isolated JS environments for nodejs — the underlying modified isolated-vm engine powering RuoShui-0014/js-env. Low-level sandbox component for 补环境.",
-     when_to_use: "Want a VM/sandbox-based (vm2 / isolated-vm) 补环境 framework to host obfuscated site JS with controlled globals and a harder-to-detect proxy than plain ES6 Proxy.",
+     capability: "Secure & isolated JS environments for nodejs — the underlying modified isolated-vm engine powering RuoShui-0014/js-env. Low-level sandbox component for environment-patching.",
+     when_to_use: "Want a VM/sandbox-based (vm2 / isolated-vm) environment-patching framework to host obfuscated site JS with controlled globals and a harder-to-detect proxy than plain ES6 Proxy.",
      source: https://github.com/RuoShui-0014/isolated-rsvm, install: "git clone https://github.com/RuoShui-0014/isolated-rsvm"}
   - {id: env-js-env, name: "ly-rgb/env-js", type: tool, domain: web, bundled: false, status: active,
-     capability: "补浏览器环境框架. README: 'Proxy代理，可自动输出浏览器检测属性' — uses Proxy handlers to auto-emit/log accessed browser-detection properties for environment patching. Small personal framework.",
-     when_to_use: "Running obfuscated anti-bot/sign JS headless in Node; want a recursive-Proxy 补环境 framework that auto-intercepts and reveals which window/navigator/document fields the target code reads. Drive it with the env-supplement-proxy skill.",
+     capability: "Browser-environment patching framework. README: 'Proxy proxying, can auto-output browser-detection properties' — uses Proxy handlers to auto-emit/log accessed browser-detection properties for environment patching. Small personal framework.",
+     when_to_use: "Running obfuscated anti-bot/sign JS headless in Node; want a recursive-Proxy environment-patching framework that auto-intercepts and reveals which window/navigator/document fields the target code reads. Drive it with the env-supplement-proxy skill.",
      source: https://github.com/ly-rgb/env-js, install: "git clone https://github.com/ly-rgb/env-js"}
   - {id: customproxy-env, name: "kabaBZ/CustomProxy", type: tool, domain: web, bundled: false, status: active,
-     capability: "自用补环境Proxy. Personal Proxy-based 补环境 helper (CustomProxy.js) plus a '佬的补环境解析.md' analysis note. Low-star, exactly the personal-project category requested.",
-     when_to_use: "Running obfuscated anti-bot/sign JS headless in Node; want a recursive-Proxy 补环境 framework that auto-intercepts and reveals which window/navigator/document fields the target code reads. Drive it with the env-supplement-proxy skill.",
+     capability: "Personal-use environment-patching Proxy. Personal Proxy-based environment-patching helper (CustomProxy.js) plus an environment-patching analysis note. Low-star, exactly the personal-project category requested.",
+     when_to_use: "Running obfuscated anti-bot/sign JS headless in Node; want a recursive-Proxy environment-patching framework that auto-intercepts and reveals which window/navigator/document fields the target code reads. Drive it with the env-supplement-proxy skill.",
      source: https://github.com/kabaBZ/CustomProxy, install: "git clone https://github.com/kabaBZ/CustomProxy"}
   - {id: jsvmenv-env, name: "ipylei/jsVmEnv", type: tool, domain: web, bundled: false, status: active,
-     capability: "js补环境框架 with VMHelper + init files; sandbox execution via vm2 or isolated-vm. Screenshots show 监控访问；根据调用栈定位 (monitor property access and locate missing env via call stack) — classic 吐环境 logging workflow.",
-     when_to_use: "Headless JS 补环境 where you want the framework to LOG accessed-but-undefined env paths (吐环境) and locate them by call stack, so you iteratively complete the environment. Pairs with env-supplement-proxy.",
+     capability: "JS environment-patching framework with VMHelper + init files; sandbox execution via vm2 or isolated-vm. Screenshots show 'monitor access; locate via call stack' (monitor property access and locate missing env via call stack) — classic env-dumping logging workflow.",
+     when_to_use: "Headless JS environment-patching where you want the framework to LOG accessed-but-undefined env paths (env-dumping) and locate them by call stack, so you iteratively complete the environment. Pairs with env-supplement-proxy.",
      source: https://github.com/ipylei/jsVmEnv, install: "git clone https://github.com/ipylei/jsVmEnv"}
   - {id: fixenv-env, name: "bgspiders/Fixenv", type: tool, domain: web, bundled: false, status: active,
-     capability: "模拟浏览器环境框架【Js补环境框架】. Personal browser-env simulation framework; low-star.",
-     when_to_use: "Running obfuscated anti-bot/sign JS headless in Node; want a recursive-Proxy 补环境 framework that auto-intercepts and reveals which window/navigator/document fields the target code reads. Drive it with the env-supplement-proxy skill.",
+     capability: "Browser-environment simulation framework [JS environment-patching framework]. Personal browser-env simulation framework; low-star.",
+     when_to_use: "Running obfuscated anti-bot/sign JS headless in Node; want a recursive-Proxy environment-patching framework that auto-intercepts and reveals which window/navigator/document fields the target code reads. Drive it with the env-supplement-proxy skill.",
      source: https://github.com/bgspiders/Fixenv, install: "git clone https://github.com/bgspiders/Fixenv"}
   - {id: crawler-js-env-env, name: "6210qwe/crawler-js-env", type: tool, domain: web, bundled: false, status: active,
-     capability: "爬虫补环境框架完善 — a 完善/improved fork-style crawler 补环境 framework. Recently pushed, low-star personal project.",
-     when_to_use: "General browser-environment patching (补环境) framework for running obfuscated anti-bot/sign JS headless in Node.",
+     capability: "Refined crawler environment-patching framework — an improved fork-style crawler environment-patching framework. Recently pushed, low-star personal project.",
+     when_to_use: "General browser-environment patching framework for running obfuscated anti-bot/sign JS headless in Node.",
      source: https://github.com/6210qwe/crawler-js-env, install: "git clone https://github.com/6210qwe/crawler-js-env"}
   - {id: envbridge-env, name: "nothing-2333/EnvBridge", type: tool, domain: web, bundled: false, status: active,
-     capability: "规范代码的 web 逆向补环境框架，with baseEnv/supplementEnv directory structure. Author argues 'web端，补环境才是最终的答案'. README lacks explicit Proxy detail but it is a structured 补环境 framework; low-star.",
-     when_to_use: "General browser-environment patching (补环境) framework for running obfuscated anti-bot/sign JS headless in Node.",
+     capability: "A clean-code web-reverse environment-patching framework, with baseEnv/supplementEnv directory structure. Author argues 'on the web side, environment-patching is the ultimate answer'. README lacks explicit Proxy detail but it is a structured environment-patching framework; low-star.",
+     when_to_use: "General browser-environment patching framework for running obfuscated anti-bot/sign JS headless in Node.",
      source: https://github.com/nothing-2333/EnvBridge, install: "git clone https://github.com/nothing-2333/EnvBridge"}
   - {id: all-vm2-vm-node-sandbox-env, name: "hybpjx/all_vm2_vm_node_sandbox", type: tool, domain: web, bundled: false, status: active,
-     capability: "志远(catvm-lineage)补环境框架 covering vm2 / vm / node sandbox variants. Educational Node sandbox 补环境 collection, mid-star.",
-     when_to_use: "Want a VM/sandbox-based (vm2 / isolated-vm) 补环境 framework to host obfuscated site JS with controlled globals and a harder-to-detect proxy than plain ES6 Proxy.",
+     capability: "Zhiyuan (catvm-lineage) environment-patching framework covering vm2 / vm / node sandbox variants. Educational Node sandbox environment-patching collection, mid-star.",
+     when_to_use: "Want a VM/sandbox-based (vm2 / isolated-vm) environment-patching framework to host obfuscated site JS with controlled globals and a harder-to-detect proxy than plain ES6 Proxy.",
      source: https://github.com/hybpjx/all_vm2_vm_node_sandbox, install: "git clone https://github.com/hybpjx/all_vm2_vm_node_sandbox"}
   - {id: reverse-env-env, name: "gongzhengwen/reverse-env", type: tool, domain: web, bundled: false, status: active,
-     capability: "Node.js 补环境框架 by prolific RE author gongzhengwen (who also mirrors catvm/sdenv/JsRpc). Personal Node 补环境 framework, low-star.",
-     when_to_use: "Running obfuscated anti-bot/sign JS headless in Node; want a recursive-Proxy 补环境 framework that auto-intercepts and reveals which window/navigator/document fields the target code reads. Drive it with the env-supplement-proxy skill.",
+     capability: "Node.js environment-patching framework by prolific RE author gongzhengwen (who also mirrors catvm/sdenv/JsRpc). Personal Node environment-patching framework, low-star.",
+     when_to_use: "Running obfuscated anti-bot/sign JS headless in Node; want a recursive-Proxy environment-patching framework that auto-intercepts and reveals which window/navigator/document fields the target code reads. Drive it with the env-supplement-proxy skill.",
      source: https://github.com/gongzhengwen/reverse-env, install: "git clone https://github.com/gongzhengwen/reverse-env"}
   - {id: crawler-browser-env, name: "gongzhengwen/crawler_browser", type: tool, domain: web, bundled: false, status: slowed,
-     capability: "基于志远大佬补环境框架，用正向开发思维重写并持续更新. Reworked 补环境 framework with forward-engineering approach; low-star personal project.",
-     when_to_use: "General browser-environment patching (补环境) framework for running obfuscated anti-bot/sign JS headless in Node.",
+     capability: "Based on Zhiyuan's environment-patching framework, rewritten with a forward-engineering mindset and continuously updated. Reworked environment-patching framework with forward-engineering approach; low-star personal project.",
+     when_to_use: "General browser-environment patching framework for running obfuscated anti-bot/sign JS headless in Node.",
      source: https://github.com/gongzhengwen/crawler_browser, install: "git clone https://github.com/gongzhengwen/crawler_browser"}
   - {id: catvm-env, name: "fanchangrui/catvm", type: tool, domain: web, bundled: false, status: slowed,
-     capability: "js逆向环境框架基础（持续补充）— the widely-referenced catvm 补环境 base framework (志远 lineage). High-star foundational educational env framework distinct from the already-known set.",
-     when_to_use: "Want a VM/sandbox-based (vm2 / isolated-vm) 补环境 framework to host obfuscated site JS with controlled globals and a harder-to-detect proxy than plain ES6 Proxy.",
+     capability: "JS-reverse environment framework foundation (continuously expanded) — the widely-referenced catvm environment-patching base framework (Zhiyuan lineage). High-star foundational educational env framework distinct from the already-known set.",
+     when_to_use: "Want a VM/sandbox-based (vm2 / isolated-vm) environment-patching framework to host obfuscated site JS with controlled globals and a harder-to-detect proxy than plain ES6 Proxy.",
      source: https://github.com/fanchangrui/catvm, install: "git clone https://github.com/fanchangrui/catvm"}
   - {id: catvm-env-2, name: "Big1moster/catvm", type: tool, domain: web, bundled: false, status: slowed,
-     capability: "志远补环境框架视频配套完结版 — completed/companion build of the catvm 补环境 course framework. High-star teaching reference.",
-     when_to_use: "Want a VM/sandbox-based (vm2 / isolated-vm) 补环境 framework to host obfuscated site JS with controlled globals and a harder-to-detect proxy than plain ES6 Proxy.",
+     capability: "Zhiyuan environment-patching framework video-companion final edition — completed/companion build of the catvm environment-patching course framework. High-star teaching reference.",
+     when_to_use: "Want a VM/sandbox-based (vm2 / isolated-vm) environment-patching framework to host obfuscated site JS with controlled globals and a harder-to-detect proxy than plain ES6 Proxy.",
      source: https://github.com/Big1moster/catvm, install: "git clone https://github.com/Big1moster/catvm"}
   - {id: hahavm-env, name: "yitiaohuangxianyu/HaHaVM", type: tool, domain: web, bundled: false, status: slowed,
-     capability: "一种补环境框架 (HaHaVM) — node VM-style browser-env patching framework. Mid-star, distinct project.",
-     when_to_use: "Want a VM/sandbox-based (vm2 / isolated-vm) 补环境 framework to host obfuscated site JS with controlled globals and a harder-to-detect proxy than plain ES6 Proxy.",
+     capability: "An environment-patching framework (HaHaVM) — node VM-style browser-env patching framework. Mid-star, distinct project.",
+     when_to_use: "Want a VM/sandbox-based (vm2 / isolated-vm) environment-patching framework to host obfuscated site JS with controlled globals and a harder-to-detect proxy than plain ES6 Proxy.",
      source: https://github.com/yitiaohuangxianyu/HaHaVM, install: "git clone https://github.com/yitiaohuangxianyu/HaHaVM"}
   - {id: fix-broswer-enviroment-frame-env, name: "Sruiis/fix_broswer_enviroment_frame", type: tool, domain: web, bundled: false, status: slowed,
-     capability: "自用补环境框架 (fix browser environment frame). Personal browser-env patching framework, mid-star.",
-     when_to_use: "General browser-environment patching (补环境) framework for running obfuscated anti-bot/sign JS headless in Node.",
+     capability: "Personal-use environment-patching framework (fix browser environment frame). Personal browser-env patching framework, mid-star.",
+     when_to_use: "General browser-environment patching framework for running obfuscated anti-bot/sign JS headless in Node.",
      source: https://github.com/Sruiis/fix_broswer_enviroment_frame, install: "git clone https://github.com/Sruiis/fix_broswer_enviroment_frame"}
   - {id: environmental-frame-env, name: "grandpaxizhilang/Environmental-frame", type: tool, domain: web, bundled: false, status: active,
-     capability: "补环境框架 (Environmental-frame). Standalone Chinese 补环境 framework, low-mid star.",
-     when_to_use: "General browser-environment patching (补环境) framework for running obfuscated anti-bot/sign JS headless in Node.",
+     capability: "Environment-patching framework (Environmental-frame). Standalone Chinese environment-patching framework, low-mid star.",
+     when_to_use: "General browser-environment patching framework for running obfuscated anti-bot/sign JS headless in Node.",
      source: https://github.com/grandpaxizhilang/Environmental-frame, install: "git clone https://github.com/grandpaxizhilang/Environmental-frame"}
   - {id: auto-repair-js-environment-env, name: "wwj520/auto_repair_js_environment", type: tool, domain: web, bundled: false, status: slowed,
-     capability: "js补环境框架 named 'auto_repair_js_environment' — auto-repair-oriented browser-env patching. Low-star personal project; name signals automatic env-completion intent.",
+     capability: "JS environment-patching framework named 'auto_repair_js_environment' — auto-repair-oriented browser-env patching. Low-star personal project; name signals automatic env-completion intent.",
      when_to_use: "Want auto-repair-oriented browser-env completion (run -> detect missing -> stub -> repeat). Use as a base for the env-supplement-proxy AI loop.",
      source: https://github.com/wwj520/auto_repair_js_environment, install: "git clone https://github.com/wwj520/auto_repair_js_environment"}
   - {id: pyv8env-env, name: "ConlinH/pyv8env", type: tool, domain: web, bundled: false, status: active,
-     capability: "纯 python 补环境框架 — runs browser-env patching for sign/anti-bot JS from Python (PyV8/V8). Pure-Python alternative to the Node frameworks, mid-star, NEW relative to known set.",
-     when_to_use: "Want a VM/sandbox-based (vm2 / isolated-vm) 补环境 framework to host obfuscated site JS with controlled globals and a harder-to-detect proxy than plain ES6 Proxy.",
+     capability: "Pure-Python environment-patching framework — runs browser-env patching for sign/anti-bot JS from Python (PyV8/V8). Pure-Python alternative to the Node frameworks, mid-star, NEW relative to known set.",
+     when_to_use: "Want a VM/sandbox-based (vm2 / isolated-vm) environment-patching framework to host obfuscated site JS with controlled globals and a harder-to-detect proxy than plain ES6 Proxy.",
      source: https://github.com/ConlinH/pyv8env, install: "git clone https://github.com/ConlinH/pyv8env"}
   - {id: pyside6-v8-engine-env, name: "letme58/pyside6-v8-engine", type: tool, domain: web, bundled: false, status: active,
-     capability: "PySide6 V8 JS逆向执行框架 - 用于JS逆向补环境. Executes target JS inside an embedded Qt/V8 (real browser engine) to avoid hand-patching env. Recently active, low-star.",
-     when_to_use: "Want to proxy env/DOM queries to a REAL browser, or patch the JS in a network proxy to skip 补环境 entirely, when the headless env ceiling is hit.",
+     capability: "PySide6 V8 JS-reverse execution framework - for JS-reverse environment-patching. Executes target JS inside an embedded Qt/V8 (real browser engine) to avoid hand-patching env. Recently active, low-star.",
+     when_to_use: "Want to proxy env/DOM queries to a REAL browser, or patch the JS in a network proxy to skip environment-patching entirely, when the headless env ceiling is hit.",
      source: https://github.com/letme58/pyside6-v8-engine, install: "git clone https://github.com/letme58/pyside6-v8-engine"}
   - {id: pqjs-env, name: "S-GGbond/PqJs", type: tool, domain: web, bundled: false, status: active,
-     capability: "'逆向不需要再补环境了'—uses Qt WebEngine (real browser) to directly run JS and return sign. The anti-补环境 / real-engine alternative; relevant as a competing approach. Active, mid-star.",
-     when_to_use: "Want to proxy env/DOM queries to a REAL browser, or patch the JS in a network proxy to skip 补环境 entirely, when the headless env ceiling is hit.",
+     capability: "'Reversing no longer needs environment-patching' — uses Qt WebEngine (real browser) to directly run JS and return sign. The anti-environment-patching / real-engine alternative; relevant as a competing approach. Active, mid-star.",
+     when_to_use: "Want to proxy env/DOM queries to a REAL browser, or patch the JS in a network proxy to skip environment-patching entirely, when the headless env ceiling is hit.",
      source: https://github.com/S-GGbond/PqJs, install: "git clone https://github.com/S-GGbond/PqJs"}
   - {id: node-crawler-env-utils-env, name: "PromiseAll/node-crawler-env-utils", type: tool, domain: web, bundled: false, status: active,
-     capability: "爬虫补环境，吐环境，代理工具 (env-patch + 吐环境 + proxy utilities). Distinct repo from the known warterbili/node-crawler-env-utils — utility toolkit for proxy-based env dumping. Low-star.",
-     when_to_use: "Headless JS 补环境 where you want the framework to LOG accessed-but-undefined env paths (吐环境) and locate them by call stack, so you iteratively complete the environment. Pairs with env-supplement-proxy.",
+     capability: "Crawler environment-patching, env-dumping, proxy tools (env-patch + env-dumping + proxy utilities). Distinct repo from the known warterbili/node-crawler-env-utils — utility toolkit for proxy-based env dumping. Low-star.",
+     when_to_use: "Headless JS environment-patching where you want the framework to LOG accessed-but-undefined env paths (env-dumping) and locate them by call stack, so you iteratively complete the environment. Pairs with env-supplement-proxy.",
      source: https://github.com/PromiseAll/node-crawler-env-utils, install: "git clone https://github.com/PromiseAll/node-crawler-env-utils"}
   - {id: reverse-ai-engine-env, name: "70548887/reverse-ai-engine", type: tool, domain: web, bundled: false, status: active,
      capability: "AI-driven automated reverse-engineering system for Web & App: JS reverse, APP reverse, signature-algorithm extraction, event-driven unattended task pipeline with a 5-tier memory layer and mitmproxy traffic capture. Markets itself as an auto reverse engine; README does not explicitly document a run->",
@@ -1099,99 +1099,99 @@ entries:
      source: https://github.com/JiangtaoQu/js-reverse-evolver, install: "git clone https://github.com/JiangtaoQu/js-reverse-evolver"}
   - {id: ai-js-debugger-env, name: "Valerian7/AI_JS_DEBUGGER", type: tool, domain: web, bundled: false, status: active,
      capability: "AI-automated JS reverse-analysis tool built on Chrome DevTools Protocol (CDP). Flask + Socket.IO backend, web UI, CDP session mgmt, fixed-file + XHR breakpoints with automatic top-of-stack backtracking, hook scripts to capture crypto keys/ciphertext, and LLM integration via any OpenAI-compatible API",
-     when_to_use: "Want to proxy env/DOM queries to a REAL browser, or patch the JS in a network proxy to skip 补环境 entirely, when the headless env ceiling is hit.",
+     when_to_use: "Want to proxy env/DOM queries to a REAL browser, or patch the JS in a network proxy to skip environment-patching entirely, when the headless env ceiling is hit.",
      source: https://github.com/Valerian7/AI_JS_DEBUGGER, install: "git clone https://github.com/Valerian7/AI_JS_DEBUGGER"}
   - {id: jshook-reverse-tool-env, name: "wuji66dde/jshook-reverse-tool", type: tool, domain: web, bundled: false, status: active,
      capability: "AI-powered JavaScript reverse-engineering tool (companion/implementation to the author's jshook-skill). CDP-based AI-assisted hook + deobf reversing. Same family as jshook-skill; relevant AI-reverse tooling, not a verified env-stub auto-loop.",
-     when_to_use: "Want to proxy env/DOM queries to a REAL browser, or patch the JS in a network proxy to skip 补环境 entirely, when the headless env ceiling is hit.",
+     when_to_use: "Want to proxy env/DOM queries to a REAL browser, or patch the JS in a network proxy to skip environment-patching entirely, when the headless env ceiling is hit.",
      source: https://github.com/wuji66dde/jshook-reverse-tool, install: "git clone https://github.com/wuji66dde/jshook-reverse-tool"}
   - {id: jsrpc-decrypt-env, name: "f4s1on/JSRPC_Decrypt", type: tool, domain: web, bundled: false, status: slowed,
      capability: "Auto-decryption proxy framework: chains two mitmproxy instances that pattern-match encrypted request/response payloads and forward crypto operations to a Sekiro server connected to a real browser, transparently decrypting traffic without env-patching.",
-     when_to_use: "Want to proxy env/DOM queries to a REAL browser, or patch the JS in a network proxy to skip 补环境 entirely, when the headless env ceiling is hit.",
+     when_to_use: "Want to proxy env/DOM queries to a REAL browser, or patch the JS in a network proxy to skip environment-patching entirely, when the headless env ceiling is hit.",
      source: https://github.com/f4s1on/JSRPC_Decrypt, install: "git clone https://github.com/f4s1on/JSRPC_Decrypt"}
   - {id: chromium-jsrpc-env, name: "Samge0/chromium-jsrpc", type: tool, domain: web, bundled: false, status: active,
      capability: "Docker-based container bundling Chromium + JsRpc to run remote JS execution through a real browser for reverse engineering, with no certificate configuration needed. Containerized turnkey proxy-to-real-browser RPC.",
-     when_to_use: "Want to proxy env/DOM queries to a REAL browser, or patch the JS in a network proxy to skip 补环境 entirely, when the headless env ceiling is hit.",
+     when_to_use: "Want to proxy env/DOM queries to a REAL browser, or patch the JS in a network proxy to skip environment-patching entirely, when the headless env ceiling is hit.",
      source: https://github.com/Samge0/chromium-jsrpc, install: "git clone https://github.com/Samge0/chromium-jsrpc"}
   - {id: cake-jsrpc-env, name: "our-cakes/cake_jsrpc", type: tool, domain: web, bundled: false, status: active,
      capability: "WebSocket bidirectional RPC system (Java backend <-> browser JS) for calling page-side encryption/decryption functions dynamically, avoiding manually extracting and reversing the JS crypto logic.",
-     when_to_use: "Want to proxy env/DOM queries to a REAL browser, or patch the JS in a network proxy to skip 补环境 entirely, when the headless env ceiling is hit.",
+     when_to_use: "Want to proxy env/DOM queries to a REAL browser, or patch the JS in a network proxy to skip environment-patching entirely, when the headless env ceiling is hit.",
      source: https://github.com/our-cakes/cake_jsrpc, install: "git clone https://github.com/our-cakes/cake_jsrpc"}
   - {id: jsrpc-env, name: "71n9/JSRPC", type: tool, domain: web, bundled: false, status: slowed,
-     capability: "JSRPC tool for real-time remote-calling JS in a real browser, explicitly to 'avoid the hassle of env-patching' (免去补环境的烦恼).",
-     when_to_use: "Want to proxy env/DOM queries to a REAL browser, or patch the JS in a network proxy to skip 补环境 entirely, when the headless env ceiling is hit.",
+     capability: "JSRPC tool for real-time remote-calling JS in a real browser, explicitly to 'avoid the hassle of env-patching'.",
+     when_to_use: "Want to proxy env/DOM queries to a REAL browser, or patch the JS in a network proxy to skip environment-patching entirely, when the headless env ceiling is hit.",
      source: https://github.com/71n9/JSRPC, install: "git clone https://github.com/71n9/JSRPC"}
   - {id: jsrpcex-env, name: "Y5neKO/JsRpcEX", type: tool, domain: web, bundled: false, status: active,
      capability: "Convenience wrapper/enhancement for jxhczhl/JsRpc, providing Python tooling to talk to the JsRpc WebSocket interface and execute browser JS remotely.",
-     when_to_use: "Want to proxy env/DOM queries to a REAL browser, or patch the JS in a network proxy to skip 补环境 entirely, when the headless env ceiling is hit.",
+     when_to_use: "Want to proxy env/DOM queries to a REAL browser, or patch the JS in a network proxy to skip environment-patching entirely, when the headless env ceiling is hit.",
      source: https://github.com/Y5neKO/JsRpcEX, install: "git clone https://github.com/Y5neKO/JsRpcEX"}
   - {id: js-rpc-env, name: "Leviathangk/js-rpc", type: tool, domain: web, bundled: false, status: active,
      capability: "JSRPC communication framework for browser interaction in scraping: Go server, Python example client, plus JS injection files to remote-call real-browser functions.",
-     when_to_use: "Want to proxy env/DOM queries to a REAL browser, or patch the JS in a network proxy to skip 补环境 entirely, when the headless env ceiling is hit.",
+     when_to_use: "Want to proxy env/DOM queries to a REAL browser, or patch the JS in a network proxy to skip environment-patching entirely, when the headless env ceiling is hit.",
      source: https://github.com/Leviathangk/js-rpc, install: "git clone https://github.com/Leviathangk/js-rpc"}
   - {id: xiaolanben-h-sign-env, name: "r1is/xiaolanben_h_sign", type: tool, domain: web, bundled: false, status: active,
-     capability: "Xiaolanben h_sign signature implemented two ways: via JSRPC remote-call to a real browser (Sekiro 'sign' action) AND via Node.js env-patching — a useful side-by-side of proxy-to-real-browser vs 补环境.",
-     when_to_use: "Want to proxy env/DOM queries to a REAL browser, or patch the JS in a network proxy to skip 补环境 entirely, when the headless env ceiling is hit.",
+     capability: "Xiaolanben h_sign signature implemented two ways: via JSRPC remote-call to a real browser (Sekiro 'sign' action) AND via Node.js env-patching — a useful side-by-side of proxy-to-real-browser vs environment-patching.",
+     when_to_use: "Want to proxy env/DOM queries to a REAL browser, or patch the JS in a network proxy to skip environment-patching entirely, when the headless env ceiling is hit.",
      source: https://github.com/r1is/xiaolanben_h_sign, install: "git clone https://github.com/r1is/xiaolanben_h_sign"}
   - {id: sekiro-lang-env, name: "langgithub/sekiro-lang", type: tool, domain: web, bundled: false, status: active,
      capability: "Sekiro 'family pack' study repo collecting Sekiro variants across iOS/Android/Python/Xposed/Frida/Unidbg — documents the RPC-to-real-runtime principle including browser/JS targets.",
-     when_to_use: "Want to proxy env/DOM queries to a REAL browser, or patch the JS in a network proxy to skip 补环境 entirely, when the headless env ceiling is hit.",
+     when_to_use: "Want to proxy env/DOM queries to a REAL browser, or patch the JS in a network proxy to skip environment-patching entirely, when the headless env ceiling is hit.",
      source: https://github.com/langgithub/sekiro-lang, install: "git clone https://github.com/langgithub/sekiro-lang"}
   - {id: sekiropython-env, name: "langgithub/SekiroPython", type: tool, domain: web, bundled: false, status: slowed,
      capability: "Python member of the Sekiro family combined with Frida RPC to remote-call the real runtime over the network (decoupling from USB), part of the RPC-to-real-environment lineage.",
-     when_to_use: "Want to proxy env/DOM queries to a REAL browser, or patch the JS in a network proxy to skip 补环境 entirely, when the headless env ceiling is hit.",
+     when_to_use: "Want to proxy env/DOM queries to a REAL browser, or patch the JS in a network proxy to skip environment-patching entirely, when the headless env ceiling is hit.",
      source: https://github.com/langgithub/SekiroPython, install: "git clone https://github.com/langgithub/SekiroPython"}
   - {id: py-jsrpc-env, name: "p1s1lver/py-JsRpc", type: tool, domain: web, bundled: false, status: active,
      capability: "Python-language reimplementation of JsRpc — a Python server to inject a browser client and remote-call JS, avoiding the original Go dependency.",
-     when_to_use: "Want to proxy env/DOM queries to a REAL browser, or patch the JS in a network proxy to skip 补环境 entirely, when the headless env ceiling is hit.",
+     when_to_use: "Want to proxy env/DOM queries to a REAL browser, or patch the JS in a network proxy to skip environment-patching entirely, when the headless env ceiling is hit.",
      source: https://github.com/p1s1lver/py-JsRpc, install: "git clone https://github.com/p1s1lver/py-JsRpc"}
   - {id: browser-environment-patch-env, name: "dengmingen/Browser-Environment-Patch", type: tool, domain: web, bundled: false, status: active,
-     capability: "Low-star Node.js 补环境 project that mocks window/document/navigator/location and a fabricated DOM so browser-only JS runs in Node — pure simulation, no proxy/real browser. NEW personal repo beyond the known set.",
-     when_to_use: "jsdom-based 补环境 framework for hosting site JS headlessly; alternative to node-bridge-build.",
+     capability: "Low-star Node.js environment-patching project that mocks window/document/navigator/location and a fabricated DOM so browser-only JS runs in Node — pure simulation, no proxy/real browser. NEW personal repo beyond the known set.",
+     when_to_use: "jsdom-based environment-patching framework for hosting site JS headlessly; alternative to node-bridge-build.",
      source: https://github.com/dengmingen/Browser-Environment-Patch, install: "git clone https://github.com/dengmingen/Browser-Environment-Patch"}
   - {id: node-sandbox-env, name: "Big1moster/node-sandbox", type: tool, domain: web, bundled: false, status: slowed,
-     capability: "node 补环境沙箱。Big1moster 版的 node-sandbox 补环境实现。NEW.",
-     when_to_use: "Want a VM/sandbox-based (vm2 / isolated-vm) 补环境 framework to host obfuscated site JS with controlled globals and a harder-to-detect proxy than plain ES6 Proxy.",
+     capability: "Node environment-patching sandbox. Big1moster's version of the node-sandbox environment-patching implementation. NEW.",
+     when_to_use: "Want a VM/sandbox-based (vm2 / isolated-vm) environment-patching framework to host obfuscated site JS with controlled globals and a harder-to-detect proxy than plain ES6 Proxy.",
      source: https://github.com/Big1moster/node-sandbox, install: "git clone https://github.com/Big1moster/node-sandbox"}
   - {id: sdenv-jsdom-env, name: "pysunday/sdenv-jsdom", type: tool, domain: web, bundled: false, status: active,
-     capability: "补环境框架 sdenv 的专用 jsdom 版本。sdenv 生态新成员，用 jsdom 作底层 DOM 补全。NEW variant beyond base sdenv.",
-     when_to_use: "jsdom-based 补环境 framework for hosting site JS headlessly; alternative to node-bridge-build.",
+     capability: "A dedicated jsdom version of the sdenv environment-patching framework. A new member of the sdenv ecosystem, using jsdom for the underlying DOM completion. NEW variant beyond base sdenv.",
+     when_to_use: "jsdom-based environment-patching framework for hosting site JS headlessly; alternative to node-bridge-build.",
      source: https://github.com/pysunday/sdenv-jsdom, install: "git clone https://github.com/pysunday/sdenv-jsdom"}
   - {id: sdenv-rs-interface-version-env, name: "lasawang/sdenv-rs-interface-version", type: tool, domain: web, bundled: false, status: active,
-     capability: "sdenv 的瑞数逆向接口版本，提供 Node API / Python SDK / GUI 封装补环境调用。NEW wrapper around sdenv.",
-     when_to_use: "jsdom-based 补环境 framework for hosting site JS headlessly; alternative to node-bridge-build.",
+     capability: "A Ruishu-reverse interface version of sdenv, providing Node API / Python SDK / GUI wrappers for environment-patching calls. NEW wrapper around sdenv.",
+     when_to_use: "jsdom-based environment-patching framework for hosting site JS headlessly; alternative to node-bridge-build.",
      source: https://github.com/lasawang/sdenv-rs-interface-version, install: "git clone https://github.com/lasawang/sdenv-rs-interface-version"}
   - {id: jsvmenv-env-2, name: "Leviathangk/jsVmEnv", type: tool, domain: web, bundled: false, status: active,
-     capability: "js 补环境框架（jsVmEnv），Leviathangk 个人实现。NEW.",
-     when_to_use: "Want a VM/sandbox-based (vm2 / isolated-vm) 补环境 framework to host obfuscated site JS with controlled globals and a harder-to-detect proxy than plain ES6 Proxy.",
+     capability: "JS environment-patching framework (jsVmEnv), Leviathangk's personal implementation. NEW.",
+     when_to_use: "Want a VM/sandbox-based (vm2 / isolated-vm) environment-patching framework to host obfuscated site JS with controlled globals and a harder-to-detect proxy than plain ES6 Proxy.",
      source: https://github.com/Leviathangk/jsVmEnv, install: "git clone https://github.com/Leviathangk/jsVmEnv"}
   - {id: complementary-environmental-framework-env, name: "Leviathangk/-Complementary-Environmental-Framework", type: tool, domain: web, bundled: false, status: slowed,
-     capability: "跟着志远大佬学做的补环境框架，学习型实现。Low-star personal NEW.",
-     when_to_use: "jsdom-based 补环境 framework for hosting site JS headlessly; alternative to node-bridge-build.",
+     capability: "An environment-patching framework built while learning from Zhiyuan, a learning-oriented implementation. Low-star personal NEW.",
+     when_to_use: "jsdom-based environment-patching framework for hosting site JS headlessly; alternative to node-bridge-build.",
      source: https://github.com/Leviathangk/-Complementary-Environmental-Framework, install: "git clone https://github.com/Leviathangk/-Complementary-Environmental-Framework"}
   - {id: catvm-env-3, name: "archerU/catvm", type: tool, domain: web, bundled: false, status: active,
-     capability: "js 补环境版本（catvm 的另一份独立实现/学习版）。Low-star NEW.",
-     when_to_use: "jsdom-based 补环境 framework for hosting site JS headlessly; alternative to node-bridge-build.",
+     capability: "JS environment-patching version (another independent implementation/learning edition of catvm). Low-star NEW.",
+     when_to_use: "jsdom-based environment-patching framework for hosting site JS headlessly; alternative to node-bridge-build.",
      source: https://github.com/archerU/catvm, install: "git clone https://github.com/archerU/catvm"}
   - {id: sdenv-proj-env, name: "CrankyChili/sdenv_proj", type: tool, domain: web, bundled: false, status: active,
-     capability: "sdenv 结合瑞数 vmp 实战工程，使用 sdenv 补环境实跑瑞数的示例项目。NEW practical repo.",
-     when_to_use: "jsdom-based 补环境 framework for hosting site JS headlessly; alternative to node-bridge-build.",
+     capability: "A hands-on project combining sdenv with Ruishu VMP, an example project that uses sdenv environment-patching to actually run Ruishu. NEW practical repo.",
+     when_to_use: "jsdom-based environment-patching framework for hosting site JS headlessly; alternative to node-bridge-build.",
      source: https://github.com/CrankyChili/sdenv_proj, install: "git clone https://github.com/CrankyChili/sdenv_proj"}
   - {id: ruishu6-wsfdc-env, name: "ctl456/ruishu6-wsfdc", type: tool, domain: web, bundled: false, status: active,
-     capability: "瑞数6 网上房地产补环境，获取 cookie 及后缀 XJlCTRRM 的补环境实战。NEW.",
-     when_to_use: "jsdom-based 补环境 framework for hosting site JS headlessly; alternative to node-bridge-build.",
+     capability: "Ruishu6 environment-patching for the online real-estate site, a hands-on environment-patching case for obtaining the cookie and the XJlCTRRM URL suffix. NEW.",
+     when_to_use: "jsdom-based environment-patching framework for hosting site JS headlessly; alternative to node-bridge-build.",
      source: https://github.com/ctl456/ruishu6-wsfdc, install: "git clone https://github.com/ctl456/ruishu6-wsfdc"}
   - {id: rs-pass-all-env, name: "QingfengBetter/rs_pass_all", type: tool, domain: web, bundled: false, status: active,
-     capability: "瑞数加密通杀方案，宣称免去补环境通杀当前及未来版本（替代/对照补环境路线）。NEW, relevant as anti-pattern reference.",
-     when_to_use: "General browser-environment patching (补环境) framework for running obfuscated anti-bot/sign JS headless in Node.",
+     capability: "A Ruishu-encryption universal-bypass solution, claiming to skip environment-patching and universally bypass current and future versions (an alternative/contrast to the environment-patching route). NEW, relevant as anti-pattern reference.",
+     when_to_use: "General browser-environment patching framework for running obfuscated anti-bot/sign JS headless in Node.",
      source: https://github.com/QingfengBetter/rs_pass_all, install: "git clone https://github.com/QingfengBetter/rs_pass_all"}
   - {id: xiaohongshu-env, name: "G-catmint/xiaohongshu", type: tool, domain: web, bundled: false, status: active,
-     capability: "小红书 headers 加密参数解决方案，结合 JSVMP 纯算还原与全扣补环境手段。补环境实战案例。NEW.",
-     when_to_use: "jsdom-based 补环境 framework for hosting site JS headlessly; alternative to node-bridge-build.",
+     capability: "A Xiaohongshu headers encrypted-param solution, combining JSVMP pure-algorithm restoration with full-extraction environment-patching techniques. A hands-on environment-patching case. NEW.",
+     when_to_use: "jsdom-based environment-patching framework for hosting site JS headlessly; alternative to node-bridge-build.",
      source: https://github.com/G-catmint/xiaohongshu, install: "git clone https://github.com/G-catmint/xiaohongshu"}
   - {id: xcx-collect-env, name: "r1is/xcx_collect", type: tool, domain: web, bundled: false, status: slowed,
-     capability: "node 补环境实现小蓝本 h_sign 获取（小程序信息收集）。Low-star 补环境实战 NEW.",
-     when_to_use: "jsdom-based 补环境 framework for hosting site JS headlessly; alternative to node-bridge-build.",
+     capability: "Node environment-patching implementation for obtaining Xiaolanben h_sign (mini-program information collection). Low-star hands-on environment-patching NEW.",
+     when_to_use: "jsdom-based environment-patching framework for hosting site JS headlessly; alternative to node-bridge-build.",
      source: https://github.com/r1is/xcx_collect, install: "git clone https://github.com/r1is/xcx_collect"}
 
 

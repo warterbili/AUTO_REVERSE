@@ -68,8 +68,8 @@ Step 3 — Do requests carry a signature / encrypted parameter (X-Bogus, sign, _
    3. Reproduce — pick by cost / stability:
       ├─ algorithm tractable & stable           → pure-algo rewrite (Python/JS). Cheapest at scale.
       ├─ too hard / drifts fast / needs live env → skill: jsrpc-universal (call the real fn over RPC; low-mid QPS)
-      └─ run the obfuscated JS headless in Node (high QPS, no browser) → 补环境:
-         ├─ auto-detect what's missing via recursive Proxy + AI loop → skill: env-supplement-proxy (自动补环境/吐环境)
+      └─ run the obfuscated JS headless in Node (high QPS, no browser) → environment supplementation:
+         ├─ auto-detect what's missing via recursive Proxy + AI loop → skill: env-supplement-proxy (auto environment supplementation / environment emission)
          ├─ jsdom template bridge for a specific SDK              → skill: node-bridge-build
          └─ ready framework (Ruishu VMP etc.)                    → catalog: sdenv / qxVm / boda_jsEnv ; escalate to cdp-browser at the ceiling
 

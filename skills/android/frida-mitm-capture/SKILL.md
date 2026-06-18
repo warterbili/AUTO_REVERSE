@@ -49,7 +49,7 @@ The script automatically: detects ADB → sets up `adb reverse` USB forwarding �
 
 ### Phase 2: Wait for the User's Action
 
-Keep waiting and do nothing until the user says "done" / "好了" / "finished".
+Keep waiting and do nothing until the user says "done" / "finished".
 
 ### Phase 3: Stop and Clean Up + Analyze (wrapper script)
 

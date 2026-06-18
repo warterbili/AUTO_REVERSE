@@ -136,11 +136,11 @@ entries:
      source: https://github.com/frida/frida-tools, install: "pip install frida-tools"}
   - {id: sekiro, name: "Sekiro", type: tool, domain: android, bundled: false, status: active,
      capability: "Long-connection + code-injection framework that exposes Android private APIs as RPC, letting a server invoke in-app .so/crypto functions across a device fleet for data collection.",
-     when_to_use: "You want to call an app's native signing/encryption function as a remote RPC (RPC over the device rather than reimplementing the algorithm) for scaled data collection or群控.",
+     when_to_use: "You want to call an app's native signing/encryption function as a remote RPC (RPC over the device rather than reimplementing the algorithm) for scaled data collection or device-fleet control.",
      source: https://github.com/virjar/sekiro, install: "git clone https://github.com/virjar/sekiro"}
   - {id: r0ysue-androidsecuritystudy, name: "r0ysue AndroidSecurityStudy", type: script, domain: android, bundled: false, status: active,
      capability: "Chinese-community Android security learning repo: hands-on scripts and notes for unpacking, Frida hooking, unidbg emulation, and so/native reverse engineering.",
-     when_to_use: "You want reference scripts/walkthroughs for a specific Android RE technique (脱壳, Frida pattern, unidbg setup, so analysis) rather than a runnable single tool.",
+     when_to_use: "You want reference scripts/walkthroughs for a specific Android RE technique (unpacking, Frida pattern, unidbg setup, so analysis) rather than a runnable single tool.",
      source: https://github.com/r0ysue/AndroidSecurityStudy, install: "git clone https://github.com/r0ysue/AndroidSecurityStudy"}
   - {id: snapchat-ssl-unpinning, name: "snapchat-ssl-unpinning", type: script, domain: android, bundled: false, status: active,
      capability: "Frida scripts and research notes to bypass Snapchat's SSL pinning on its LLVM-obfuscated client, enabling MITM capture of its HTTPS traffic.",
@@ -209,16 +209,16 @@ entries:
      when_to_use: "When you need a drop-in Frida Java/native function tracer for an Android app and want vetted raptor-style scripts rather than writing tracing hooks from scratch.",
      source: https://github.com/0xdea/frida-scripts, install: "git clone https://github.com/0xdea/frida-scripts"}
   - {id: frida-il2cppdumper-immy, name: "frida-il2cppDumper (IIIImmmyyy)", type: tool, domain: android, bundled: false, status: active,
-     capability: "Enhanced Riru/Frida IL2CPP dumper recovering source-level type/method info directly from process memory; handles NetEase yidun (易盾) protected Unity games.",
+     capability: "Enhanced Riru/Frida IL2CPP dumper recovering source-level type/method info directly from process memory; handles NetEase Yidun protected Unity games.",
      when_to_use: "When dumping a Unity IL2CPP Android game whose global-metadata is encrypted/stripped or protected by NetEase yidun, and static Il2CppDumper fails so you need a memory-based runtime dump.",
      source: https://github.com/IIIImmmyyy/frida-il2cppDumper, install: "git clone https://github.com/IIIImmmyyy/frida-il2cppDumper"}
   - {id: fart-fix, name: "FART-Fix", type: script, domain: android, bundled: false, status: active,
      capability: "Updated Frida unpacking scripts adapting FART to run on Frida 16.1.0 + Android 12 for ART-based DEX dumping",
-     when_to_use: "Want to use FART-style Frida unpacking (whole-app/抽取壳 dump) on a modern stack (Frida 16.1.0, Android 12) where the original FART scripts break",
+     when_to_use: "Want to use FART-style Frida unpacking (whole-app / method-extraction packer dump) on a modern stack (Frida 16.1.0, Android 12) where the original FART scripts break",
      source: https://github.com/LLeavesG/FART-Fix, install: "git clone https://github.com/LLeavesG/FART-Fix"}
   - {id: youpk-unpacker, name: "Youpk (unpacker)", type: tool, domain: android, bundled: false, status: active,
-     capability: "ART active-invocation unpacker (脱壳机): builds call chains to traverse all methods and backfill CodeItem, defeating whole-app and method-extraction packers (Pixel1 / Android 7.1.2)",
-     when_to_use: "Need to unpack an Android app protected by an extraction/抽取壳 packer where in-memory frida-dexdump fails — use Youpk's ART active-call traversal on a Pixel1 / Android 7.1.2 ROM",
+     capability: "ART active-invocation unpacker: builds call chains to traverse all methods and backfill CodeItem, defeating whole-app and method-extraction packers (Pixel1 / Android 7.1.2)",
+     when_to_use: "Need to unpack an Android app protected by a method-extraction packer where in-memory frida-dexdump fails — use Youpk's ART active-call traversal on a Pixel1 / Android 7.1.2 ROM",
      source: https://github.com/youlor/unpacker, install: "git clone https://github.com/youlor/unpacker"}
   - {id: user1342-awesome-android-re, name: "Awesome-Android-Reverse-Engineering", type: platform, domain: android, bundled: false, status: active,
      capability: "Curated Android RE index: decompilers, unpackers, Frida/dynamic-analysis tooling, smali resources and training material.",
@@ -246,7 +246,7 @@ entries:
      source: https://github.com/r0ysue/r0rpc, install: "git clone https://github.com/r0ysue/r0rpc"}
   - {id: crack-libsgmain, name: "crack_libsgmain", type: script, domain: android, bundled: false, status: active,
      capability: "Reverse-engineering case/scripts for Alibaba JAQ security's libsgmain (sgmain) native sign library.",
-     when_to_use: "Your target uses Alibaba/Aliyun JAQ (聚安全) native protection — libsgmain / sgmain sign generation — and you want a worked reversing reference for that .so.",
+     when_to_use: "Your target uses Alibaba/Aliyun JAQ (Ju Security) native protection — libsgmain / sgmain sign generation — and you want a worked reversing reference for that .so.",
      source: https://github.com/r0ysue/crack_libsgmain, install: "git clone https://github.com/r0ysue/crack_libsgmain"}
   - {id: smartdone-frida-scripts, name: "Frida-Scripts (smartdone)", type: script, domain: android, bundled: false, status: archived,
      capability: "Collection of practical Frida scripts for common Android hooking tasks.",
@@ -261,7 +261,7 @@ entries:
      when_to_use: "You're learning a specific Android RE technique from CYRUS-STUDIO write-ups and want the matching runnable example project to follow along.",
      source: https://github.com/CYRUS-STUDIO/AndroidExample, install: "git clone https://github.com/CYRUS-STUDIO/AndroidExample"}
   - {id: cyrus-frida-fart, name: "frida_fart", type: tool, domain: android, bundled: false, status: active,
-     capability: "Frida-enhanced FART providing stronger active-call (主动调用) DEX unpacking without Xposed.",
+     capability: "Frida-enhanced FART providing stronger active-invocation DEX unpacking without Xposed.",
      when_to_use: "You need FART-style unpacking with forced method invocation but want it driven by Frida (no Xposed) to dump DEX from a packed app.",
      source: https://github.com/CYRUS-STUDIO/frida_fart, install: "git clone https://github.com/CYRUS-STUDIO/frida_fart"}
   - {id: douyin-httpso-gorgon, name: "China-0x4thk/douyin_httpso", type: tool, domain: android, bundled: false, status: active,
@@ -270,11 +270,11 @@ entries:
      source: https://github.com/China-0x4thk/douyin_httpso, install: "git clone https://github.com/China-0x4thk/douyin_httpso"}
   - {id: xhs-unidbg-sign-litsummer, name: "LitSummer/xhs_unidbg_sign", type: script, domain: android, bundled: false, status: active,
      capability: "unidbg emulation project generating Xiaohongshu app sign for version 7.6.73, with JNI env-patching for the native signer.",
-     when_to_use: "When reversing the Xiaohongshu Android app's native sign and you want to run the .so under unidbg instead of on-device: use as a worked JNI补环境 example for XHS 7.6.73. Pair with unidbg-emulation/jni-env-patching skills.",
+     when_to_use: "When reversing the Xiaohongshu Android app's native sign and you want to run the .so under unidbg instead of on-device: use as a worked JNI env-patching example for XHS 7.6.73. Pair with unidbg-emulation/jni-env-patching skills.",
      source: https://github.com/LitSummer/xhs_unidbg_sign, install: "git clone https://github.com/LitSummer/xhs_unidbg_sign"}
   - {id: unidbg-mt-server-mtgsig23, name: "irabbit666666/unidbg-mt-server23", type: tool, domain: android, bundled: false, status: active,
      capability: "Java unidbg-based emulation service that produces Meituan mtgsig 2.3 signatures, with native JNI env-patching wired up.",
-     when_to_use: "When Meituan/美团 requests are rejected without mtgsig (version 2.3) and you want to generate it by emulating the app .so under unidbg as an HTTP service rather than calling a device. Reference for mtgsig 2.3 补环境.",
+     when_to_use: "When Meituan requests are rejected without mtgsig (version 2.3) and you want to generate it by emulating the app .so under unidbg as an HTTP service rather than calling a device. Reference for mtgsig 2.3 env-patching.",
      source: https://github.com/irabbit666666/unidbg-mt-server23, install: "git clone https://github.com/irabbit666666/unidbg-mt-server23"}
   - {id: akamai-bmp-decrypt-yoghurtbot, name: "yoghurtbot/akamai-bmp-decrypt", type: script, domain: android, bundled: false, status: active,
      capability: "Snippet demonstrating how to decrypt the sensor strings produced by the Akamai Mobile SDK (BMP).",

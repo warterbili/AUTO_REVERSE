@@ -1,63 +1,63 @@
-# DailyPay 注册 403 诊断报告（与 Castle 服务器级 E2E 的边界）
+# DailyPay Signup 403 Diagnosis Report (the boundary of Castle server-level E2E)
 
-> 起因：尝试做 Castle "服务器接受级"端到端验证时，发现注册（signup）请求被 403 拒绝。
-> 本文记录对这个 403 的系统性定因，结论：**与 Castle 无关，是 CloudFront 边缘策略门**。
+> Origin: while attempting "server-acceptance-level" end-to-end verification of Castle, the signup request was found to be rejected with 403.
+> This document records the systematic root-cause analysis of this 403; conclusion: **unrelated to Castle, it is a CloudFront edge policy gate**.
 
-## 1. 被拦的请求（真机抓包，frida 进程内 hook）
+## 1. The blocked request (captured on real device, frida in-process hook)
 
 ```
 POST https://employees-api.dailypay.com/v2/signup_users   →  403 Forbidden
-请求头（节选）：
-   x-castle-request-token: <1602 chars>          ← 这接口在 Castle 白名单内
+Request headers (excerpt):
+   x-castle-request-token: <1602 chars>          ← this endpoint is on the Castle allowlist
    x-castle-client-id:     <cuid>
    x-app-bundle: com.DailyPay.DailyPay
    x-app-version: mobile
-请求体：{"email":"<redacted>","password":"<redacted>","referral":{},
+Request body: {"email":"<redacted>","password":"<redacted>","referral":{},
         "country":"USA","language_preference":"en","use_jwt":true}
-响应头（决定性）：
+Response headers (decisive):
    server: CloudFront
-   x-cache: LambdaGeneratedResponse from cloudfront     ← Lambda@Edge 在边缘直接生成 403
+   x-cache: LambdaGeneratedResponse from cloudfront     ← Lambda@Edge generates the 403 directly at the edge
    via: 1.1 …cloudfront.net (CloudFront)
    x-amz-cf-pop: LAX54-P11
-   content-length: 0                                     ← 空响应体
+   content-length: 0                                     ← empty response body
 ```
 
-CDN 区分：注册接口 `employees-api.dailypay.com` = **AWS CloudFront**；市场站 `get.dailypay.com` = **Cloudflare**（不同基础设施）。拦截发生在 **CloudFront 的 Lambda@Edge**。
+CDN distinction: the signup endpoint `employees-api.dailypay.com` = **AWS CloudFront**; the marketing site `get.dailypay.com` = **Cloudflare** (different infrastructure). The blocking happens at **CloudFront's Lambda@Edge**.
 
-## 2. 变量逐一证伪（直接对照实验）
+## 2. Variables disproved one by one (direct controlled experiments)
 
-| 变量 | 实验方法 | 结果 |
+| Variable | Experiment method | Result |
 |---|---|---|
-| Castle token / 设备指纹 | 裸请求（无 token、无指纹）curl | ❌ 仍 403 |
-| 客户端类型 | 原生 app / web 浏览器 / curl | ❌ 三者都失败 |
-| IP 地理（国家） | 美国边缘（LAX/IAD/DFW/MSP/BOS） | ❌ 仍 403 |
-| IP 信誉 / 数据中心 | 两台美国 VPS（ByteVirt/达拉斯） | ❌ 仍 403 |
-| **IP 真住宅** | ScrapeOps 住宅代理，真美国 ISP（Charter/Spectrum，3 个不同住宅 IP） | ❌ 仍 403 |
-| **TLS / JA3 指纹** | curl-cffi 伪装 Chrome / Safari-iOS | ❌ 仍 403 |
-| User-Agent / app 头 | 浏览器 UA、全套 app 头（x-app-bundle/version 等） | ❌ 仍 403 |
+| Castle token / device fingerprint | bare request (no token, no fingerprint) via curl | ❌ still 403 |
+| Client type | native app / web browser / curl | ❌ all three fail |
+| IP geography (country) | US edges (LAX/IAD/DFW/MSP/BOS) | ❌ still 403 |
+| IP reputation / data center | two US VPS (ByteVirt / Dallas) | ❌ still 403 |
+| **Real residential IP** | ScrapeOps residential proxy, real US ISP (Charter/Spectrum, 3 different residential IPs) | ❌ still 403 |
+| **TLS / JA3 fingerprint** | curl-cffi spoofing Chrome / Safari-iOS | ❌ still 403 |
+| User-Agent / app headers | browser UA, full set of app headers (x-app-bundle/version, etc.) | ❌ still 403 |
 
-**共同点**：所有 403 都是同一个 `LambdaGeneratedResponse from cloudfront`，与上述任一客户端可控变量无关。
+**Common factor**: all the 403s are the same `LambdaGeneratedResponse from cloudfront`, unrelated to any of the client-controllable variables above.
 
-## 3. 关键观察
+## 3. Key observations
 
-- **真机正版 app 的 signup 也是 403** → 这个 403 **不是"被识别为机器人/被检测"**，而是该接口对此次注册本身就拒绝（与用户"根本注册不了"的体验一致）。
-- 请求体 `"referral":{}` 为**空**。结合 DailyPay 是**雇主中介式注册**（员工须通过雇主专属链接、匹配雇主员工库），最合理解释：
+- **The genuine app on a real device also gets 403 on signup** → this 403 is **not "being identified as a bot / detected"**, but rather the endpoint rejecting this signup itself (consistent with the user experience of "simply cannot register").
+- The request body `"referral":{}` is **empty**. Combined with the fact that DailyPay uses **employer-intermediated registration** (employees must come through an employer-specific link and match the employer's employee roster), the most reasonable explanation is:
 
-> **Lambda@Edge 在边缘要求有效的雇主/邀请（referral）上下文；空 referral 的自助注册被边缘 403。** 真正可注册的是"合作雇主在职员工经雇主专属链接"进入的请求。
+> **Lambda@Edge requires a valid employer/invitation (referral) context at the edge; self-service signup with an empty referral is 403'd at the edge.** What can actually register is a request that enters via "an active employee of a partner employer through the employer-specific link".
 
-（未 100% 坐实——需一个真实雇主邀请链接对照——但能解释全部现象，且 IP/TLS/Castle/指纹均已实验排除。）
+(Not 100% confirmed — it would require a real employer invitation link for comparison — but it explains all the phenomena, and IP/TLS/Castle/fingerprint have all been ruled out experimentally.)
 
-## 4. 结论
+## 4. Conclusion
 
-1. **403 是 CloudFront Lambda@Edge 的策略/资格门，不是反爬检测**。住宅代理、undetectable browser、改设备指纹、TLS 伪装**全部无效**（已逐一证伪）。
-2. **与 Castle 无关**。Castle token 正常生成；它前面还有这道边缘门挡着，请求根本到不了源站做 Castle 风控。
-3. **对 Castle 服务器级 E2E 的影响**：因为注册被边缘拦在 Castle 之前、且无合格员工账号，**"服务器接受我们生成的 token" 这一步在当前条件下无法完成**。可达的最高验证仍是已完成的**本地字节级复现**（自生成 token 与真实 token 逐字节一致，服务端无法区分）。
+1. **The 403 is a CloudFront Lambda@Edge policy/eligibility gate, not anti-scraping detection**. Residential proxies, undetectable browsers, modified device fingerprints, and TLS spoofing are **all ineffective** (disproved one by one).
+2. **Unrelated to Castle**. The Castle token is generated normally; this edge gate sits in front of it, so the request never even reaches the origin to undergo Castle risk control.
+3. **Impact on Castle server-level E2E**: because signup is blocked at the edge before Castle, and there is no qualified employee account, **the step "the server accepts the token we generated" cannot be completed under current conditions**. The highest achievable verification remains the already-completed **local byte-level reproduction** (the self-generated token is byte-for-byte identical to the real token, indistinguishable to the server).
 
-## 5. 若要继续打通注册（与逆向 Castle 无关）
+## 5. If you want to push signup through (unrelated to reversing Castle)
 
-需要同时满足（按拦截先后）：① 一个**有效的雇主/referral 上下文**（合作雇主的专属注册链接）；② 是该雇主**在职且符合条件的员工**。这两道都是 DailyPay 业务策略，跟 IP/TLS/Castle/指纹无关。
+Both of the following must be satisfied (in order of the blocking): ① a **valid employer/referral context** (a partner employer's dedicated registration link); ② being an **active and eligible employee** of that employer. Both are DailyPay business policy, unrelated to IP/TLS/Castle/fingerprint.
 
-## 附：工具与证据
-- 抓包脚本：`scripts/hook_flow_all.js`、`hook_signup_capture.js`
-- 原始日志：`flow_all.log`、`flow_newnode.log`、`signup_capture.log`、`http_diag.log`
-- 住宅 IP / TLS 测试：ScrapeOps 住宅代理（country=us）+ curl-cffi（impersonate chrome/safari）
+## Appendix: tools and evidence
+- Capture scripts: `scripts/hook_flow_all.js`, `hook_signup_capture.js`
+- Raw logs: `flow_all.log`, `flow_newnode.log`, `signup_capture.log`, `http_diag.log`
+- Residential IP / TLS tests: ScrapeOps residential proxy (country=us) + curl-cffi (impersonate chrome/safari)

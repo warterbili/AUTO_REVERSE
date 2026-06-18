@@ -1,88 +1,88 @@
 ---
 name: env-supplement-proxy
-description: 用 ES6 Proxy 递归代理 + 访问日志做"自动补环境 / 自动吐环境"——把 globalThis/window/navigator/document 包成递归 Proxy，trap 住 get/set/has/getOwnPropertyDescriptor/deleteProperty，记录所有"被访问但未定义"的路径，配合 AI 循环（跑 → 抓 X is not defined / undefined 访问 → 补 stub → 再跑 → 直到输出稳定 → 与真浏览器样本 diff）半自动把 headless Node 里跑反爬/sign 混淆 JS 所缺的浏览器环境补齐。覆盖核心机制、自动补全循环、检测/反调试踩坑（Function.prototype.toString [native code] 完整性、toString/valueOf/Symbol.toPrimitive 强转、in/hasOwnProperty、属性描述符 getter vs value、navigator/screen/canvas/WebGL/timezone 指纹自洽、iframe/contentWindow、performance.now/Date 时序、UA/platform/webdriver 一致性、Proxy 经 toString/stack 泄漏），并给出框架选型表（sdenv / qxVm / NodeSandbox / boda_jsEnv / js-sandbox-env-framework / Browser-Env / node-crawler-env-utils）与升级到真浏览器的逃生路线。触发词：补环境、自动补环境、Proxy 补环境、吐环境、env 补全、window is not defined、navigator is not defined、document is not defined、jsdom、sdenv、浏览器环境模拟、headless 跑加密 JS、proxy hook 环境检测、缺啥补啥、纯 JS 补环境框架、AI 补环境。
+description: Use an ES6 Proxy recursive wrapper + access logging for "automatic environment supplementation / automatic environment disclosure"—wrap globalThis/window/navigator/document in a recursive Proxy, trap get/set/has/getOwnPropertyDescriptor/deleteProperty, record every "accessed but undefined" path, and pair it with an AI loop (run → catch X is not defined / undefined access → add a stub → rerun → until output stabilizes → diff against a real-browser sample) to semi-automatically supplement the browser environment that anti-scraping/sign obfuscated JS needs when running in headless Node. Covers the core mechanism, the auto-completion loop, and detection/anti-debugging pitfalls (Function.prototype.toString [native code] integrity, toString/valueOf/Symbol.toPrimitive coercion, in/hasOwnProperty, property descriptor getter vs value, navigator/screen/canvas/WebGL/timezone fingerprint consistency, iframe/contentWindow, performance.now/Date timing, UA/platform/webdriver consistency, Proxy leakage via toString/stack), and provides a framework selection table (sdenv / qxVm / NodeSandbox / boda_jsEnv / js-sandbox-env-framework / Browser-Env / node-crawler-env-utils) plus the escape route of upgrading to a real browser. Trigger keywords: environment supplementation, automatic environment supplementation, Proxy environment supplementation, environment disclosure, env completion, window is not defined, navigator is not defined, document is not defined, jsdom, sdenv, browser environment simulation, running encrypted JS headless, proxy hook environment detection, fill whatever is missing, pure-JS environment framework, AI environment supplementation.
 languages: [zh, en]
 ---
 
-# Proxy 自动补环境 / 自动吐环境 Skill
+# Proxy Automatic Environment Supplementation / Disclosure Skill
 
-> **TL;DR**：补环境 = 让一段在浏览器里写、用了 `window`/`navigator`/`document` 的混淆 JS（反爬采集、sign、cookie 生成），能在 **Node 里裸跑**而不报 `X is not defined`。
-> **自动补环境** = 不手撸每个 stub，而是把全局对象包成**递归 ES6 Proxy**，trap 住属性访问、**记录所有被访问但未定义的路径**，然后跑一个循环：跑 → 抓缺失 → 补一个合理值 → 再跑 → 直到输出稳定 → 与真浏览器 diff 校验。这就是"自动"和"吐环境"的含义（环境自己"吐"出它缺什么）。
+> **TL;DR**: Environment supplementation = making a piece of obfuscated JS written for the browser and using `window`/`navigator`/`document` (anti-scraping collection, sign, cookie generation) **run bare in Node** without throwing `X is not defined`.
+> **Automatic environment supplementation** = instead of hand-writing every stub, wrap the global objects in a **recursive ES6 Proxy**, trap property access, **record every accessed-but-undefined path**, then run a loop: run → catch what's missing → supply a reasonable value → rerun → until output stabilizes → diff-verify against a real browser. That is what "automatic" and "environment disclosure" mean (the environment itself "discloses" what it is missing).
 >
-> 诚实说在前面：**没有"一键补全任何站点"的银弹**。Proxy/jsdom 路线有天花板——遇到 `typeof document.all`、V8 层面的 toString/stack 检测、指纹自洽校验时会穿透。本 skill 教**技术本身 + 选型 + 何时该放弃补环境改走真浏览器**。
+> Honestly, up front: **there is no "one-click supplement any site" silver bullet**. The Proxy/jsdom route has a ceiling—it gets penetrated by `typeof document.all`, V8-level toString/stack detection, and fingerprint consistency checks. This skill teaches **the technique itself + framework selection + when to give up on environment supplementation and switch to a real browser**.
 
 ---
 
-## 用户触发语句
+## User Trigger Phrases
 
-- "这段加密 JS 一跑就 `window is not defined` / `navigator is not defined`，帮我补环境"
-- "给 \<site\> 的采集脚本做个自动补环境，缺啥补啥"
-- "Proxy 补环境 / 自动吐环境怎么搞"
-- "jsdom 补不动了，有没有纯 JS 的补环境框架"
-- "headless 在 Node 里跑这个 sign 算法，怎么把浏览器环境补出来"
-- "selenium/CDP 太慢，想把算法搬到 Node 里补环境跑"
+- "This encrypted JS throws `window is not defined` / `navigator is not defined` as soon as it runs—help me supplement the environment"
+- "Build automatic environment supplementation for \<site\>'s collection script, filling whatever is missing"
+- "How do I do Proxy environment supplementation / automatic environment disclosure"
+- "jsdom can't keep up—is there a pure-JS environment supplementation framework"
+- "I'm running this sign algorithm headless in Node—how do I supplement the browser environment"
+- "selenium/CDP is too slow; I want to move the algorithm into Node and run it with environment supplementation"
 
 ---
 
-## 这是什么 + 何时用（决策先行）
+## What This Is + When to Use It (Decision First)
 
-把一段浏览器 JS 搬到 Node 里跑，它会立刻撞上"浏览器全局对象在 Node 不存在"：`window`、`document`、`navigator`、`screen`、`location`、`localStorage`、`XMLHttpRequest`…… **补环境**就是把这些缺的东西"喂"给它。
+When you move a piece of browser JS into Node to run, it immediately hits "the browser global objects don't exist in Node": `window`, `document`, `navigator`, `screen`, `location`, `localStorage`, `XMLHttpRequest`… **Environment supplementation** is "feeding" it those missing things.
 
-**两种补法**：
-- **手撸（hand-stub）**：你一个一个加 `global.navigator = { userAgent: '...' }`。精确但极慢，且不知道脚本到底查了哪些。
-- **自动（Proxy 路线，本 skill）**：用 Proxy 包住全局，让脚本自己访问，Proxy 帮你**把它访问过的、缺的路径全打印出来**，你只补它真查的。这就是 `node-bridge-build` 里 "jni-env-patching 4 步法：先看真环境再给合理值，只补 SDK 实际查的" 的自动化版本。
+**Two supplementation approaches**:
+- **Hand-stub**: you add `global.navigator = { userAgent: '...' }` one by one. Precise but extremely slow, and you don't know which properties the script actually queried.
+- **Automatic (the Proxy route, this skill)**: wrap the globals in a Proxy, let the script access them itself, and the Proxy **prints out every accessed-but-missing path** for you, so you only supplement what it actually queries. This is the automated version of the `node-bridge-build` principle: "the jni-env-patching 4-step method: look at the real environment first, then give reasonable values, and only supplement what the SDK actually queries."
 
-### 什么时候选 Proxy 自动补环境（vs 其它路线）
+### When to Choose Proxy Automatic Environment Supplementation (vs Other Routes)
 
-| 你的处境 | 选什么 | 为什么 |
+| Your situation | What to choose | Why |
 |---|---|---|
-| 算法不复杂，能完整逆出来 | **纯算**（手写 Python/JS 重实现） | 最快最稳，无环境依赖。能纯算就别补环境 |
-| 算法太重/混淆太狠，逆不动，但 **QPS 要求高、要 headless 大规模跑** | **Proxy 自动补环境**（本 skill） | 不逆算法，直接把原 JS 喂进半自动补出的环境里跑，单进程吞吐远高于浏览器 |
-| 页面/App 已经在跑，只要偶尔调一下算法 | **`jsrpc-universal`**（JsRpc/Sekiro RPC） | 直接调真实环境里的函数，免抠代码免补环境，但受真实端在线数与网络 RTT 限制，QPS 上不去 |
-| 已有 jsdom 模板、目标是 PX/Akamai 这类已知 SDK | **`node-bridge-build`**（jsdom + 11 env 模块模板） | 有现成模板直接套，比从零 Proxy 快 |
-| 补环境穿透/指纹自洽过不了，或就是要 100% 真 | **`cdp-browser`** 真 Chrome / **`jsrpc-universal`** | 真浏览器免补环境，代价是慢、重 |
+| Algorithm isn't complex; you can fully reverse it | **Pure reimplementation** (hand-write a Python/JS reimplementation) | Fastest and most stable, no environment dependency. If you can reimplement it purely, don't supplement the environment |
+| Algorithm is too heavy / obfuscation too brutal to reverse, but **QPS demand is high and you need to run it headless at scale** | **Proxy automatic environment supplementation** (this skill) | Don't reverse the algorithm; feed the original JS directly into the semi-automatically supplemented environment and run it—single-process throughput far exceeds a browser |
+| The page/App is already running and you only need to call the algorithm occasionally | **`jsrpc-universal`** (JsRpc/Sekiro RPC) | Directly call the function in the real environment, no code extraction and no environment supplementation, but limited by the number of online real endpoints and network RTT, so QPS can't scale up |
+| You already have a jsdom template and the target is a known SDK like PX/Akamai | **`node-bridge-build`** (jsdom + 11 env module templates) | Apply the ready-made template directly—faster than building a Proxy from scratch |
+| Environment supplementation gets penetrated / fingerprint consistency can't pass, or you just want 100% real | **`cdp-browser`** real Chrome / **`jsrpc-universal`** | A real browser needs no environment supplementation, at the cost of being slow and heavy |
 
-> **一句话规则**：当你**必须在 Node 里 headless、大规模、跑一段逆不动的反爬/sign 混淆 JS**，而真浏览器/RPC 的 QPS 喂不饱、你又**不想手撸每个 stub** 时 —— 用 Proxy 自动补环境。
+> **One-sentence rule**: when you **must run, headless and at scale in Node, a piece of anti-scraping/sign obfuscated JS you can't reverse**, and a real browser/RPC can't supply enough QPS, and you **don't want to hand-write every stub**—use Proxy automatic environment supplementation.
 
-> 与 `node-bridge-build` 的关系：那个 skill 是"有 jsdom 模板时怎么套模板做 PX/Akamai bridge"；**本 skill 是模板背后的通用技术**——当你没有现成模板、面对任意站点、想让环境**半自动地自己吐出来**时用。两者可叠加：jsdom 兜底 DOM 仿真，Proxy 兜底"缺啥自动报"。
+> Relationship to `node-bridge-build`: that skill is "how to apply a template to build a PX/Akamai bridge when you have a jsdom template"; **this skill is the general technique behind the template**—use it when you have no ready-made template, face an arbitrary site, and want the environment to **semi-automatically disclose itself**. The two can stack: jsdom backstops DOM simulation, Proxy backstops "automatically reporting whatever is missing."
 
 ---
 
-## 核心机制：递归 Proxy + 访问日志
+## Core Mechanism: Recursive Proxy + Access Log
 
-补环境的"自动"靠一个**递归 ES6 Proxy**：把全局对象包起来，trap 住所有操作，**返回的对象再递归包一层**，这样无论脚本访问多深的路径（`window.navigator.connection.rtt`），每一层都能被记录。关键 trap：
+The "automatic" in environment supplementation relies on a **recursive ES6 Proxy**: wrap the global object, trap all operations, and **recursively wrap the returned object in another layer**, so that no matter how deep a path the script accesses (`window.navigator.connection.rtt`), every layer can be recorded. Key traps:
 
-- `get` —— 读属性。命中已定义的返回真值（再递归代理）；**未定义的记录路径并返回一个"占位 Proxy"**，避免立刻 `undefined`/报错中断。
-- `set` —— 写属性。记录脚本往环境里塞了什么（常是它自己缓存的中间值）。
-- `has` —— `'x' in window` / `with(window)` 作用域查找会走这里。**必须返回 `true`**，否则 `with` 块里裸写 `navigator` 会落到外层 → `is not defined`。
-- `getOwnPropertyDescriptor` —— `Object.getOwnPropertyDescriptor` 检测会走这里，要给出**和真浏览器一致的描述符**（见 Gotchas）。
-- `deleteProperty` / `ownKeys` / `defineProperty` —— 脚本枚举/删除/重定义属性时用，反爬常用 `Object.keys(navigator)` 比对。
+- `get` — read a property. On a hit for a defined property, return the real value (recursively proxied again); for an **undefined property, record the path and return a "placeholder Proxy"** to avoid an immediate `undefined`/error interruption.
+- `set` — write a property. Record what the script stuffs into the environment (often an intermediate value it caches itself).
+- `has` — `'x' in window` / `with(window)` scope lookups go through here. **Must return `true`**, otherwise a bare `navigator` written inside a `with` block falls through to the outer scope → `is not defined`.
+- `getOwnPropertyDescriptor` — `Object.getOwnPropertyDescriptor` detection goes through here; you must provide a **descriptor consistent with a real browser** (see Gotchas).
+- `deleteProperty` / `ownKeys` / `defineProperty` — used when the script enumerates/deletes/redefines properties; anti-scraping commonly uses `Object.keys(navigator)` for comparison.
 
-最小但正确的"递归代理 + 访问日志"骨架：
+A minimal but correct "recursive proxy + access log" skeleton:
 
 ```javascript
-// recursive-env-proxy.js —— 教学版：跑通后看它"吐"出缺哪些路径
-const missing = new Set();           // 收集"被访问但未定义"的路径
+// recursive-env-proxy.js —— Teaching version: once it runs, watch it "disclose" which paths are missing
+const missing = new Set();           // Collect "accessed but undefined" paths
 
 function makeProxy(target, path) {
   return new Proxy(target, {
     get(t, prop, recv) {
-      // Symbol / 内部钩子直接放过，避免污染日志、避免破坏 Proxy 自身
+      // Let Symbol / internal hooks pass straight through, to avoid polluting the log and breaking the Proxy itself
       if (typeof prop === 'symbol') return Reflect.get(t, prop, recv);
       const full = path ? `${path}.${String(prop)}` : String(prop);
 
       if (prop in t) {
         const val = Reflect.get(t, prop, recv);
-        // 只对对象/函数递归代理；原始值直接返回
+        // Only recursively proxy objects/functions; return primitive values directly
         return (val && (typeof val === 'object' || typeof val === 'function'))
           ? makeProxy(val, full) : val;
       }
-      // —— 关键：未定义就记录，并返回可继续链式访问的占位 Proxy ——
+      // —— Key: if undefined, record it and return a placeholder Proxy that supports continued chained access ——
       missing.add(full);
-      return makeProxy(function () {}, full);   // 既能当对象点下去，也能被当函数调用
+      return makeProxy(function () {}, full);   // Can both be dotted into as an object and called as a function
     },
     set(t, prop, val) { return Reflect.set(t, prop, val); },
-    has(t, prop) { return true; },                       // with(window){...} / 'x' in window 不漏到外层
+    has(t, prop) { return true; },                       // with(window){...} / 'x' in window won't leak to the outer scope
     getOwnPropertyDescriptor(t, prop) {
       return Reflect.getOwnPropertyDescriptor(t, prop)
           ?? { configurable: true, enumerable: true, value: undefined };
@@ -91,233 +91,233 @@ function makeProxy(target, path) {
   });
 }
 
-// 用一个空壳当 window 起步，让脚本自己把缺口暴露出来
+// Start with an empty shell as window, letting the script expose the gaps itself
 const fakeWindow = makeProxy({}, '');
 globalThis.window = fakeWindow;
 globalThis.self = fakeWindow;
 globalThis.navigator = fakeWindow.navigator;
 globalThis.document  = fakeWindow.document;
 
-// ... 在这里 require/eval 目标混淆 JS ...
+// ... require/eval the target obfuscated JS here ...
 
 process.on('exit', () => {
-  console.log('=== 被访问但未定义的路径（按这个补 stub）===');
+  console.log('=== Accessed-but-undefined paths (stub these) ===');
   console.log([...missing].sort().join('\n'));
 });
 ```
 
-> ⚠️ 这个教学版**只用来"吐缺口"**，不能直接拿去过反爬：它的占位 Proxy 一被 `toString()`/`typeof`/描述符检测就穿帮。真正过检测要按 [`references/proxy-cookbook.md`](references/proxy-cookbook.md) 把每个检测点补对。
+> ⚠️ This teaching version is **only for "disclosing gaps"**; you can't take it straight to defeat anti-scraping: its placeholder Proxy gives itself away the moment it hits `toString()`/`typeof`/descriptor detection. To actually pass detection, follow [`references/proxy-cookbook.md`](references/proxy-cookbook.md) and supplement each detection point correctly.
 
 ---
 
-## 自动补全循环（这才是"自动"）
+## The Auto-Completion Loop (This Is the "Automatic" Part)
 
-AI 应该把补环境当成一个**收敛循环**来跑，而不是一次写完：
+The AI should run environment supplementation as a **convergence loop**, not write it all at once:
 
 ```
-┌─ 1. 注入 Proxy 环境（空壳 window/navigator/document）
+┌─ 1. Inject the Proxy environment (empty-shell window/navigator/document)
 │
-├─ 2. 跑目标 JS
-│      ├─ 抛 "X is not defined"        → 全局缺 X
-│      ├─ 抛 "Cannot read ... of undefined" → 某路径中途断了
-│      └─ 正常结束但 missing 集合有内容  → 这些是它查过但没值的路径
+├─ 2. Run the target JS
+│      ├─ throws "X is not defined"        → global X is missing
+│      ├─ throws "Cannot read ... of undefined" → some path broke partway
+│      └─ finishes normally but the missing set has entries  → these are paths it queried but had no value for
 │
-├─ 3. 对每个缺口补一个【合理值】（不是随便给）：
-│      · 字符串类（userAgent/platform/语言）→ 抄真浏览器实测值
-│      · 函数类（addEventListener/getContext）→ 给个返回合理值的 [native code] 壳函数
-│      · 数值类（screen.width/devicePixelRatio）→ 抄真实分辨率
-│      · 对象类 → 继续让 Proxy 递归吐下一层
+├─ 3. For each gap, supply a [reasonable value] (not an arbitrary one):
+│      · String type (userAgent/platform/language)        → copy a real browser's measured value
+│      · Function type (addEventListener/getContext)      → give a [native code] shell function returning a reasonable value
+│      · Numeric type (screen.width/devicePixelRatio)     → copy a real resolution
+│      · Object type                                      → keep letting the Proxy recursively disclose the next layer
 │
-├─ 4. 再跑 → 缺口变少 → 重复 2~4
+├─ 4. Rerun → fewer gaps → repeat 2~4
 │
-├─ 5. 直到【输出稳定】：连续两轮 missing 不再新增、目标函数能产出结果
+├─ 5. Until [output stabilizes]: for two consecutive rounds the missing set stops growing, and the target function produces a result
 │
-└─ 6. 【校验】与真浏览器样本 diff：同样输入，对比 Node 输出与真 Chrome 输出
-       一致 → 收敛成功；不一致 → 缺口在"指纹自洽"层（见 Gotchas），不是缺 API
+└─ 6. [Verify] diff against a real-browser sample: with the same input, compare the Node output to the real Chrome output
+       Match → converged successfully; mismatch → the gap is at the "fingerprint consistency" layer (see Gotchas), not a missing API
 ```
 
-补 stub 的取值原则（沿用 `jni-env-patching` 的"先读真环境再给合理值"）：
-- **能从真浏览器抓的值，就去抓**（用 `cdp-browser` 在真 Chrome 里读 `navigator.xxx`、`screen.xxx`、canvas 指纹），别凭空编。
-- **凭空编的值要内部自洽**：UA 写 Windows 就别让 `navigator.platform` 是 `MacIntel`（见 Gotchas 自洽校验）。
-- **函数 stub 默认返回"无害值"**：事件类返回 `undefined`、查询类返回空数组/空对象，先让脚本跑下去，再按它后续怎么用这个返回值精修。
+Value-selection principles for stubs (following `jni-env-patching`'s "read the real environment first, then give reasonable values"):
+- **If a value can be captured from a real browser, go capture it** (use `cdp-browser` in real Chrome to read `navigator.xxx`, `screen.xxx`, canvas fingerprints); don't make it up.
+- **Made-up values must be internally consistent**: if the UA says Windows, don't make `navigator.platform` be `MacIntel` (see the consistency-check Gotcha).
+- **Function stubs return a "harmless value" by default**: event-type ones return `undefined`, query-type ones return an empty array/empty object—first let the script keep running, then refine based on how it later uses the return value.
 
-成熟框架（sdenv / lasawang 框架）把第 2~3 步做成了 `--detect` 自动检测模式：跑一遍自动报告缺哪些 API 并给加载建议，你只需确认值。这就是"AI 辅助补环境"。
+Mature frameworks (sdenv / the lasawang framework) turn steps 2~3 into a `--detect` automatic-detection mode: one run automatically reports which APIs are missing and gives loading suggestions, so you only need to confirm values. That is "AI-assisted environment supplementation."
 
 ---
 
-## ⚠️ Gotchas（最硬的部分：反爬专门检测补环境）
+## ⚠️ Gotchas (the Hardest Part: Anti-Scraping Specifically Detects Environment Supplementation)
 
-补环境跑不通，**九成不是缺 API，而是被检测出"这不是真浏览器"**。逐条排查：
+When environment supplementation doesn't run, **nine times out of ten it isn't a missing API—it's being detected as "this isn't a real browser."** Work through these one by one:
 
-1. **`Function.prototype.toString` 完整性检测（最常见）**
-   反爬会 `fn.toString()`，真原生函数返回 `function xxx() { [native code] }`。你的 stub 用普通 JS 函数会返回真实源码 → 暴露。
-   解决：壳函数必须让 `toString` 返回 `function xxx() { [native code] }`，且 **`toString` 自己也得过 `toString` 检测**（递归陷阱）。底层框架（NodeSandbox/node-sandbox 的 `SetNative`、sdenv 的 `wrapFunc`）在 C++/V8 层做，纯 JS 框架靠改写 `Function.prototype.toString` 拦截。**注意 `Function.prototype.toString.toString()` 也要是 native**。
+1. **`Function.prototype.toString` integrity detection (most common)**
+   Anti-scraping calls `fn.toString()`; a real native function returns `function xxx() { [native code] }`. Your stub, being a plain JS function, returns the real source code → exposed.
+   Solution: the shell function must make `toString` return `function xxx() { [native code] }`, and **`toString` itself must also pass the `toString` check** (a recursive trap). Low-level frameworks (NodeSandbox/node-sandbox's `SetNative`, sdenv's `wrapFunc`) do this at the C++/V8 layer; pure-JS frameworks rely on rewriting `Function.prototype.toString` to intercept. **Note that `Function.prototype.toString.toString()` must also be native.**
 
-2. **`toString` / `valueOf` / `Symbol.toPrimitive` 强制类型转换**
-   `'' + navigator`、`navigator + 1` 会触发对象→原始值转换。Proxy 的 `get` 要正确响应 `Symbol.toPrimitive`、`toString`、`valueOf`，否则抛 `Cannot convert object to primitive value`，或转出来的字符串里露出 `[object Object]` / Proxy 痕迹。
+2. **`toString` / `valueOf` / `Symbol.toPrimitive` type coercion**
+   `'' + navigator` and `navigator + 1` trigger object→primitive conversion. The Proxy's `get` must respond correctly to `Symbol.toPrimitive`, `toString`, and `valueOf`, otherwise it throws `Cannot convert object to primitive value`, or the resulting string leaks `[object Object]` / Proxy traces.
 
-3. **`in` 算子 + `hasOwnProperty` 不一致**
-   你 `has` 全返回 `true`，但 `Object.prototype.hasOwnProperty.call(navigator, 'webdriver')` 走的是 `getOwnPropertyDescriptor`。两者结果对不上（`'x' in obj` 为真但拿不到描述符）→ 暴露。`has` 和 `getOwnPropertyDescriptor` 要协调。
+3. **`in` operator + `hasOwnProperty` inconsistency**
+   Your `has` returns `true` for everything, but `Object.prototype.hasOwnProperty.call(navigator, 'webdriver')` goes through `getOwnPropertyDescriptor`. The two results don't match (`'x' in obj` is true but you can't get a descriptor) → exposed. `has` and `getOwnPropertyDescriptor` must be coordinated.
 
-4. **属性描述符 (configurable/enumerable/writable, getter vs value) 不匹配**
-   真浏览器里 `navigator.userAgent` 是**原型上的 getter**（`get userAgent`），不是 `navigator` 自身的 value 属性；很多内置属性 `enumerable:false`、`configurable:true`。你直接 `navigator.userAgent = '...'` 给成 own value、enumerable:true → `Object.getOwnPropertyDescriptor` / `Object.keys` 一比就露。要在**原型链对应层**用 getter 定义，描述符抄真浏览器。(NodeSandbox 的 `defineProperty(mode)` / node-sandbox 的 `Utils.defineProperty` 就是为强改这些位存在的：`mode=7` = writable/enumerable/configurable 全 false。)
+4. **Property descriptor mismatch (configurable/enumerable/writable, getter vs value)**
+   In a real browser `navigator.userAgent` is a **getter on the prototype** (`get userAgent`), not an own value property on `navigator`; many built-in properties are `enumerable:false`, `configurable:true`. If you directly do `navigator.userAgent = '...'`, it becomes an own value with `enumerable:true` → `Object.getOwnPropertyDescriptor` / `Object.keys` exposes it on comparison. You must define it with a getter at the **corresponding level of the prototype chain**, copying the real browser's descriptor. (NodeSandbox's `defineProperty(mode)` / node-sandbox's `Utils.defineProperty` exist precisely to force-set these bits: `mode=7` = writable/enumerable/configurable all false.)
 
-5. **navigator / screen / canvas / WebGL / timezone 指纹自洽**
-   单个值对没用，要**整组自洽**：`userAgent`↔`platform`↔`oscpu`↔`appVersion`、`screen.width/height`↔`availWidth`↔`devicePixelRatio`、canvas/WebGL 渲染结果↔`WEBGL_debug_renderer_info`(显卡名)↔UA、`Intl.DateTimeFormat().resolvedOptions().timeZone`↔`Date.getTimezoneOffset()`↔IP 地理位置。**canvas/WebGL 指纹不能随机伪造**——要么用真实采集值（`cdp-browser` 抓），要么用框架的指纹 profile（lasawang 框架一个 JSON 控制全套指纹）。
+5. **navigator / screen / canvas / WebGL / timezone fingerprint consistency**
+   A single correct value is useless; the **whole group must be consistent**: `userAgent`↔`platform`↔`oscpu`↔`appVersion`, `screen.width/height`↔`availWidth`↔`devicePixelRatio`, canvas/WebGL render result↔`WEBGL_debug_renderer_info` (GPU name)↔UA, `Intl.DateTimeFormat().resolvedOptions().timeZone`↔`Date.getTimezoneOffset()`↔IP geolocation. **canvas/WebGL fingerprints cannot be randomly faked**—either use real captured values (captured by `cdp-browser`) or use a framework's fingerprint profile (the lasawang framework controls the entire fingerprint set from one JSON).
 
 6. **iframe / contentWindow / `document.createElement` trap**
-   反爬常 `document.createElement('iframe')` 后取 `iframe.contentWindow` 拿一个"干净 window"来反查你有没有污染原型，或在 iframe 里重新取原始函数。createElement 要按 tagName 返回带正确原型的元素壳；contentWindow 要给一个自洽的子 window（不能直接回原 window，否则 `iframe.contentWindow === window` 暴露）。
+   Anti-scraping often does `document.createElement('iframe')` then grabs `iframe.contentWindow` to get a "clean window" for cross-checking whether you've polluted the prototype, or re-fetches original functions inside the iframe. createElement must return an element shell with the correct prototype per tagName; contentWindow must provide a self-consistent child window (it cannot just return the original window, otherwise `iframe.contentWindow === window` exposes it).
 
-7. **`performance.now` / `Date` 时序**
-   行为检测算 `performance.now()` 差值、`Date.now()` 间隔。补环境里这些值要单调递增且数量级合理（别一直返回同一个常量，也别返回 Node 的真实 0.x ms 高精度——和浏览器节流后的精度不一样）。测试态可固定时间戳（qxVm 的 `isTest`、sdenv 固定随机数），生产态要给可信的递增时序。
+7. **`performance.now` / `Date` timing**
+   Behavioral detection computes `performance.now()` deltas and `Date.now()` intervals. In the supplemented environment these values must increase monotonically and be of a reasonable magnitude (don't keep returning the same constant, and don't return Node's real 0.x ms high precision—it differs from the browser's throttled precision). In test mode you can fix the timestamp (qxVm's `isTest`, sdenv's fixed random numbers); in production mode you must give a believable increasing timing sequence.
 
-8. **环境自洽：UA vs platform vs webdriver**
-   `navigator.webdriver` 必须 `false`（且描述符要像原生）；UA、platform、`navigator.languages`、时区、`hardwareConcurrency`、`deviceMemory` 要像同一台真机。任一处对不上整组就废。
+8. **Environment consistency: UA vs platform vs webdriver**
+   `navigator.webdriver` must be `false` (and the descriptor must look native); UA, platform, `navigator.languages`, timezone, `hardwareConcurrency`, and `deviceMemory` must all look like the same real machine. If any one doesn't match, the whole group is blown.
 
-9. **Proxy 自身泄漏（最阴的）**
-   - `fn.toString()` 露出 Proxy/壳代码（见 #1）。
-   - 抛错时 `error.stack` 里出现你的 `recursive-env-proxy.js` 路径/`Proxy` 帧 → 反爬 try/catch 读 stack 就发现。框架要拦截 `Error.prepareStackTrace` / `Error.captureStackTrace`，清掉自己的帧（NodeSandbox 的 `stack_intercept`、node-sandbox 的 `Utils.Error_get_stack`）。
-   - `typeof proxy` 对 callable Proxy 返回 `'function'`、对普通返回 `'object'`，但 `document.all` 在真浏览器是**唯一 `typeof === 'undefined'` 的对象**——纯 Proxy 做不出来，要 V8 层 `setUndetectable`（NodeSandbox/node-sandbox 提供）。这是纯 JS 补环境的**硬天花板**之一。
-   - `Object.prototype.toString.call(navigator)` 应是 `[object Navigator]`，Proxy 包过的可能变 `[object Object]` → 要用 `Symbol.toStringTag` 修。
+9. **Proxy self-leakage (the nastiest)**
+   - `fn.toString()` leaks Proxy/shell code (see #1).
+   - When an error is thrown, your `recursive-env-proxy.js` path / `Proxy` frame appears in `error.stack` → anti-scraping's try/catch reading the stack discovers it. The framework must intercept `Error.prepareStackTrace` / `Error.captureStackTrace` and clean out its own frames (NodeSandbox's `stack_intercept`, node-sandbox's `Utils.Error_get_stack`).
+   - `typeof proxy` returns `'function'` for a callable Proxy and `'object'` for a plain one, but `document.all` is the **only object in a real browser with `typeof === 'undefined'`**—a pure Proxy can't reproduce this; it requires the V8-layer `setUndetectable` (provided by NodeSandbox/node-sandbox). This is one of the **hard ceilings** of pure-JS environment supplementation.
+   - `Object.prototype.toString.call(navigator)` should be `[object Navigator]`; a Proxy-wrapped one may become `[object Object]` → fix it with `Symbol.toStringTag`.
 
-> 把 #1/#5/#9 看作三大杀手：toString 完整性、指纹自洽、Proxy 泄漏。这三个过不去，补再多 API 也没用。
+> Treat #1/#5/#9 as the three big killers: toString integrity, fingerprint consistency, Proxy leakage. If these three can't be passed, no amount of additional API supplementation helps.
 
 ---
 
-## 框架选型表（诚实的 tradeoff）
+## Framework Selection Table (Honest Tradeoffs)
 
-逐项详见 [`references/framework-comparison.md`](references/framework-comparison.md)。速查：
+Item-by-item details in [`references/framework-comparison.md`](references/framework-comparison.md). Quick reference:
 
-| 框架 | 路线 | 适合 | 代价 / 局限 |
+| Framework | Route | Good for | Cost / limitation |
 |---|---|---|---|
-| **pysunday/sdenv** (+ sdenv-jsdom / sdenv-extend) | jsdom fork + 插件 + 部分 C++ | **公开补环境天花板**；瑞数 vmp 等，作者称固定随机+插件后 cookie 与浏览器一致 | 要编译 node 插件（node-gyp + VS/Xcode），Node 版本挑剔；DOM 重 |
-| **ylw00/qxVm** | 纯 JS + vm2，弱引用 | 学原理、轻量、检测点少的站；`isTest` 固定时序好调试 | 开源版无动态 DOM 解析（DOM 要自己重写），检测点覆盖有限 |
-| **bnmgh1/NodeSandbox** / **node-sandbox** | **魔改 Node/V8** + 套 jsdom | 要 V8 层能力（`SetNative`/`setUndetectable`/`defineProperty(mode)`/stack 拦截）打硬检测 | 开源是"空架子"无样例；只编了 Windows 版；魔改 node 维护成本高 |
-| **xuxiaobo-bobo/boda_jsEnv** | env 框架 | 国内成熟 env 框架之一 | README 几乎只有免责声明，文档靠源码/作者 |
-| **lasawang/js-sandbox-env-framework** | **Node VM + Proxy 监控 + 指纹 profile + AI 辅助补环境** | **与本 skill 最贴合**：递归 Proxy 追踪、`--detect` 自动报缺 API、一个 JSON 控全套指纹、webdriver=false/toString 保护 | 纯 VM 路线仍有 V8 层天花板（document.all 等）；Web 管理界面是加分非必须 |
-| **decodecaptcha/Browser-Env** | **代理到真浏览器**（selenium/UC/CDP）+ 可选 jsdom | 补环境过不去时"免补环境"——直接执行真实浏览器 | 慢、重、QPS 低；本质是逃生路线不是补环境 |
-| **warterbili/node-crawler-env-utils** | **Proxy 环境监控工具**（本仓库 owner 第一方） | **"吐环境"利器**：`setEnvProxy({paths})` 拦 12 种 Proxy 操作、彩色日志、深度代理、调用栈——专门用来跑自动补全循环第 2~3 步 | 是"监控/吐缺口"工具，不是"过检测的成品环境"；要配合上面的成品框架 |
+| **pysunday/sdenv** (+ sdenv-jsdom / sdenv-extend) | jsdom fork + plugins + partial C++ | **the public environment-supplementation ceiling**; Ruishu vmp etc.—the author says that with fixed randomness + plugins, the cookie matches the browser | Must compile a node addon (node-gyp + VS/Xcode), picky about Node version; heavy DOM |
+| **ylw00/qxVm** | pure JS + vm2, weak references | learning the principles, lightweight, sites with few detection points; `isTest` fixed timing is good for debugging | the open-source version has no dynamic DOM parsing (you rewrite the DOM yourself), limited detection-point coverage |
+| **bnmgh1/NodeSandbox** / **node-sandbox** | **modified Node/V8** + wrapping jsdom | when you need V8-layer capabilities (`SetNative`/`setUndetectable`/`defineProperty(mode)`/stack interception) to beat hard detection | open source is an "empty skeleton" with no samples; only a Windows build is compiled; high maintenance cost for a modified node |
+| **xuxiaobo-bobo/boda_jsEnv** | env framework | one of the mature domestic env frameworks | the README is almost only a disclaimer; documentation relies on the source/author |
+| **lasawang/js-sandbox-env-framework** | **Node VM + Proxy monitoring + fingerprint profile + AI-assisted environment supplementation** | **the closest fit for this skill**: recursive Proxy tracing, `--detect` to auto-report missing APIs, one JSON controlling the entire fingerprint set, webdriver=false/toString protection | the pure-VM route still has a V8-layer ceiling (document.all etc.); the web admin UI is a bonus, not essential |
+| **decodecaptcha/Browser-Env** | **proxy to a real browser** (selenium/UC/CDP) + optional jsdom | "no environment supplementation" when supplementation can't pass—execute directly in a real browser | slow, heavy, low QPS; essentially an escape route, not environment supplementation |
+| **warterbili/node-crawler-env-utils** | **Proxy environment monitoring tool** (first-party, this repo's owner) | **an "environment disclosure" powerhouse**: `setEnvProxy({paths})` intercepts 12 kinds of Proxy operations, colored logs, deep proxying, call stacks—specifically for running steps 2~3 of the auto-completion loop | it's a "monitoring/gap-disclosure" tool, not a "ready-to-go, detection-passing environment"; must be paired with the finished frameworks above |
 
-**选型建议**：
-- 想**学技术 / 看 Proxy 自动报缺**：先用第一方 **node-crawler-env-utils** 跑"吐环境"循环，配 **lasawang 框架** 的 `--detect` + 指纹 profile。
-- 想**直接干活、目标是瑞数等强对抗**：上 **sdenv**（接受编译成本）。
-- **碰到 V8 层硬检测**（`document.all`、toString/stack 穿透）：上 **NodeSandbox/node-sandbox** 的魔改 node。
+**Selection advice**:
+- To **learn the technique / watch the Proxy auto-report gaps**: first run the "environment disclosure" loop with the first-party **node-crawler-env-utils**, paired with the **lasawang framework**'s `--detect` + fingerprint profile.
+- To **just get the job done against strong adversaries like Ruishu**: go with **sdenv** (accept the compilation cost).
+- When you **hit V8-layer hard detection** (`document.all`, toString/stack penetration): go with **NodeSandbox/node-sandbox**'s modified node.
 
-### 逃生路线（撞天花板就别硬刚）
+### Escape Route (When You Hit the Ceiling, Don't Force It)
 
 ```
-Proxy 自动补环境（本 skill）
-   ↓ 指纹自洽过不了 / V8 层 document.all / toString·stack 穿透
-sdenv（jsdom fork，公开 ceiling）
-   ↓ 还是穿
-NodeSandbox / node-sandbox（魔改 V8，setUndetectable / stack 拦截）
-   ↓ 仍不值得（投入产出比太低）
-真浏览器：cdp-browser（真 Chrome，免补环境）  或  jsrpc-universal（调真实环境里的算法）
-   或  decodecaptcha/Browser-Env（代理到真浏览器）
+Proxy automatic environment supplementation (this skill)
+   ↓ fingerprint consistency can't pass / V8-layer document.all / toString·stack penetration
+sdenv (jsdom fork, the public ceiling)
+   ↓ still penetrated
+NodeSandbox / node-sandbox (modified V8, setUndetectable / stack interception)
+   ↓ still not worth it (ROI too low)
+Real browser: cdp-browser (real Chrome, no environment supplementation)  or  jsrpc-universal (call the algorithm in the real environment)
+   or  decodecaptcha/Browser-Env (proxy to a real browser)
 ```
 
-> 判断"该升级"的信号：补了 50+ 个 stub 还在新增缺口、与真浏览器 diff 始终对不上、缺口集中在 canvas/WebGL/document.all/stack —— **这些是补环境天花板，不是你补得不够**。果断换真浏览器。
+> Signals that "you should upgrade": you've added 50+ stubs and gaps are still appearing, the diff against a real browser never matches, and the gaps cluster around canvas/WebGL/document.all/stack — **these are the environment-supplementation ceiling, not a sign you haven't supplemented enough**. Switch to a real browser decisively.
 
 ---
 
-## Example（最短可用路径）
+## Example (Shortest Usable Path)
 
 ```bash
 mkdir env-supplement && cd env-supplement
 npm init -y
-# 第一方"吐环境"监控工具（跑自动补全循环用）
+# First-party "environment disclosure" monitoring tool (for running the auto-completion loop)
 npm install crawler-env-utils
-# 需要 DOM 仿真时再加 jsdom
+# Add jsdom when you need DOM simulation
 npm install jsdom
 ```
 
-**第 1 步：先让环境"吐"出缺什么**（教学版 Proxy 或 node-crawler-env-utils）
+**Step 1: First let the environment "disclose" what's missing** (the teaching Proxy or node-crawler-env-utils)
 
 ```javascript
 // run-and-collect.js
 const { setEnvProxy, LogLevel } = require('crawler-env-utils');
 setEnvProxy({
   paths: ['window', 'navigator', 'document', 'screen', 'location'],
-  deepProxyPaths: ['window.navigator'],          // 递归深代理
+  deepProxyPaths: ['window.navigator'],          // recursive deep proxying
   logConfig: { level: LogLevel.TRACE, showStackTrace: true },
 });
-// require / eval 你的目标混淆 JS：
+// require / eval your target obfuscated JS:
 const sign = require('./target_obfuscated.js');
 try { console.log(sign.getToken('payload')); }
-catch (e) { console.log('断在：', e.message); }   // 抓 X is not defined / of undefined
+catch (e) { console.log('broke at:', e.message); }   // catch X is not defined / of undefined
 ```
 
 ```bash
 node run-and-collect.js
-# 看日志里 [GET] 了哪些路径却拿不到值 → 这就是要补的清单
+# See which paths were [GET] in the log but had no value → that's the list to supplement
 ```
 
-**第 2 步：迭代补 stub（围绕 "is not defined" 收敛）**
+**Step 2: Iteratively add stubs (converge around "is not defined")**
 
 ```javascript
-// env.js —— 每轮把日志报缺的补上，值优先从真 Chrome（cdp-browser）抓
+// env.js —— each round, supplement what the log reports as missing; prefer capturing values from real Chrome (cdp-browser)
 globalThis.navigator = Object.create(Navigator?.prototype ?? {});
-Object.defineProperty(navigator, 'userAgent', {            // 原型 getter + 真实描述符
+Object.defineProperty(navigator, 'userAgent', {            // prototype getter + real descriptor
   get() { return 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ...'; },
   enumerable: false, configurable: true,
 });
 Object.defineProperty(navigator, 'webdriver', { get(){ return false; }, configurable:true });
-// 函数 stub 要过 [native code] 检测：
+// Function stubs must pass [native code] detection:
 function native(fn, name) {
   Object.defineProperty(fn, 'name', { value: name });
-  fn.toString = () => `function ${name}() { [native code] }`;  // 真框架在 V8 层做，这里示意
+  fn.toString = () => `function ${name}() { [native code] }`;  // real frameworks do this at the V8 layer; illustrative here
   return fn;
 }
 globalThis.addEventListener = native(function addEventListener(){}, 'addEventListener');
 ```
 
 ```bash
-# 第 3 步：再跑 → 缺口变少 → 重复第 2 步，直到稳定
+# Step 3: rerun → fewer gaps → repeat step 2 until stable
 node -r ./env.js run-and-collect.js
 ```
 
-**第 4 步：与真浏览器 diff 校验**
+**Step 4: diff-verify against a real browser**
 
 ```bash
-# 同一份 payload，在真 Chrome 里跑 sign（用 cdp-browser skill），对比输出
-# 一致 = 收敛；不一致且缺口在 canvas/WebGL/document.all = 撞天花板，走逃生路线
+# With the same payload, run sign in real Chrome (using the cdp-browser skill) and compare outputs
+# Match = converged; mismatch with gaps in canvas/WebGL/document.all = hit the ceiling, take the escape route
 ```
 
-> 真正过强对抗别用上面的教学 `native()`——`toString` 自身会穿帮。改用 sdenv 的 `browser(window,'chrome')` 一把注入，或 NodeSandbox 的 V8 层 `SetNative`。教学版只用来理解循环。
+> To actually beat a strong adversary, don't use the teaching `native()` above—its `toString` will give itself away. Use sdenv's `browser(window,'chrome')` to inject in one shot, or NodeSandbox's V8-layer `SetNative`. The teaching version is only for understanding the loop.
 
 ---
 
-## 别做的事
+## What Not to Do
 
-- ❌ **不要试图 mock 全部 browser API** —— 不可能也没必要。Proxy 自动报缺，**只补脚本实际查的**（`node-bridge-build` 同款原则）。
-- ❌ **不要凭空编指纹值** —— UA/canvas/分辨率优先用 `cdp-browser` 从真 Chrome 抓；编的值九成自洽不了。
-- ❌ **不要随机伪造 canvas/WebGL** —— 不能随机，必须真实采集或用框架指纹 profile。
-- ❌ **不要用普通 JS 函数当 stub 就指望过检测** —— `toString` 一查就露，必须 `[native code]` 壳。
-- ❌ **不要无脑递归代理一切** —— 代理 `Function.prototype` / `Object.prototype` / Symbol 会污染并自伤；忽略 `__proto__`/`constructor`/Symbol（node-crawler-env-utils 的 `ignoredProperties` 就是干这个）。
-- ❌ **不要把凭据/代理账号 hardcode** —— 走 env var。
-- ❌ **撞天花板还硬补** —— 缺口在 document.all/stack/canvas 自洽时，是天花板不是你菜，换真浏览器。
+- ❌ **Don't try to mock every browser API** — it's impossible and unnecessary. The Proxy auto-reports gaps; **only supplement what the script actually queries** (the same principle as `node-bridge-build`).
+- ❌ **Don't make up fingerprint values** — prefer capturing UA/canvas/resolution from real Chrome with `cdp-browser`; made-up values are inconsistent nine times out of ten.
+- ❌ **Don't randomly fake canvas/WebGL** — they can't be random; they must be really captured or use a framework fingerprint profile.
+- ❌ **Don't use a plain JS function as a stub and expect to pass detection** — one `toString` check exposes it; you need a `[native code]` shell.
+- ❌ **Don't mindlessly recursively proxy everything** — proxying `Function.prototype` / `Object.prototype` / Symbol pollutes and self-harms; ignore `__proto__`/`constructor`/Symbol (node-crawler-env-utils's `ignoredProperties` does exactly this).
+- ❌ **Don't hardcode credentials/proxy accounts** — use env vars.
+- ❌ **Don't keep brute-forcing after hitting the ceiling** — when the gaps are at document.all/stack/canvas consistency, it's the ceiling, not a skill issue—switch to a real browser.
 
 ---
 
-## 配套引用
+## Companion References
 
-| 文件 | 内容 |
+| File | Contents |
 |---|---|
-| [`references/proxy-cookbook.md`](references/proxy-cookbook.md) | 递归 Proxy 代码模式 + 每个检测点（toString/[native code]、Symbol.toPrimitive、has/descriptor 协调、document.all、stack 清理、Symbol.toStringTag、iframe/contentWindow）的处理写法 + 自动补全循环脚手架 |
-| [`references/framework-comparison.md`](references/framework-comparison.md) | 7 个框架逐项对比（路线/能力/局限/安装坑）+ 选型决策树 + 各自最适合的场景 |
+| [`references/proxy-cookbook.md`](references/proxy-cookbook.md) | Recursive Proxy code patterns + how to handle each detection point (toString/[native code], Symbol.toPrimitive, has/descriptor coordination, document.all, stack cleanup, Symbol.toStringTag, iframe/contentWindow) + the auto-completion loop scaffold |
+| [`references/framework-comparison.md`](references/framework-comparison.md) | Item-by-item comparison of 7 frameworks (route/capabilities/limitations/installation pitfalls) + selection decision tree + the scenario each one fits best |
 
-相关 skill：取真值用 **`cdp-browser`**；有 PX/Akamai jsdom 模板用 **`node-bridge-build`**；不想补环境直接调真实算法用 **`jsrpc-universal`**；取值方法论复用 **`jni-env-patching`**（先读真环境再给合理值）。
-
----
-
-## ❌ 不要踩的"自然语言陷阱"
-
-1. **"补环境能一键搞定任何站"** —— 不能。有 V8 层天花板（document.all/toString/stack）。
-2. **"缺啥补啥跑通就行"** —— 跑通 ≠ 过检测。要和真浏览器 diff 校验。
-3. **"指纹随便填个能跑就行"** —— 错，整组要自洽，canvas 不能随机。
-4. **"补环境一定比浏览器划算"** —— 只在 QPS 高、算法逆不动时划算；偶尔调用走 RPC/浏览器更省事。
-5. **"Proxy 全返回 true / 占位对象就够了"** —— has/descriptor/toString/stack 任一不自洽就露。
+Related skills: use **`cdp-browser`** to obtain real values; use **`node-bridge-build`** when you have a PX/Akamai jsdom template; use **`jsrpc-universal`** to directly call the real algorithm when you don't want environment supplementation; reuse the value-selection methodology from **`jni-env-patching`** (read the real environment first, then give reasonable values).
 
 ---
 
-*本 skill 基于对 pysunday/sdenv(+jsdom/extend)、ylw00/qxVm、bnmgh1/NodeSandbox 与 node-sandbox、xuxiaobo-bobo/boda_jsEnv、lasawang/js-sandbox-env-framework、decodecaptcha/Browser-Env、warterbili/node-crawler-env-utils 的 README/源码整理，机制与检测点来自这些框架的实际实现，非记忆杜撰。授权安全研究 / CTF / 教学用途。*
+## ❌ "Natural-Language Traps" to Avoid
+
+1. **"Environment supplementation can one-click handle any site"** — it can't. There's a V8-layer ceiling (document.all/toString/stack).
+2. **"Just fill whatever's missing and getting it to run is enough"** — running ≠ passing detection. You must diff-verify against a real browser.
+3. **"Just put any fingerprint that runs"** — wrong; the whole group must be consistent, and canvas can't be random.
+4. **"Environment supplementation is always more economical than a browser"** — only when QPS is high and the algorithm can't be reversed; for occasional calls, RPC/browser is simpler.
+5. **"A Proxy that returns true / a placeholder object for everything is enough"** — if any of has/descriptor/toString/stack is inconsistent, it's exposed.
+
+---
+
+*This skill is compiled from the READMEs/source of pysunday/sdenv(+jsdom/extend), ylw00/qxVm, bnmgh1/NodeSandbox and node-sandbox, xuxiaobo-bobo/boda_jsEnv, lasawang/js-sandbox-env-framework, decodecaptcha/Browser-Env, and warterbili/node-crawler-env-utils; the mechanisms and detection points come from these frameworks' actual implementations, not from memory. For authorized security research / CTF / teaching purposes.*

@@ -1,213 +1,213 @@
 ---
 name: akamai-reverse
-description: Akamai Bot Manager (BMP / Bot Manager Premier) 逆向工程 skill —— 从抓包指纹识别到生成被服务端接受的 sensor_data / akamai-bm-telemetry，拿到合法 _abck cookie 的端到端方法论。覆盖 _abck / bm_sz / ak_bmsc / sbsd 四类 cookie 的角色、sensor_data POST 握手（请求 N 次、`-1-` 无效态 vs `~0~` 有效态判定）、Web sensor_data 与 移动端 BMP（pipe -1,2,-94 协议 + RSA/AES/HMAC + PoW）两条分叉路线、sensor 字段结构（-100 系统信息 / -115 校验统计 / -117 触摸 / -143 motion 等）与 generator 参数化（app 包名 / lang / version / device 指纹）、以及 Akamai 脚本版本漂移（pin script version、sensor 格式跨版本变化）的现实。移动端直接路由到 xvertile/akamai-bmp-generator 作为可用起点；Web 端给方法论（须逐目标干活）。Trigger terms: Akamai, Akamai Bot Manager, BMP, sensor_data, akamai-bm-telemetry, _abck, bm_sz, ak_bmsc, sbsd, bm-verify, x-acf-sensor-data, /_bm/, akam, "bypass akamai", "akamai 反爬", "_abck 无效".
-languages: [zh, en]
+description: Akamai Bot Manager (BMP / Bot Manager Premier) reverse-engineering skill — an end-to-end methodology from traffic-capture fingerprinting to generating server-accepted sensor_data / akamai-bm-telemetry and obtaining a valid _abck cookie. Covers the roles of the four cookie types _abck / bm_sz / ak_bmsc / sbsd, the sensor_data POST handshake (N requests; `-1-` invalid state vs `~0~` valid state detection), the two diverging routes Web sensor_data and mobile BMP (pipe -1,2,-94 protocol + RSA/AES/HMAC + PoW), the sensor field structure (-100 system info / -115 verify stats / -117 touch / -143 motion, etc.) and generator parameterization (app package name / lang / version / device fingerprint), as well as the reality of Akamai script version drift (pin script version; sensor format changes across versions). The mobile path routes directly to xvertile/akamai-bmp-generator as a usable starting point; the Web path provides methodology (requires per-target work). Trigger terms: Akamai, Akamai Bot Manager, BMP, sensor_data, akamai-bm-telemetry, _abck, bm_sz, ak_bmsc, sbsd, bm-verify, x-acf-sensor-data, /_bm/, akam, "bypass akamai", "akamai anti-scraping", "_abck invalid".
+languages: [en]
 ---
 
-# Akamai Bot Manager 逆向工程 Skill
+# Akamai Bot Manager Reverse-Engineering Skill
 
-> **TL;DR**：Akamai 反爬有两层 —— (1) HTTPS 传输层 TLS/JA3/JA4 + HTTP2 指纹；(2) 应用层行为风控 = 客户端采集设备/浏览器/行为信号 → 加密成 **sensor_data** POST 给 Akamai 边缘 → 换回一个合法 **_abck** cookie。
-> 本 skill 给的是**采集 + 路由 + 方法论**：先指纹判型，移动端直接路由到现成的全量逆向实现 `xvertile/akamai-bmp-generator`；Web 端给 px-reverse 式的逐目标方法论。
+> **TL;DR**: Akamai anti-scraping has two layers — (1) the HTTPS transport layer with TLS/JA3/JA4 + HTTP2 fingerprinting; (2) the application-layer behavioral risk control = the client collects device/browser/behavior signals → encrypts them into **sensor_data** → POSTs them to the Akamai edge → receives a valid **_abck** cookie in return.
+> This skill provides **collection + routing + methodology**: first fingerprint to classify the target, then for mobile route directly to the existing full reverse-engineered implementation `xvertile/akamai-bmp-generator`; for Web provide a px-reverse-style per-target methodology.
 >
-> 诚实说在前面：**Akamai Web sensor_data 没有一份"通用生成器"**。脚本逐站点/逐版本变化，canvas 指纹不能随机伪造，行为轨迹要足够真实，还叠加 TLS 指纹 + IP 信誉。**这是逐目标的活。** 移动端 BMP 因为协议相对稳定、设备指纹可池化，才有现成全量实现。
+> An honest disclaimer up front: **there is no single "universal generator" for Akamai Web sensor_data**. The script changes per site and per version, the canvas fingerprint cannot be randomly faked, the behavioral trajectory must be realistic enough, and on top of that there are TLS fingerprinting + IP reputation. **This is per-target work.** Mobile BMP only has an existing full implementation because its protocol is relatively stable and device fingerprints can be pooled.
 
 ---
 
-## When to trigger（指纹识别）
+## When to trigger (fingerprinting)
 
-命中以下任一即为 Akamai Bot Manager，用本 skill：
+If any of the following match, it is Akamai Bot Manager — use this skill:
 
-**Cookie 指纹**（最可靠）：
-- `_abck` —— 核心校验 cookie，sensor_data POST 的返回物。形如 `<token>~-1~-1~...` 或 `...~0~...`
-- `bm_sz` —— Bot Manager session，首屏由 Akamai 边缘下发，sensor 生成时作为输入参数之一
-- `ak_bmsc` —— Akamai Bot Manager session cookie（边缘侧会话态）
-- `bm_sv` / `bm_mi` / `bm_lso` —— 辅助会话 cookie
-- `sbsd` / `sbsd_o` —— **较新**的 Akamai 增强校验类型（Akamai 升级 v3 后引入，xiaoweigege 仓库已支持），独立于 sensor_data 的二级握手
+**Cookie fingerprints** (most reliable):
+- `_abck` — the core verification cookie, the return value of the sensor_data POST. Looks like `<token>~-1~-1~...` or `...~0~...`
+- `bm_sz` — Bot Manager session, issued by the Akamai edge on the first page load, used as one of the inputs to sensor generation
+- `ak_bmsc` — Akamai Bot Manager session cookie (edge-side session state)
+- `bm_sv` / `bm_mi` / `bm_lso` — auxiliary session cookies
+- `sbsd` / `sbsd_o` — a **newer** Akamai enhanced verification type (introduced after Akamai upgraded to v3; already supported in the xiaoweigege repo), a secondary handshake independent of sensor_data
 
-**请求指纹**：
-- POST body 是一坨 base64 大块 + `$` 分隔（Web）或 pipe 协议 `-1,2,-94,...`（移动端 BMP）
-- 请求头 / body 出现 `akamai-bm-telemetry`、`x-acf-sensor-data`、`X-Akamai-BMP`
-- 采集脚本 URL 含混淆路径，常见 `/_bm/`、`...akam...`、随机化的脚本名（每站点不同）
-- 被拦截时返回 **403**（不是 412/429），且响应里重新 `Set-Cookie: _abck=...~-1~-1~...`
+**Request fingerprints**:
+- The POST body is a big base64 blob with `$` separators (Web), or the pipe protocol `-1,2,-94,...` (mobile BMP)
+- `akamai-bm-telemetry`, `x-acf-sensor-data`, or `X-Akamai-BMP` appears in the request headers / body
+- The collection script URL contains an obfuscated path, commonly `/_bm/`, `...akam...`, or a randomized script name (different per site)
+- When blocked it returns **403** (not 412/429), and the response again sets `Set-Cookie: _abck=...~-1~-1~...`
 
-**判型时的反例**（不要用本 skill）：`_px3/_px2`→PerimeterX（用 px-reverse）；`datadome` cookie→DataDome；`__cf_bm/cf_clearance`→Cloudflare；`X-Castle-Request-Token`→Castle（用 castle-reverse）。
+**Counterexamples when classifying** (do NOT use this skill): `_px3/_px2`→PerimeterX (use px-reverse); `datadome` cookie→DataDome; `__cf_bm/cf_clearance`→Cloudflare; `X-Castle-Request-Token`→Castle (use castle-reverse).
 
 ---
 
-## ⚠️ 第一步永远是分叉：Web sensor_data vs 移动端 BMP
+## ⚠️ The first step is always the fork: Web sensor_data vs mobile BMP
 
-这是新手最容易做错的地方 —— **两条路线协议完全不同，工具完全不同**：
+This is where beginners go wrong most often — **the two routes have completely different protocols and completely different tools**:
 
-| 维度 | **Web sensor_data** | **移动端 BMP（Bot Manager Premier mobile SDK）** |
+| Dimension | **Web sensor_data** | **Mobile BMP (Bot Manager Premier mobile SDK)** |
 |---|---|---|
-| 客户端 | 浏览器 JS（混淆采集脚本） | Android/iOS App 内嵌 Akamai BMP SDK |
-| 载荷名 | `sensor_data` / `akamai-bm-telemetry`（header，base64） | `sensor_data`（pipe 协议串） |
-| 关键信号 | **canvas 指纹**、WebGL、字体、navigator、**鼠标轨迹** | **设备 Build 信息**、传感器 motion（加速度/陀螺仪/方向）、触摸事件 |
-| 加密 | 逐版本自定义（AST 还原脚本） | RSA(公钥) 包 AES key + AES-CBC + HMAC-SHA256 + base64 + 可选 **PoW** |
-| 现成实现 | ❌ 无通用，逐目标干活 | ✅ **`xvertile/akamai-bmp-generator`**（Go，全量逆向 2.1.2→4.2.1） |
-| 难点 | canvas 不能随机伪造 + 行为真实度 + TLS 指纹 | 设备指纹池质量 + pin 对版本 |
+| Client | Browser JS (obfuscated collection script) | Android/iOS app with the embedded Akamai BMP SDK |
+| Payload name | `sensor_data` / `akamai-bm-telemetry` (header, base64) | `sensor_data` (pipe protocol string) |
+| Key signals | **canvas fingerprint**, WebGL, fonts, navigator, **mouse trajectory** | **device Build info**, sensor motion (accelerometer/gyroscope/orientation), touch events |
+| Encryption | Custom per version (restore the script via AST) | RSA (public key) wraps the AES key + AES-CBC + HMAC-SHA256 + base64 + optional **PoW** |
+| Existing implementation | ❌ None universal; per-target work | ✅ **`xvertile/akamai-bmp-generator`** (Go, full reverse engineering of 2.1.2→4.2.1) |
+| Difficulty | canvas cannot be randomly faked + behavioral realism + TLS fingerprint | device fingerprint pool quality + pinning the right version |
 
-**路由规则**：
-- **目标是移动端 App / 移动端 API** → 直奔 `references/bmp-mobile.md`，用 `akamai-bmp-generator` 作为起点。这是本 skill 唯一"开箱即用"的路径。
-- **目标是网站** → 走 `references/web-sensor.md` 的方法论。先用 `cdp-browser` 真实 Chrome 抓 sensor POST，确认能不能直接用浏览器自动化绕过（很多时候这比纯算法划算）。
+**Routing rules**:
+- **Target is a mobile app / mobile API** → go straight to `references/bmp-mobile.md` and use `akamai-bmp-generator` as the starting point. This is the only "out-of-the-box" path in this skill.
+- **Target is a website** → follow the methodology in `references/web-sensor.md`. First use `cdp-browser` (real Chrome) to capture the sensor POST, and confirm whether you can bypass it directly with browser automation (often this is more cost-effective than pure algorithmic work).
 
 ---
 
-## Workflow（编号步骤 —— 不要跳步）
+## Workflow (numbered steps — do not skip any)
 
-1. **指纹判型**：先确认确实是 Akamai（见上 When to trigger）。`GET` 目标首页，看响应有没有 `bm_sz` / `ak_bmsc` 的 `Set-Cookie` 和 `_abck`。被业务接口 403 时抓响应里的 `Set-Cookie: _abck=` —— 末尾是 `~-1~-1` 就是无效态，确认是 sensor 风控而非纯 IP 封禁。
+1. **Fingerprint and classify**: first confirm it really is Akamai (see When to trigger above). `GET` the target homepage and check whether the response has `Set-Cookie` for `bm_sz` / `ak_bmsc` and `_abck`. When a business endpoint returns 403, capture the `Set-Cookie: _abck=` in the response — if it ends in `~-1~-1` it is the invalid state, confirming this is sensor risk control rather than a pure IP ban.
 
-2. **分叉**：移动端 → 步骤 3（BMP）；Web → 步骤 6（sensor_data）。**不要在没分型前就开始读脚本。**
+2. **Fork**: mobile → step 3 (BMP); Web → step 6 (sensor_data). **Do not start reading the script before classifying.**
 
-3. **【移动端】先解决 TLS 指纹**：Akamai 第一层就查 TLS/HTTP2 指纹。Python 用 `curl_cffi`（impersonate chrome/safari/okhttp），Go 用 `bogdanfinn/tls-client`。**TLS 不对，sensor 再完美也 403。** 这一步独立于 sensor，先单独验证（带浏览器 UA + 正确 TLS GET 首页能拿到 `bm_sz` 即过关）。
+3. **[Mobile] First solve the TLS fingerprint**: Akamai's first layer already checks the TLS/HTTP2 fingerprint. In Python use `curl_cffi` (impersonate chrome/safari/okhttp); in Go use `bogdanfinn/tls-client`. **If TLS is wrong, even a perfect sensor gets 403.** This step is independent of the sensor — verify it separately first (with a browser UA + correct TLS, a GET of the homepage that obtains `bm_sz` means it passes).
 
-4. **【移动端】跑 akamai-bmp-generator**：`git clone xvertile/akamai-bmp-generator && cd cmd/akamai-bmp-server && go run main.go`，POST `/akamai/bmp`：
+4. **[Mobile] Run akamai-bmp-generator**: `git clone xvertile/akamai-bmp-generator && cd cmd/akamai-bmp-server && go run main.go`, then POST `/akamai/bmp`:
    ```json
    {"app":"com.target.app","lang":"en_US","version":"3.3.4","challenge":false,"powUrl":"https://m.target.com"}
    ```
-   返回 `{"sensor":"...","userAgent":...}`。**关键是 `version` 要 pin 到目标 App 真实使用的 BMP 版本**（见步骤 5）。
+   This returns `{"sensor":"...","userAgent":...}`. **The key is that `version` must be pinned to the BMP version the target app actually uses** (see step 5).
 
-5. **【移动端】pin 对 BMP 版本**：用 jadx 反编译 App，搜 `BMPSDK` / `Akamai BMPSDK/` UA 字符串，或 frida hook sensor 生成点抓真实 sensor 头几个字段（pipe 串第一段就是版本号，如 `3.3.4`）。版本不对 → sensor 字段集 / 序号 / 协议头不匹配 → 403。generator 支持 2.1.2 / 2.2.2 / 2.2.3 / 3.1.0 / 3.2.3 / 3.3.0 / 3.3.1 / 3.3.4 / 3.3.9 / 4.0.2 / 4.2.1。
+5. **[Mobile] Pin the right BMP version**: decompile the app with jadx and search for the `BMPSDK` / `Akamai BMPSDK/` UA string, or frida-hook the sensor generation point to capture the first few fields of the real sensor (the first segment of the pipe string is the version number, e.g. `3.3.4`). Wrong version → the sensor field set / ordering / protocol header does not match → 403. The generator supports 2.1.2 / 2.2.2 / 2.2.3 / 3.1.0 / 3.2.3 / 3.3.0 / 3.3.1 / 3.3.4 / 3.3.9 / 4.0.2 / 4.2.1.
 
-6. **【Web】先试浏览器自动化**：用 `cdp-browser`（真实 Chrome，无 webdriver 特征）+ 残留指纹 + 住宅 IP 直接访问。Akamai 对真实 Chrome + 真实行为非常宽容。**能用浏览器解决就别纯算法逆向 sensor_data**（成本差一个数量级）。
+6. **[Web] Try browser automation first**: use `cdp-browser` (real Chrome, no webdriver traces) + a residual fingerprint + a residential IP to access the site directly. Akamai is very lenient toward real Chrome + real behavior. **If a browser can solve it, do not do pure algorithmic reverse engineering of sensor_data** (the cost differs by an order of magnitude).
 
-7. **【Web】抓 sensor POST + pin 脚本**：CDP 拦截 sensor_data POST（找发往 Akamai 边缘的那个 POST，body 是 base64 大块）。同时下载混淆采集脚本并记 sha256 —— **Akamai 频繁换脚本版本，必须 pin 住同一版本采集多批样本**，否则字段对不齐。
+7. **[Web] Capture the sensor POST + pin the script**: use CDP to intercept the sensor_data POST (find the POST sent to the Akamai edge, whose body is a big base64 blob). At the same time, download the obfuscated collection script and record its sha256 — **Akamai changes script versions frequently, so you must pin the same version and collect several batches of samples**, otherwise the fields will not line up.
 
-8. **【Web】sensor_data 握手循环（abck 状态机）**：见下面 §_abck 握手。
+8. **[Web] The sensor_data handshake loop (the abck state machine)**: see §_abck handshake below.
 
-9. **【Web】sbsd（如有）**：较新站点除 sensor_data 外还要过 sbsd 二级握手。先确认 sbsd cookie 是否存在/是否被业务接口要求；存在则需单独逆向其载荷（参考 xiaoweigege/akamai2.0-sensor_data 的 sbsd 支持）。
+9. **[Web] sbsd (if present)**: newer sites require passing the sbsd secondary handshake in addition to sensor_data. First confirm whether the sbsd cookie exists / is required by the business endpoint; if present, you must reverse-engineer its payload separately (refer to the sbsd support in xiaoweigege/akamai2.0-sensor_data).
 
-10. **稳定性测试**：拿到 `~0~` 态 `_abck` 后请求业务接口；连续 5+ 次、换 IP、间隔请求都 200 才算过。
-
----
-
-## 🔑 _abck 握手状态机（核心、最容易写错）
-
-sensor_data **不是发一次就完事**，是一个状态机：
-
-```
-初始 GET 首页 → Akamai 下发 _abck=<token>~-1~-1~...   ← 无效态（末尾 ~-1~-1）
-   │
-   ▼ POST sensor_data #1（带当前 _abck + bm_sz）
-更新的 _abck 仍可能是 ~-1~-1（trust 不够）
-   │
-   ▼ POST sensor_data #2、#3 …
-_abck 变成 ...~0~...   ← 有效态！可以停了
-```
-
-**判定规则**（来自 hypersolutions / xiaoweigege 实战）：
-- `_abck` 含 `~0~` → **有效，停止 POST**，可以请求业务接口。
-- `_abck` 末尾 `~-1~-1` → 仍无效，继续 POST（或参数不够真实，被永久压在无效态）。
-- 站点**不用 `~0~` 指示器**时：经验值是**固定 POST 3 次** sensor 后即视为就绪。
-- 每次 POST 必须带上**当前最新的 `_abck` + `bm_sz`**（cookie 会随响应更新，要回写）。
-- `_abck` 有时效，业务接口 403 重新下发 `~-1~-1` 时要重新走握手（通常 1 次 sensor 即可从"被作废态"恢复）。
-
-> ⚠️ 易错点：很多人 sensor 字段全对了却拿不到 `~0~`。原因往往是 **(a) 没回写更新后的 `_abck`/`bm_sz` 就发下一次**；**(b) POST 次数不够**；**(c) sensor 不够真实，被 Akamai "放行但拖慢"**（xiaoweigege 原文：参数不够真实 akamai 会给通过但拖慢请求 10s）；**(d) TLS/IP 层先挂了，跟 sensor 无关。**
+10. **Stability test**: after obtaining a `~0~`-state `_abck`, request the business endpoint; it only passes if it returns 200 across 5+ consecutive requests, IP changes, and spaced-out requests.
 
 ---
 
-## sensor 字段结构（高层）+ generator 参数化
+## 🔑 The _abck handshake state machine (core; the easiest to get wrong)
 
-**移动端 BMP**（pipe 协议，来自 akamai-bmp-generator 源码，以 3.3.4 为例）：
+sensor_data **is not a one-shot send** — it is a state machine:
 
-序列化格式：每个字段 `-1,2,-94,<id>,<value>` 拼接（`SerializeBmp`）。关键字段 id：
+```
+Initial GET of homepage → Akamai issues _abck=<token>~-1~-1~...   ← invalid state (ends in ~-1~-1)
+   │
+   ▼ POST sensor_data #1 (with current _abck + bm_sz)
+The updated _abck may still be ~-1~-1 (not enough trust)
+   │
+   ▼ POST sensor_data #2, #3 …
+_abck becomes ...~0~...   ← valid state! you can stop
+```
 
-| id | 含义 | 来源 |
+**Decision rules** (from hypersolutions / xiaoweigege field experience):
+- `_abck` contains `~0~` → **valid, stop POSTing**; you can request the business endpoint.
+- `_abck` ends in `~-1~-1` → still invalid, keep POSTing (or the parameters are not realistic enough and are permanently held in the invalid state).
+- When a site **does not use the `~0~` indicator**: the rule of thumb is that after a **fixed 3 sensor POSTs** it is considered ready.
+- Every POST must carry the **current latest `_abck` + `bm_sz`** (the cookies are updated with each response and must be written back).
+- `_abck` has a lifetime; when a business endpoint returns 403 and re-issues `~-1~-1`, you must redo the handshake (usually a single sensor recovers from the "invalidated state").
+
+> ⚠️ Common mistake: many people have all the sensor fields correct yet cannot obtain `~0~`. The cause is usually **(a) sending the next request without writing back the updated `_abck`/`bm_sz`**; **(b) not enough POSTs**; **(c) the sensor is not realistic enough and Akamai "lets it through but slows it down"** (xiaoweigege's original wording: when the parameters are not realistic enough, Akamai will allow the request through but delay it by 10s); **(d) the TLS/IP layer failed first, unrelated to the sensor.**
+
+---
+
+## sensor field structure (high level) + generator parameterization
+
+**Mobile BMP** (pipe protocol, from the akamai-bmp-generator source, using 3.3.4 as the example):
+
+Serialization format: each field is concatenated as `-1,2,-94,<id>,<value>` (`SerializeBmp`). Key field ids:
+
+| id | Meaning | Source |
 |---|---|---|
-| (首段) | BMP 版本号，如 `3.3.4` | 常量，**必须 pin 对** |
-| `-100` | 系统信息（屏幕、电量、Build.MODEL/BRAND/FINGERPRINT、androidId、lang…） | device 指纹 + `UrlEncode` |
-| `-101` | event listeners `do_en,dm_en,t_en` | 常量 |
-| `-103` | 后台事件 | 随机时间序列 |
-| `-112` | 性能基准 `PERF_BENCH` | device 指纹池 |
-| `-115` | **校验统计**（touchVel/motion 累加值/时长/`FeistelEncode` 校验和） | 计算，**这段最关键，错了直接挂** |
-| `-117` | 触摸事件序列 | 随机生成 |
-| `-143` | motion 数据（加速度计/陀螺仪，DCT 变换 + `BmpHash` 编码） | 随机生成 |
-| `-150` | `1,0` | 常量 |
+| (first segment) | BMP version number, e.g. `3.3.4` | constant, **must be pinned correctly** |
+| `-100` | system info (screen, battery, Build.MODEL/BRAND/FINGERPRINT, androidId, lang…) | device fingerprint + `UrlEncode` |
+| `-101` | event listeners `do_en,dm_en,t_en` | constant |
+| `-103` | background events | random time series |
+| `-112` | performance benchmark `PERF_BENCH` | device fingerprint pool |
+| `-115` | **verify stats** (touchVel / motion cumulative value / duration / `FeistelEncode` checksum) | computed, **this segment is the most critical; if wrong it fails outright** |
+| `-117` | touch event sequence | randomly generated |
+| `-143` | motion data (accelerometer/gyroscope, DCT transform + `BmpHash` encoding) | randomly generated |
+| `-150` | `1,0` | constant |
 
-加密链（`EncryptSensor`）：`AES key(16B 随机) → RSA-PKCS1v15 公钥加密 → b64`，`sensor 串 → AES-128-CBC(随机IV) → iv+密文 → HMAC-SHA256 → 全部 b64`，最终 `<encrypted>$<powResponse>$<powToken>`。
+Encryption chain (`EncryptSensor`): `AES key (16B random) → RSA-PKCS1v15 public-key encryption → b64`; `sensor string → AES-128-CBC (random IV) → iv+ciphertext → HMAC-SHA256 → all b64`; final form `<encrypted>$<powResponse>$<powToken>`.
 
-**参数化入口**（generator 的 `AkamaiRequest`）：
-- `app` —— App 包名（如 `com.ihg.apps.android`），进 `-100` 字段，**必须是目标真实包名**
-- `lang` —— 如 `en_US`，进 `-100`
-- `version` —— BMP 版本，**必须 pin 对目标**
-- `challenge` + `powUrl` —— 是否做 Proof-of-Work（站点开了 PoW 才需要，会 GET `<domain>/_bm/get_params?type=sdk-pow` 拿 nonce/difficulty 并求解 SHA-256 PoW）
-- device —— 从 `devices.json` 设备池随机取（2K 真实设备指纹）；**池子质量直接决定通过率**
+**Parameterization entry points** (the generator's `AkamaiRequest`):
+- `app` — the app package name (e.g. `com.ihg.apps.android`), goes into the `-100` field, **must be the target's real package name**
+- `lang` — e.g. `en_US`, goes into `-100`
+- `version` — the BMP version, **must be pinned to the target**
+- `challenge` + `powUrl` — whether to do Proof-of-Work (only needed when the site has PoW enabled; it will GET `<domain>/_bm/get_params?type=sdk-pow` to obtain nonce/difficulty and solve the SHA-256 PoW)
+- device — drawn randomly from the `devices.json` device pool (2K real device fingerprints); **the pool's quality directly determines the pass rate**
 
-**Web sensor_data** 结构高层：xiaoweigege 分析 maersk.com 为一个 **58 元素数组**拼接加密，其中 **canvas 指纹 + 鼠标运动轨迹最关键**，canvas 不能随机伪造（须收集真实浏览器的）。`akamai-bm-telemetry` header = sensor_data 的 base64 变体。**逐版本变化，靠 AST 还原混淆脚本**，没有现成通用实现。
-
----
-
-## Gotchas（真实踩坑）
-
-1. **TLS 指纹是第一道墙，独立于 sensor**。`requests`/`httpx` 裸发必 403。必须 `curl_cffi`(impersonate) / `tls-client`(Go) / 真实浏览器。先单独验证 TLS 过关再碰 sensor。
-2. **`bm_sz` / `_abck` 要回写**。每次响应都可能更新这两个 cookie，下一次请求必须带最新的。用持久 session（curl_cffi Session / cookiejar）。
-3. **BMP 版本 pin 错 = 字段集不匹配 = 403**。先 jadx/frida 确认目标 App 的真实 BMP 版本号再选 generator 的 `version`。
-4. **设备指纹池质量决定一切**（移动端）。用现成 `devices.json` 可能很快被标记；高并发要扩充真实设备池 + 一机一指纹 + 换 IP。
-5. **canvas 不能随机伪造**（Web）。必须收集真实浏览器 canvas 指纹替换；motion/鼠标轨迹要算法模拟得像真人。
-6. **"放行但拖慢"陷阱**。sensor 不够真实时 Akamai 不直接 403，而是放行却把响应拖到 10s —— 看起来通过了其实置信度很低。监控响应延迟，别只看状态码。
-7. **脚本版本漂移**（Web）。Akamai 频繁更新采集脚本，老的 AST 还原结果会失效。**pin sha256、同版本采多批样本**，把还原产物与版本号绑定。
-8. **sbsd 是独立二级握手**。新站点过了 sensor_data 仍可能被 sbsd 卡。先确认 sbsd 是否被业务接口强制要求，再决定要不要单独逆它。
-9. **IP 信誉是隐藏维度**。数据中心 IP 即使 sensor 完美也可能被压制；用住宅 IP 才能稳定拿 `~0~`。403 不一定是你 sensor 的错，先用 trust 矩阵（真实浏览器/你的脚本 × 干净/脏 IP）定位墙在哪。
-10. **PoW 只在站点开启时才需要**（`challenge:true`）。盲目开 PoW 会多打一个 `/_bm/get_params` 请求、徒增暴露面；先确认目标是否真的要 PoW。
-11. **`akamai-bmp-generator` 是起点不是终点**。它给的是协议正确的 sensor 骨架；具体站点的设备池、版本、PoW 开关、TLS、IP 仍要你按目标调。诚实对待"这是逐目标的活"。
+**Web sensor_data** structure at a high level: xiaoweigege's analysis of maersk.com found it to be a **58-element array** concatenated and encrypted, in which the **canvas fingerprint + mouse movement trajectory are the most critical**, and the canvas cannot be randomly faked (you must collect a real browser's). The `akamai-bm-telemetry` header = a base64 variant of sensor_data. **It changes per version and relies on AST-based restoration of the obfuscated script**; there is no existing universal implementation.
 
 ---
 
-## Example（移动端最短可用路径）
+## Gotchas (real pitfalls)
+
+1. **The TLS fingerprint is the first wall, independent of the sensor.** A raw send with `requests`/`httpx` is guaranteed to get 403. You must use `curl_cffi` (impersonate) / `tls-client` (Go) / a real browser. Verify TLS passes separately before touching the sensor.
+2. **`bm_sz` / `_abck` must be written back.** Every response may update these two cookies, and the next request must carry the latest values. Use a persistent session (curl_cffi Session / cookiejar).
+3. **Pinning the wrong BMP version = mismatched field set = 403.** Use jadx/frida first to confirm the target app's real BMP version number, then choose the generator's `version`.
+4. **The device fingerprint pool quality determines everything** (mobile). Using the stock `devices.json` may get flagged quickly; for high concurrency you need to expand the real device pool + one fingerprint per device + rotate IPs.
+5. **The canvas cannot be randomly faked** (Web). You must collect a real browser's canvas fingerprint to substitute in; motion/mouse trajectories must be algorithmically simulated to look human.
+6. **The "let through but slow down" trap.** When the sensor is not realistic enough, Akamai does not return 403 directly but instead lets it through while dragging the response out to 10s — it looks like it passed but the confidence is actually very low. Monitor response latency; don't look only at the status code.
+7. **Script version drift** (Web). Akamai updates the collection script frequently, and old AST-restoration results stop working. **Pin the sha256, collect several batches of samples from the same version**, and bind the restored artifacts to the version number.
+8. **sbsd is an independent secondary handshake.** New sites may still block you with sbsd even after sensor_data passes. First confirm whether sbsd is mandatorily required by the business endpoint, then decide whether to reverse it separately.
+9. **IP reputation is a hidden dimension.** A data-center IP may be suppressed even with a perfect sensor; only a residential IP reliably obtains `~0~`. A 403 is not necessarily your sensor's fault — use a trust matrix (real browser / your script × clean / dirty IP) first to pinpoint which layer is the wall.
+10. **PoW is only needed when the site enables it** (`challenge:true`). Blindly enabling PoW adds an extra `/_bm/get_params` request and needlessly increases your exposure surface; first confirm whether the target actually requires PoW.
+11. **`akamai-bmp-generator` is a starting point, not an endpoint.** It provides a protocol-correct sensor skeleton; the specific site's device pool, version, PoW switch, TLS, and IP still need you to tune them to the target. Be honest that "this is per-target work."
+
+---
+
+## Example (the shortest usable mobile path)
 
 ```bash
-# 1. 起 generator
+# 1. Start the generator
 git clone https://github.com/xvertile/akamai-bmp-generator
 cd akamai-bmp-generator/cmd/akamai-bmp-server && go run main.go    # :1337
 
-# 2. 生成 sensor（version 必须 pin 对目标 App）
+# 2. Generate the sensor (version must be pinned to the target app)
 curl -s -XPOST localhost:1337/akamai/bmp -d \
   '{"app":"com.ihg.apps.android","lang":"en_US","version":"3.3.4","challenge":false}'
 # → {"sensor":"...$...$","userAgent":"...","model":"SM-A326U",...}
 ```
 
 ```python
-# 3. 用正确 TLS + abck 握手（Python 侧）
+# 3. Use correct TLS + abck handshake (Python side)
 from curl_cffi import requests
-s = requests.Session(impersonate="chrome")            # 关键：TLS 指纹
-s.get("https://m.target.com/")                         # 拿 bm_sz / 初始 _abck
+s = requests.Session(impersonate="chrome")            # key: TLS fingerprint
+s.get("https://m.target.com/")                         # get bm_sz / initial _abck
 
-for i in range(3):                                     # abck 状态机
-    sensor = gen_sensor()                              # 调 generator
-    r = s.post("https://m.target.com/akam/...",        # sensor 提交端点
+for i in range(3):                                     # abck state machine
+    sensor = gen_sensor()                              # call the generator
+    r = s.post("https://m.target.com/akam/...",        # sensor submission endpoint
                data=sensor, headers={"User-Agent": UA})
     abck = s.cookies.get("_abck", "")
-    if "~0~" in abck:                                  # 有效态，停
+    if "~0~" in abck:                                  # valid state, stop
         break
 
-# 4. 带合法 cookie 请求业务接口
-print(s.get("https://m.target.com/api/...").status_code)   # 期望 200
+# 4. Request the business endpoint with the valid cookie
+print(s.get("https://m.target.com/api/...").status_code)   # expect 200
 ```
 
-> Web 端没有等价"最短路径"。请走 `references/web-sensor.md`：优先 `cdp-browser` 浏览器自动化；纯算法逆向是逐目标的硬活（AST 还原脚本 + 真实 canvas 池 + 行为模拟）。
+> There is no equivalent "shortest path" for the Web side. Follow `references/web-sensor.md`: prefer `cdp-browser` browser automation; pure algorithmic reverse engineering is per-target hard work (AST-restore the script + a real canvas pool + behavioral simulation).
 
 ---
 
-## 配套引用
+## Companion references
 
-| 文件 | 内容 |
+| File | Contents |
 |---|---|
-| [`references/bmp-mobile.md`](references/bmp-mobile.md) | 移动端 BMP 全量协议：pipe 字段表 + 加密链 + PoW + akamai-bmp-generator 用法 + 版本 pin 方法 |
-| [`references/web-sensor.md`](references/web-sensor.md) | Web sensor_data 方法论：cookie 状态机细节 + 浏览器自动化优先策略 + AST 还原路线 + sbsd + 诚实的难度评估 |
+| [`references/bmp-mobile.md`](references/bmp-mobile.md) | The full mobile BMP protocol: pipe field table + encryption chain + PoW + akamai-bmp-generator usage + version pinning method |
+| [`references/web-sensor.md`](references/web-sensor.md) | Web sensor_data methodology: cookie state machine details + browser-automation-first strategy + AST restoration route + sbsd + an honest difficulty assessment |
 
-相关 skill：移动端配合 `jadx-reverse-engineering`(pin 版本) + `frida-hooking`(抓真实 sensor)；Web 端配合 `cdp-browser`(抓包/自动化) + `node-bridge-build`(跑混淆脚本)。
-
----
-
-## ❌ 不要踩的"自然语言陷阱"
-
-1. **"找个 Akamai 通用过法"** —— Web 端不存在。逐站点/逐版本。
-2. **"sensor 发一次就行"** —— 错，是状态机，看 `~0~` 或固定 3 次。
-3. **"状态码 200 就过了"** —— 错，注意"放行但拖慢"，看延迟和业务数据是否真实。
-4. **"requests 加个 UA 就行"** —— 错，TLS 指纹先挂。
-5. **"随机生成 canvas"** —— 错，canvas 不能伪造，要真实采集。
-6. **"403 一定是 sensor 错"** —— 未必，先用 trust 矩阵分清 sensor / TLS / IP 哪层挂了。
+Related skills: on mobile, pair with `jadx-reverse-engineering` (pin the version) + `frida-hooking` (capture the real sensor); on Web, pair with `cdp-browser` (capture/automation) + `node-bridge-build` (run the obfuscated script).
 
 ---
 
-*本 skill 基于 xvertile/akamai-bmp-generator（移动端全量逆向，Go）+ xiaoweigege/akamai2.0-sensor_data（Web sensor_data/sbsd 分析）+ Akamai _abck 握手公开文档整理。所有协议字段、加密链、cookie 状态来自源码与实测，非记忆杜撰。*
+## ❌ "Natural-language traps" to avoid
+
+1. **"Find a universal Akamai bypass"** — it does not exist for the Web side. Per site / per version.
+2. **"Sending the sensor once is enough"** — wrong, it is a state machine; watch for `~0~` or a fixed 3 times.
+3. **"Status code 200 means it passed"** — wrong; beware the "let through but slow down" case, and check the latency and whether the business data is real.
+4. **"Just add a UA to requests"** — wrong, the TLS fingerprint fails first.
+5. **"Randomly generate the canvas"** — wrong, the canvas cannot be faked; it must be collected for real.
+6. **"A 403 must be a sensor error"** — not necessarily; first use a trust matrix to distinguish which layer failed: sensor / TLS / IP.
+
+---
+
+*This skill is compiled from xvertile/akamai-bmp-generator (full mobile reverse engineering, Go) + xiaoweigege/akamai2.0-sensor_data (Web sensor_data/sbsd analysis) + the public Akamai _abck handshake documentation. All protocol fields, the encryption chain, and cookie states come from source code and real testing, not from fabricated memory.*

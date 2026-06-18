@@ -55,7 +55,7 @@ string, not personal):
 Mozilla/5.0 BiliDroid/8.83.0 (bbcallen@gmail.com) 8.83.0 os/android model/MI 9 mobi_app/android build/8830500 channel/html5_search_google innerVer/8830510 osVer/13 network/2
 ```
 
-> **B站 requires a UA on nearly every API** — a bare request returns HTTP 412 (risk-control page).
+> **Bilibili requires a UA on nearly every API** — a bare request returns HTTP 412 (risk-control page).
 
 ---
 
@@ -91,7 +91,7 @@ Mozilla/5.0 BiliDroid/8.83.0 (bbcallen@gmail.com) 8.83.0 os/android model/MI 9 m
 
 Of the per-request params, **only `sign` requires reversing**; `container_uuid`, `scm_action_id`,
 `statistics` are format-only (not server-validated); `ts` just needs to be roughly current.
-`message` uses bracketed-text emoji (`[笑哭]` → `%5B%E7%AC%91%E5%93%AD%5D`), not Unicode emoji.
+`message` uses bracketed-text emoji (a name in square brackets, e.g. the "laughing-crying" emoji, URL-encoded as `%5B%E7%AC%91%E5%93%AD%5D`), not Unicode emoji.
 
 The `sign` algorithm is documented in full in [`app-api-sign.md`](app-api-sign.md).
 

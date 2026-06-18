@@ -1,124 +1,124 @@
-# 补环境框架对比 + 选型指南
+# Environment Supplementation Framework Comparison + Selection Guide
 
-> 配合 [`../SKILL.md`](../SKILL.md)。这里逐项展开 7 个框架的路线/能力/局限/安装坑，给选型决策树。
-> 信息来自各仓库 README/源码，标注了各自原话里的关键能力，非记忆杜撰。
-
----
-
-## 逐框架详解
-
-### 1. pysunday/sdenv（+ sdenv-jsdom + sdenv-extend）— 公开补环境天花板
-
-- **路线**：站在 jsdom 肩膀上的运行时补环境框架。专用 fork **sdenv-jsdom**（复刻 jsdom 27.0.1）提供强 DOM 仿真；**sdenv-extend** 提供 node 端与真浏览器共用的环境处理插件（battery/connection/cookie/window 代理等 handler，链式 `getHandle('battery')(...)`）。
-- **核心 API 极简**：只有一个 `browser(window, type)` —— 传入 window 和浏览器类型（目前 Chrome 支持，Firefox/Safari 未支持），自动把浏览器特性集成进 window。
-- **能力亮点**：作者称**固定随机数 + 加 sdenv-extend 插件后，瑞数 vmp 代码在 sdenv 跑出的 cookie 与浏览器一致**。`sdenv-extend` 能缓存原始值（`sdenv.memory.window`）、判断运行环境（`config.isNode`/`envType`）、提供 `wrapFunc`/`monitor` 工具。`window` handler 支持 `windowGetterUndefinedKeys`/`windowGetterErrorKeys`/`windowGetterWinKeys` 精细控制属性读取行为。
-- **用法**：npm（`npm i sdenv`）/ docker（内置 `check` 命令验证某站是否适用）/ 源码 / 全局 / npx（`npx sdenv <网站>` 直接验证）。
-- **代价 / 坑**：要编译 node 插件 → **node-gyp + Python + C 环境（Windows 装 VS 勾"使用 C++ 的桌面开发"，Mac 装 Xcode）**。**Node 版本挑剔**：v20.19.5/v22/v23/v24/v25 ✅，**v21.7.3 ❌**。DOM 重、起步成本高。
-
-> 定位：**接受编译成本、要打瑞数等强对抗**时的首选。`node-bridge-build` 把它列为升级后手也是这个原因。
-
-### 2. ylw00/qxVm — 纯 JS 轻量、学原理
-
-- **路线**：基于 node16 + vm2，**纯 JS** 设计的补环境框架；内部用**弱引用**避免内存回收问题，优化实例产生方式。
-- **用法**：`QXVM_GENERATE.QXVm_sanbox(js_code, '导出函数名', user_config)`。`user_config.isTest=true` 固定时间戳/随机数（**调试 diff 神器**）；`compress` 针对检测格式化的站；`runConfig.proxy/logOpen` 控制代理与日志；`env` 传 canvas/plugin/navigator/location/document。封装了浏览器事件主动调用 `lwVm.callListener('load')`、`protectAddIsTrusted`（给 event 加 isTrusted）、自定义 log、nodeServer 起 API。
-- **代价 / 坑**：作者明说**开源版没有动态 DOM 解析**，框架内部 DOM 操作"不可信"，DOM 要自己重写（见仓库 `z_working/rs4.js`）。检测点覆盖相对少（作者定位为"前期版本，检测点比较少"）。最新支持瑞数/阿里/腾讯的版本**未开源**。
-- **定位**：**学 Proxy/沙箱原理、轻量站点、需要固定时序调试**时好用。
-
-### 3. bnmgh1/NodeSandbox 与 bnmgh1/node-sandbox — 魔改 V8，打硬检测
-
-- **路线**：**魔改 Node/V8 源码** + 套 jsdom。把过检测的能力下沉到 C++/V8 层，所以**底层定义的方法天然不需要考虑 toString 检测**，且比 JS 的 `defineProperty` 快很多。
-- **杀手级 API**（V8 层，纯 JS 做不到）：
-  - `defineProperty(obj, key, {value, mode})` —— `mode` 位掩码强改描述符：`READ_ONLY=1 | DONT_ENUM=2 | DONT_DELETE=4`，`7`=全 false，`0`=全 true；**即使 configurable:false 也能强改后 delete**。
-  - `setUndetectable(obj)` —— 把对象 `typeof` 强制成 `'undefined'`（做 `document.all` 的唯一正解）。
-  - `SetNative(fn)`（node-sandbox 的 `wanfeng.SetNative`）/ `myToString`（NodeSandbox 的 `cbb_wf.myToString`）—— 函数 `toString` 在底层返回 `[native code]`，且不导致内存无法回收。
-  - `setImmutableProto(obj)` —— 改 `__proto__` 报错（window/location 真实行为）。
-  - `stack_intercept` / `Utils.Error_get_stack` —— **底层拦截堆栈**，清掉补环境自身的帧。
-  - `defineIstrusted(event)` / `ClearMemory()`（主动 GC，无限建 vm 也稳）/ `getContext`（区分上下文）/ `newDocument`/`newLocation`/`init`/`initWorker`。
-- **机制**：node 底层埋一层拦截器，`window` get document → 走 `globalMy.window_get_document`；`document.createElement` → 走 `globalMy.Document_createElement`（原型方法用类名前缀）。创建节点时用壳对象映射 jsdom 对象过检测。
-- **代价 / 坑**：**开源只有"空架子"无任何产品样例**；**只编了 Windows 版**（macOS/Ubuntu 未编/慎更新，老代码可能跑不起来）；魔改 node 维护成本高；默认重写 Promise（用原生要调 `rePromise`）；**遇到未定义方法 node 会直接挂掉**（要补全）。
-- **定位**：**纯 JS/jsdom 撞天花板**（document.all、toString/stack 穿透）时的硬解。
-
-### 4. xuxiaobo-bobo/boda_jsEnv — 成熟 env 框架（文档少）
-
-- **路线**：国内常见的 env 补环境框架之一（boda 系）。
-- **坑**：README **几乎只有免责声明 + 联系方式**，没有公开用法文档，靠源码/作者群。评估成本高。
-- **定位**：知道有这么个选项即可；除非有现成经验，否则优先文档齐全的 sdenv/lasawang。
-
-### 5. lasawang/js-sandbox-env-framework — 与本 skill 最贴合 ⭐
-
-- **路线**：基于 Node.js VM 的完整沙箱，**专为 JS 逆向设计**，直接命中本 skill 主题：
-  - **指纹配置系统**：一个 JSON 控制全套指纹（Navigator/Screen/Window/Location/DOM/Canvas/WebGL/Audio），一键切设备身份（默认 profile = Chrome 120 + Win10 + NVIDIA RTX 3060）。
-  - **自动检测模式** `--detect`：**自动报告脚本缺失的 API 并给加载建议**（= 本 skill 自动补全循环第 2~3 步）。
-  - **代理监控** `--proxy`：完整 Proxy 追踪，记录所有属性访问和方法调用（= "吐环境"）。
-  - **AI 辅助补环境**：自动生成缺失 API 的补环境代码。
-  - **反检测**：webdriver=false、toString 保护、无 bot 特征泄露。
-  - 性能：7866 行混淆代码 18ms 执行完成。
-- **用法**：`node standalone-runner.js --profile default script.js`；`--detect` 先分析缺啥；`--profile-file ./my-device.json` 自定义指纹；编程 API `SimpleSandbox.injectEnvironment('env/bom/navigator.js')`。还带 Web 管理界面（`npm start` → :3000）。
-- **代价 / 坑**：纯 VM 路线仍有 V8 层天花板（document.all 等纯 JS 做不彻底）；Node ≥18。
-- **定位**：**学技术 + 半自动补环境 + 指纹 profile 化**的首选起点。
-
-### 6. decodecaptcha/Browser-Env — 代理到真浏览器（免补环境）
-
-- **路线**：不造轮子，封装集成现成开源项目，提供多档"真浏览器/V8"执行：
-  - `chrome_remote` / `chrome_remote_pro`：用 `--remote-debugging-port` 启动真 Chrome，CDP 客户端连 `debuggerAddress` —— 命令行启动**天然无 webdriver 特征**，绕过自动化检测（"辛苦抠的 js 再也不用花几小时补环境"）。
-  - `browserenv` / `wirebrowserenv`（带网络拦截改包）/ `wirebrowserenv_uc`（集成 undetected-chromedriver，不触发 Distill/Imperva/DataDome/Botprotect）。
-  - `v8env`（PyMiniRacer，最小 V8，只跑纯 JS）；`jsenv`（nodejs + jsdom/canvas 异步/同步补环境）。
-- **依赖 / 坑**：Windows、Python 3.6+、selenium 3.4+、Chrome 92+、selenium-wire、undetected-chromedriver；UC 要 `version_main` 对齐本机 Chrome 版本。
-- **定位**：**补环境过不去时的逃生路线**——直接执行真实浏览器免补环境，代价是慢、重、QPS 低。本质和 `cdp-browser` 同类。
-
-### 7. warterbili/node-crawler-env-utils — 第一方"吐环境"监控工具 ⭐（本仓库 owner 自有）
-
-- **路线**：基于 Proxy 的**环境代理监控工具**，专做自动补全循环的"收集缺口"环节。
-- **能力**：`setEnvProxy({ paths, ... })` 一行拦 **12 种 Proxy 操作**（get/set/has/deleteProperty/ownKeys/getOwnPropertyDescriptor/defineProperty/preventExtensions/getPrototypeOf/setPrototypeOf/apply/construct）；**5 级日志**（ERROR~TRACE）彩色输出、`maxDepth`、`showStackTrace`、`customFormatter`；`deepProxyPaths` 深度递归代理；`ignoredProperties` 忽略 `__proto__`/`constructor` 防自伤；`enableApply`/`enableConstruct` 控制函数/构造拦截。TypeScript，`npm i crawler-env-utils`。
-- **定位**：**第一方首选的"吐环境"工具**——跑 SKILL 自动补全循环第 2~3 步（让环境吐出缺啥、记录每次访问）。它**不是过检测的成品环境**，要配合上面的成品框架（sdenv/lasawang）补值过检测。
+> Use together with [`../SKILL.md`](../SKILL.md). This expands, item by item, the route/capabilities/limitations/installation pitfalls of 7 frameworks, and gives a selection decision tree.
+> The information comes from each repo's README/source, with each one's key capabilities noted in its own words, not invented from memory.
 
 ---
 
-## 选型决策树
+## Per-Framework Details
+
+### 1. pysunday/sdenv (+ sdenv-jsdom + sdenv-extend) — the Public Environment-Supplementation Ceiling
+
+- **Route**: a runtime environment-supplementation framework standing on jsdom's shoulders. A dedicated fork **sdenv-jsdom** (a re-implementation of jsdom 27.0.1) provides strong DOM simulation; **sdenv-extend** provides environment-handling plugins shared between the node side and a real browser (battery/connection/cookie/window proxy and other handlers, chained `getHandle('battery')(...)`).
+- **Minimal core API**: just one `browser(window, type)` —— pass in window and the browser type (currently Chrome is supported, Firefox/Safari are not) and it automatically integrates browser features into window.
+- **Capability highlights**: the author says that **with fixed random numbers + the sdenv-extend plugins, the cookie that Ruishu vmp code produces under sdenv matches the browser**. `sdenv-extend` can cache original values (`sdenv.memory.window`), judge the runtime environment (`config.isNode`/`envType`), and provide `wrapFunc`/`monitor` tools. The `window` handler supports `windowGetterUndefinedKeys`/`windowGetterErrorKeys`/`windowGetterWinKeys` for fine-grained control of property-read behavior.
+- **Usage**: npm (`npm i sdenv`) / docker (with a built-in `check` command to verify whether a given site is applicable) / source / global / npx (`npx sdenv <website>` to verify directly).
+- **Cost / pitfalls**: you must compile a node addon → **node-gyp + Python + a C toolchain (on Windows install VS with "Desktop development with C++" checked; on Mac install Xcode)**. **Picky about the Node version**: v20.19.5/v22/v23/v24/v25 ✅, **v21.7.3 ❌**. Heavy DOM, high startup cost.
+
+> Positioning: the **first choice when you accept the compilation cost and need to beat strong adversaries like Ruishu**. This is also why `node-bridge-build` lists it as the upgrade fallback.
+
+### 2. ylw00/qxVm — Pure-JS, Lightweight, for Learning the Principles
+
+- **Route**: an environment-supplementation framework designed in **pure JS** on node16 + vm2; internally it uses **weak references** to avoid memory-reclamation issues and optimizes how instances are produced.
+- **Usage**: `QXVM_GENERATE.QXVm_sanbox(js_code, 'exportedFunctionName', user_config)`. `user_config.isTest=true` fixes timestamps/random numbers (**a debugging-diff godsend**); `compress` targets sites that detect formatting; `runConfig.proxy/logOpen` control proxying and logging; `env` passes canvas/plugin/navigator/location/document. It wraps actively dispatching browser events `lwVm.callListener('load')`, `protectAddIsTrusted` (adding isTrusted to events), custom log, and nodeServer to start an API.
+- **Cost / pitfalls**: the author explicitly says **the open-source version has no dynamic DOM parsing**, the framework's internal DOM operations are "untrustworthy", and the DOM must be rewritten by you (see `z_working/rs4.js` in the repo). Detection-point coverage is relatively low (the author positions it as "an early version with relatively few detection points"). The latest version supporting Ruishu/Alibaba/Tencent is **not open-sourced**.
+- **Positioning**: good for **learning Proxy/sandbox principles, lightweight sites, and when you need fixed-timing debugging**.
+
+### 3. bnmgh1/NodeSandbox and bnmgh1/node-sandbox — Modified V8, for Beating Hard Detection
+
+- **Route**: **modified Node/V8 source** + wrapping jsdom. It pushes detection-passing capability down to the C++/V8 layer, so **methods defined at the low level naturally don't need to consider toString detection**, and it's much faster than JS's `defineProperty`.
+- **Killer APIs** (V8 layer, impossible in pure JS):
+  - `defineProperty(obj, key, {value, mode})` —— `mode` bitmask force-changes the descriptor: `READ_ONLY=1 | DONT_ENUM=2 | DONT_DELETE=4`, `7`=all false, `0`=all true; **even with configurable:false you can force-change and then delete**.
+  - `setUndetectable(obj)` —— force the object's `typeof` to `'undefined'` (the only correct way to do `document.all`).
+  - `SetNative(fn)` (node-sandbox's `wanfeng.SetNative`) / `myToString` (NodeSandbox's `cbb_wf.myToString`) —— the function `toString` returns `[native code]` at the low level, without preventing memory reclamation.
+  - `setImmutableProto(obj)` —— make changing `__proto__` throw (the real behavior of window/location).
+  - `stack_intercept` / `Utils.Error_get_stack` —— **intercept the stack at the low level**, clearing out the supplemented environment's own frames.
+  - `defineIstrusted(event)` / `ClearMemory()` (active GC, stable even building infinite vms) / `getContext` (distinguishing contexts) / `newDocument`/`newLocation`/`init`/`initWorker`.
+- **Mechanism**: a layer of interceptors is buried in node's internals; `window` get document → goes through `globalMy.window_get_document`; `document.createElement` → goes through `globalMy.Document_createElement` (prototype methods use a class-name prefix). When creating nodes, shell objects map to jsdom objects to pass detection.
+- **Cost / pitfalls**: **the open source is only an "empty skeleton" with no product samples whatsoever**; **only a Windows build is compiled** (macOS/Ubuntu aren't compiled / update with caution, old code may not run); the modified node has high maintenance cost; Promise is rewritten by default (to use the native one call `rePromise`); **when an undefined method is hit, node simply crashes** (you must supplement it).
+- **Positioning**: the hard solution when **pure JS/jsdom hits the ceiling** (document.all, toString/stack penetration).
+
+### 4. xuxiaobo-bobo/boda_jsEnv — a Mature env Framework (Sparse Docs)
+
+- **Route**: one of the env environment-supplementation frameworks common in China (the boda lineage).
+- **Pitfalls**: the README is **almost only a disclaimer + contact info**, with no public usage documentation, relying on the source/the author's group. Evaluation cost is high.
+- **Positioning**: just know this option exists; unless you have prior experience with it, prefer the well-documented sdenv/lasawang.
+
+### 5. lasawang/js-sandbox-env-framework — the Closest Fit for This Skill ⭐
+
+- **Route**: a complete sandbox based on the Node.js VM, **designed specifically for JS reversing**, hitting this skill's theme directly:
+  - **Fingerprint configuration system**: one JSON controls the entire fingerprint set (Navigator/Screen/Window/Location/DOM/Canvas/WebGL/Audio), with one-click device-identity switching (default profile = Chrome 120 + Win10 + NVIDIA RTX 3060).
+  - **Automatic detection mode** `--detect`: **automatically reports the script's missing APIs and gives loading suggestions** (= steps 2~3 of this skill's auto-completion loop).
+  - **Proxy monitoring** `--proxy`: full Proxy tracing, recording all property accesses and method calls (= "environment disclosure").
+  - **AI-assisted environment supplementation**: automatically generates supplementation code for missing APIs.
+  - **Anti-detection**: webdriver=false, toString protection, no bot-feature leakage.
+  - Performance: 7866 lines of obfuscated code executed in 18ms.
+- **Usage**: `node standalone-runner.js --profile default script.js`; `--detect` analyzes what's missing first; `--profile-file ./my-device.json` for a custom fingerprint; programmatic API `SimpleSandbox.injectEnvironment('env/bom/navigator.js')`. It also comes with a web admin UI (`npm start` → :3000).
+- **Cost / pitfalls**: the pure-VM route still has a V8-layer ceiling (document.all etc. can't be done thoroughly in pure JS); Node ≥18.
+- **Positioning**: the preferred starting point for **learning the technique + semi-automatic environment supplementation + fingerprint profiling**.
+
+### 6. decodecaptcha/Browser-Env — Proxy to a Real Browser (No Environment Supplementation)
+
+- **Route**: doesn't reinvent the wheel; it wraps and integrates existing open-source projects, offering several tiers of "real browser / V8" execution:
+  - `chrome_remote` / `chrome_remote_pro`: launch real Chrome with `--remote-debugging-port`, and a CDP client connects to `debuggerAddress` —— a command-line launch is **naturally free of webdriver features**, bypassing automation detection ("the JS you painstakingly extracted never needs hours of environment supplementation again").
+  - `browserenv` / `wirebrowserenv` (with network interception and packet modification) / `wirebrowserenv_uc` (integrating undetected-chromedriver, not triggering Distill/Imperva/DataDome/Botprotect).
+  - `v8env` (PyMiniRacer, minimal V8, only runs pure JS); `jsenv` (nodejs + jsdom/canvas, async/sync environment supplementation).
+- **Dependencies / pitfalls**: Windows, Python 3.6+, selenium 3.4+, Chrome 92+, selenium-wire, undetected-chromedriver; UC requires `version_main` to align with the local Chrome version.
+- **Positioning**: the **escape route when environment supplementation can't pass**—execute directly in a real browser with no environment supplementation, at the cost of being slow, heavy, and low-QPS. Essentially in the same category as `cdp-browser`.
+
+### 7. warterbili/node-crawler-env-utils — First-Party "Environment Disclosure" Monitoring Tool ⭐ (Owned by This Repo's Owner)
+
+- **Route**: a Proxy-based **environment-proxy monitoring tool**, specialized for the "collect the gaps" stage of the auto-completion loop.
+- **Capabilities**: `setEnvProxy({ paths, ... })` intercepts **12 kinds of Proxy operations** in one line (get/set/has/deleteProperty/ownKeys/getOwnPropertyDescriptor/defineProperty/preventExtensions/getPrototypeOf/setPrototypeOf/apply/construct); **5 log levels** (ERROR~TRACE) with colored output, `maxDepth`, `showStackTrace`, `customFormatter`; `deepProxyPaths` for deep recursive proxying; `ignoredProperties` to ignore `__proto__`/`constructor` to prevent self-harm; `enableApply`/`enableConstruct` to control function/construct interception. TypeScript, `npm i crawler-env-utils`.
+- **Positioning**: the **preferred first-party "environment disclosure" tool**—for running steps 2~3 of the SKILL's auto-completion loop (letting the environment disclose what's missing and recording every access). It is **not a detection-passing finished environment**; it must be paired with the finished frameworks above (sdenv/lasawang) to supplement values and pass detection.
+
+---
+
+## Selection Decision Tree
 
 ```
-要补环境？
-├─ 只想看"脚本到底查了啥 / 缺了啥"（吐环境）
-│     → warterbili/node-crawler-env-utils（第一方）  +  lasawang --detect
+Need environment supplementation?
+├─ Just want to see "what the script actually queried / what's missing" (environment disclosure)
+│     → warterbili/node-crawler-env-utils (first-party)  +  lasawang --detect
 │
-├─ 学技术 / 要指纹 profile 化 / 半自动 + AI 辅助
-│     → lasawang/js-sandbox-env-framework（最贴合）
-│        想更轻、要固定时序调试 → ylw00/qxVm
+├─ Learning the technique / want fingerprint profiling / semi-automatic + AI-assisted
+│     → lasawang/js-sandbox-env-framework (closest fit)
+│        Want it lighter, need fixed-timing debugging → ylw00/qxVm
 │
-├─ 直接干活、目标是瑞数等强对抗、能接受编译成本
+├─ Just getting the job done, target is a strong adversary like Ruishu, can accept the compilation cost
 │     → pysunday/sdenv (+ sdenv-jsdom + sdenv-extend)
 │
-├─ 撞 V8 层硬检测（document.all / toString·stack 穿透）
-│     → bnmgh1/NodeSandbox 或 node-sandbox（魔改 V8）
+├─ Hitting V8-layer hard detection (document.all / toString·stack penetration)
+│     → bnmgh1/NodeSandbox or node-sandbox (modified V8)
 │
-└─ 补环境投入产出比太低 / 要 100% 真 / 偶尔调用
-      → cdp-browser（真 Chrome）/ jsrpc-universal（调真实算法）
-         / decodecaptcha/Browser-Env（代理到真浏览器）
+└─ Environment supplementation ROI too low / want 100% real / occasional calls
+      → cdp-browser (real Chrome) / jsrpc-universal (call the real algorithm)
+         / decodecaptcha/Browser-Env (proxy to a real browser)
 ```
 
-## 能力矩阵（速查）
+## Capability Matrix (Quick Reference)
 
-| 框架 | 路线 | DOM 仿真 | 自动报缺 | 指纹 profile | V8 层过检测 | 文档/样例 | 安装难度 |
+| Framework | Route | DOM simulation | Auto-report gaps | Fingerprint profile | V8-layer detection passing | Docs/samples | Install difficulty |
 |---|---|---|---|---|---|---|---|
-| sdenv | jsdom fork+插件+C++ | 强（jsdom27） | check 命令 | extend handler | 部分(C++) | 好 | 高（编译）|
-| qxVm | 纯 JS + vm2 | 弱（要自写） | log | env 传值 | 否 | 中（公众号）| 低 |
-| NodeSandbox/node-sandbox | 魔改 V8 + jsdom | jsdom | 否 | 否 | **强** | 差（空架子）| 高（限 Win）|
-| boda_jsEnv | env 框架 | ? | ? | ? | ? | **差（仅免责）** | ? |
-| lasawang | Node VM+Proxy | 全覆盖 | **--detect** | **JSON 一键** | 否 | **好** | 低（Node18）|
-| Browser-Env | 真浏览器/V8 | 真浏览器 | N/A（免补） | 真浏览器 | N/A（真的）| 中 | 中（selenium/UC）|
-| node-crawler-env-utils | Proxy 监控 | N/A | **吐缺口** | 否 | 否 | 好 | 低（npm）|
+| sdenv | jsdom fork+plugins+C++ | Strong (jsdom27) | check command | extend handler | Partial (C++) | Good | High (compile) |
+| qxVm | pure JS + vm2 | Weak (write your own) | log | env values | No | Medium (WeChat blog) | Low |
+| NodeSandbox/node-sandbox | modified V8 + jsdom | jsdom | No | No | **Strong** | Poor (empty skeleton) | High (Windows only) |
+| boda_jsEnv | env framework | ? | ? | ? | ? | **Poor (disclaimer only)** | ? |
+| lasawang | Node VM+Proxy | Full coverage | **--detect** | **One-click JSON** | No | **Good** | Low (Node18) |
+| Browser-Env | real browser/V8 | real browser | N/A (no supplementation) | real browser | N/A (it's real) | Medium | Medium (selenium/UC) |
+| node-crawler-env-utils | Proxy monitoring | N/A | **discloses gaps** | No | No | Good | Low (npm) |
 
-> 没有"全 ✅"的框架。**组合用**：node-crawler-env-utils/lasawang 吐缺口 + sdenv/NodeSandbox 过检测 + cdp-browser 取真值 + 撞天花板就换真浏览器。
+> There's no "all ✅" framework. **Combine them**: node-crawler-env-utils/lasawang to disclose gaps + sdenv/NodeSandbox to pass detection + cdp-browser to obtain real values + switch to a real browser when you hit the ceiling.
 
-## 增补（2026-06 专项搜集，全部已入 catalog）
+## Addendum (June 2026 dedicated collection, all already added to the catalog)
 
-完整清单见 `tmp/collection/proxy-auto-env.md`（86 条去重）。值得优先看的新发现：
+For the full list see `tmp/collection/proxy-auto-env.md` (86 deduplicated entries). New finds worth looking at first:
 
-| 框架 | 亮点 | 何时选 |
+| Framework | Highlight | When to choose |
 |---|---|---|
-| **happy1256/Youzi-Mask** | 模块化重写；`IS_PROXY`（一级监听看直接访问）+ `IS_RECURSION_PROXY`（递归监听看多层访问）双开关，正好对应本 skill 的递归 Proxy 法 | 想要现成的「递归代理 + 分级监听」开关，新且活跃（2026-06）；其前身 happy1256/youzi_js_env star 更高 |
-| **lwjjike/xbsJsEnv** | 小博士框架：自动拦截全局对象的 get/set/has/delete/enumerate/define/getOwnPropertyDescriptor + BOM/DOM 方法调用拦截 | 要「全属性访问拦截/吐环境」且持续维护（★58，2026-04） |
-| **RuoShui-0014/js-env** | 基于魔改 isolated-vm，自带**非标准 proxy + native 函数创建**；`rsvm.get/set` 读写属性**不触发访问器**（抗检测） | 目标会检测 Proxy/访问器痕迹时，用 isolated-vm 层的隐形代理（★108） |
-| ipylei/jsVmEnv、ConlinH/pyv8env | vm2/isolated-vm 沙箱 + 调用栈定位缺失环境；pyv8 给 Python 侧 | 偏 VM 沙箱路线 / 需要 Python 集成 |
+| **happy1256/Youzi-Mask** | a modular rewrite; dual switches `IS_PROXY` (first-level monitoring to see direct access) + `IS_RECURSION_PROXY` (recursive monitoring to see multi-level access), exactly corresponding to this skill's recursive-Proxy method | when you want ready-made "recursive proxy + tiered monitoring" switches, new and active (June 2026); its predecessor happy1256/youzi_js_env has more stars |
+| **lwjjike/xbsJsEnv** | the Xiaoboshi framework: automatically intercepts global objects' get/set/has/delete/enumerate/define/getOwnPropertyDescriptor + BOM/DOM method-call interception | when you want "full property-access interception / environment disclosure" and ongoing maintenance (★58, April 2026) |
+| **RuoShui-0014/js-env** | based on a modified isolated-vm, with a built-in **non-standard proxy + native function creation**; `rsvm.get/set` read/write properties **without triggering accessors** (anti-detection) | when the target detects Proxy/accessor traces, use the invisible proxy at the isolated-vm layer (★108) |
+| ipylei/jsVmEnv, ConlinH/pyv8env | vm2/isolated-vm sandbox + call-stack localization of the missing environment; pyv8 for the Python side | leans toward the VM-sandbox route / when you need Python integration |
 
-> 选型原则不变：**先吐缺口（Youzi-Mask/xbsJsEnv/node-crawler-env-utils）→ 抗检测时上 isolated-vm 系（RuoShui-0014/NodeSandbox）→ 取真值/撞顶换 cdp-browser**。
+> The selection principle is unchanged: **first disclose the gaps (Youzi-Mask/xbsJsEnv/node-crawler-env-utils) → when you need anti-detection go to the isolated-vm family (RuoShui-0014/NodeSandbox) → obtain real values / hit the ceiling and switch to cdp-browser**.

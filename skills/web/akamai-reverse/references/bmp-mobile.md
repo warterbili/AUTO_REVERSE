@@ -1,117 +1,117 @@
-# 移动端 Akamai BMP 协议参考（Bot Manager Premier mobile SDK）
+# Mobile Akamai BMP Protocol Reference (Bot Manager Premier mobile SDK)
 
-> 基于 `xvertile/akamai-bmp-generator` 源码整理（Go，全量逆向）。这是本 skill 唯一开箱即用的路径。
-> 协议字段名/序号/加密链均来自 `bm/<version>/bm.go` + `sdk/sdk.go`，非记忆。
+> Compiled from the `xvertile/akamai-bmp-generator` source (Go, full reverse engineering). This is the only out-of-the-box path in this skill.
+> The protocol field names / ordering / encryption chain all come from `bm/<version>/bm.go` + `sdk/sdk.go`, not from memory.
 
-## 1. 为什么移动端有现成实现而 Web 没有
+## 1. Why mobile has an existing implementation and Web does not
 
-- 移动端 BMP 是 App 内嵌的 native/Java SDK，协议（pipe 序列化 + 固定加密链）跨版本相对稳定。
-- 设备指纹是 Android `Build.*` 静态字段 + 可合成的 motion/触摸，**可以池化**（2K 真实设备就够）。
-- Web 端采集脚本逐站点定制 + 频繁换版 + canvas 不可伪造 + 强依赖真实行为，无法做成通用库。
+- Mobile BMP is a native/Java SDK embedded in the app, and its protocol (pipe serialization + a fixed encryption chain) is relatively stable across versions.
+- The device fingerprint is Android `Build.*` static fields + synthesizable motion/touch, which **can be pooled** (2K real devices is enough).
+- The Web collection script is customized per site + changed frequently + the canvas cannot be faked + it relies heavily on real behavior, so it cannot be turned into a universal library.
 
-## 2. pipe 序列化协议
+## 2. Pipe serialization protocol
 
-`SerializeBmp(pairs)`：每个有 id 的字段输出 `-1,2,-94,<id>,<value>`，无 id 的直接输出 value 拼接。
+`SerializeBmp(pairs)`: each field that has an id is emitted as `-1,2,-94,<id>,<value>`, while fields without an id emit the value directly, concatenated.
 
-3.3.4 的字段装配顺序（`GenerateSensorData`）：
+The field assembly order for 3.3.4 (`GenerateSensorData`):
 
-| id | 含义 | 生成方式 |
+| id | Meaning | Generation method |
 |---|---|---|
-| 首段（无 id） | `BMPVERSION`，如 `3.3.4` | 常量，**pin 对目标** |
-| `-90` | challenge 信息（仅 `challenge:true` 时） | `cf-sdk-1-00-0.js#model=...#sdkVersion=...` |
-| `-70`/`-80`/`-121` | 空 | `""` |
-| `-100` | **系统信息** | 见 §3 |
-| `-101` | event listeners | 常量 `do_en,dm_en,t_en` |
-| `-102` | eact | 通常空 |
-| `-103` | 后台事件 | `GetBackgroundEvents`：随机 `action,ts;` 序列 |
-| `-104` | 常量 | `-2,3,-50,-301,null` |
-| `-108` | text change | 空 |
-| `-112` | **性能基准** | `PERF_BENCH`（device 池字段，如 `17,906,59,...`） |
-| `-115` | **校验统计** | 见 §4，最关键 |
-| `-117` | 触摸事件 | `GenerateTouchEvents`：`action,time,0,0,1,1,1,-1;` |
-| `-120` | 空 | |
-| `-142`/`-144`/`-160` | 方向（orientation）数据 | 3.3.4 默认注释掉，可能空 |
-| `-143`/`-145`/`-161` | **motion 数据** | `GenerateMotionString`：加速度计/陀螺仪 |
-| `-150` | 常量 | `1,0` |
+| first segment (no id) | `BMPVERSION`, e.g. `3.3.4` | constant, **pin to the target** |
+| `-90` | challenge info (only when `challenge:true`) | `cf-sdk-1-00-0.js#model=...#sdkVersion=...` |
+| `-70`/`-80`/`-121` | empty | `""` |
+| `-100` | **system info** | see §3 |
+| `-101` | event listeners | constant `do_en,dm_en,t_en` |
+| `-102` | eact | usually empty |
+| `-103` | background events | `GetBackgroundEvents`: random `action,ts;` sequence |
+| `-104` | constant | `-2,3,-50,-301,null` |
+| `-108` | text change | empty |
+| `-112` | **performance benchmark** | `PERF_BENCH` (device pool field, e.g. `17,906,59,...`) |
+| `-115` | **verify stats** | see §4, the most critical |
+| `-117` | touch events | `GenerateTouchEvents`: `action,time,0,0,1,1,1,-1;` |
+| `-120` | empty | |
+| `-142`/`-144`/`-160` | orientation data | commented out by default in 3.3.4, may be empty |
+| `-143`/`-145`/`-161` | **motion data** | `GenerateMotionString`: accelerometer/gyroscope |
+| `-150` | constant | `1,0` |
 
-不同版本字段集略有差异（这就是版本必须 pin 对的原因）。
+The field set differs slightly between versions (this is exactly why the version must be pinned correctly).
 
-## 3. `-100` 系统信息字段（device 指纹来源）
+## 3. The `-100` system info field (source of the device fingerprint)
 
-`GetSystemInfo` 用 `UrlEncode` 拼接（注意是 Akamai 自定义 UrlEncode，大写十六进制、保留部分 ASCII）：
-屏幕 height/width、电量、orientation、`lang`、`Build.VERSION.RELEASE`、`MODEL`、`BOOTLOADER`、`HARDWARE`、`app`(包名)、androidId、SDK_INT、`MANUFACTURER`、`PRODUCT`、`TAGS`、`TYPE`、`USER`、`DISPLAY`、`BOARD`、`BRAND`、`DEVICE`、`FINGERPRINT`、`HOST`、`ID` …
-末尾追加 `Ab(systemInfo)`（ASCII<128 求和校验）+ 随机 int + `startTime/2`。
+`GetSystemInfo` concatenates using `UrlEncode` (note this is Akamai's custom UrlEncode: uppercase hex, preserving some ASCII):
+screen height/width, battery, orientation, `lang`, `Build.VERSION.RELEASE`, `MODEL`, `BOOTLOADER`, `HARDWARE`, `app` (package name), androidId, SDK_INT, `MANUFACTURER`, `PRODUCT`, `TAGS`, `TYPE`, `USER`, `DISPLAY`, `BOARD`, `BRAND`, `DEVICE`, `FINGERPRINT`, `HOST`, `ID` …
+At the end it appends `Ab(systemInfo)` (an ASCII<128 sum checksum) + a random int + `startTime/2`.
 
-device 结构（`dm/device.go`）：`SCREEN`、`PERF_BENCH[]`、`BUILD{MANUFACTURER,HARDWARE,MODEL,BOOTLOADER,VERSION{RELEASE,CODENAME,INCREMENTAL,SDK_INT},PRODUCT,TAGS,TYPE,USER,DISPLAY,BOARD,BRAND,DEVICE,FINGERPRINT,HOST,ID}}`。
-`androidId`：SDK_INT≥26 用 16 hex（`GenAndroidId`），否则 UUID。
+device structure (`dm/device.go`): `SCREEN`, `PERF_BENCH[]`, `BUILD{MANUFACTURER,HARDWARE,MODEL,BOOTLOADER,VERSION{RELEASE,CODENAME,INCREMENTAL,SDK_INT},PRODUCT,TAGS,TYPE,USER,DISPLAY,BOARD,BRAND,DEVICE,FINGERPRINT,HOST,ID}}`.
+`androidId`: for SDK_INT≥26 use 16 hex (`GenAndroidId`), otherwise a UUID.
 
-## 4. `-115` 校验统计（GetVerifyStats，错了直接挂）
+## 4. `-115` verify stats (GetVerifyStats; if wrong it fails outright)
 
 ```
 0,<touchVel>,<d>,<d2>,<longValue>,<time>,0,<touchSteps>,<shifta>,<shiftb>,<r1>,<r2>,0,<FeistelEncode(longValue, touchSteps+shifta+shiftb, time)>,<startTime>
 ```
 - `time = now - startTime`
-- `longValue = d2 + touchVel + d`（motion/触摸累加值，由 `CreateMotionPair` 的 value 求和而来）
-- `r1 = rand(4,16)*1000`，`r2 = rand(15,53)*1000`
-- `FeistelEncode`：16 轮 Feistel，把统计量编码成一个校验整数。**这是 motion/触摸/时间的一致性校验，随机乱填会被识破。**
+- `longValue = d2 + touchVel + d` (the motion/touch cumulative value, derived by summing the values from `CreateMotionPair`)
+- `r1 = rand(4,16)*1000`, `r2 = rand(15,53)*1000`
+- `FeistelEncode`: 16-round Feistel that encodes the statistics into a single checksum integer. **This is the consistency check across motion/touch/time; filling it in randomly will be detected.**
 
-## 5. motion 数据（-143）
+## 5. motion data (-143)
 
-`GenerateMotionString` → `CreateMotionPair`：
-- 生成加速度计/陀螺仪角度序列（`GenGenericEvents` lerp 插值 + 噪声）
-- `BmpHash`：把 float 序列量化成 65(`A`)..`}` 的字符（60 桶），处理 `\`/`.` 转义
-- `ShortenBmpHash`：游程压缩；`HashF7`：CRC-like 32 位查表 hash（`f7912a` 表）
-- 长度是 2 的幂时走 DCT 变换（`aeA`/`agA` 阈值置零）分支
-- 输出 `2;<low>;<high>;<hashF7>;<shortHash>` 形式，多轴用 `:` 连接
+`GenerateMotionString` → `CreateMotionPair`:
+- Generates an accelerometer/gyroscope angle sequence (`GenGenericEvents` lerp interpolation + noise)
+- `BmpHash`: quantizes the float sequence into characters from 65 (`A`) to `}` (60 buckets), handling `\`/`.` escaping
+- `ShortenBmpHash`: run-length compression; `HashF7`: a CRC-like 32-bit table-lookup hash (the `f7912a` table)
+- When the length is a power of 2, it takes the DCT transform branch (zeroing values below the `aeA`/`agA` thresholds)
+- Outputs the form `2;<low>;<high>;<hashF7>;<shortHash>`, with multiple axes joined by `:`
 
-## 6. 加密链（EncryptSensor）
+## 6. Encryption chain (EncryptSensor)
 
 ```
-aeskey = 随机16B
+aeskey = random 16B
 aesKeyEncrypted = base64( RSA-PKCS1v15( aeskey, rsaPubKey ) )
-hmacKey = 随机16B
+hmacKey = random 16B
 hmacKeyEncrypted = base64( RSA-PKCS1v15( hmacKey, rsaPubKey ) )
 
-doFinal, iv = AES-128-CBC( sensorPlain, aeskey )    // PKCS5 padding, 随机 IV
+doFinal, iv = AES-128-CBC( sensorPlain, aeskey )    // PKCS5 padding, random IV
 obj = iv || doFinal
 mac = HMAC-SHA256( obj, hmacKey )
 encryptedData = base64( obj || mac )
 
-最终 sensor = "1,a,<aesKeyEncrypted>,<hmacKeyEncrypted>$<encryptedData>$1000,1000,1000"
-（GenerateSensorData 还会再拼成 <encrypted>$<powResponse>$<powToken>）
+final sensor = "1,a,<aesKeyEncrypted>,<hmacKeyEncrypted>$<encryptedData>$1000,1000,1000"
+(GenerateSensorData further assembles it into <encrypted>$<powResponse>$<powToken>)
 ```
-`rsaKey` 是硬编码在每个版本 `bm.go` 里的 Akamai 公钥（base64 DER）。
+`rsaKey` is the Akamai public key hardcoded into each version's `bm.go` (base64 DER).
 
-## 7. Proof-of-Work（仅 challenge:true）
+## 7. Proof-of-Work (only when challenge:true)
 
-`GetPowParams`：GET `http://<domain>/_bm/get_params?type=sdk-pow` → `{nonce,difficulty,checksum,mode}`。
-`SolvePow`：暴力找 `format` 使 `FindPowAnswer(SHA256(androidId+uptime+nonce+(difficulty+i)+format), difficulty+i)==0`，做 10 个难度递增的解。
-拼成 `androidId;uptime;nonce;difficulty;checksum;<answers>;<iterations>;<elapsed>`。
-**站点没开 PoW 就别做**（`challenge:false`，`GetPowResponse` 直接返回空）。
+`GetPowParams`: GET `http://<domain>/_bm/get_params?type=sdk-pow` → `{nonce,difficulty,checksum,mode}`.
+`SolvePow`: brute-force a `format` such that `FindPowAnswer(SHA256(androidId+uptime+nonce+(difficulty+i)+format), difficulty+i)==0`, producing 10 solutions of increasing difficulty.
+Assembled as `androidId;uptime;nonce;difficulty;checksum;<answers>;<iterations>;<elapsed>`.
+**If the site has no PoW, don't do it** (`challenge:false`; `GetPowResponse` returns empty directly).
 
-## 8. 用 generator
+## 8. Using the generator
 
 ```bash
 git clone https://github.com/xvertile/akamai-bmp-generator
-cd akamai-bmp-generator/cmd/akamai-bmp-server   # 或 ./server
+cd akamai-bmp-generator/cmd/akamai-bmp-server   # or ./server
 go run main.go --host localhost --port 1337 --devicepath db/devices.json
 ```
-POST `/akamai/bmp`：
+POST `/akamai/bmp`:
 ```json
 {"app":"com.target.app","lang":"en_US","version":"3.3.4","challenge":false,"powUrl":"https://m.target.com"}
 ```
-返回 `{"sensor","androidVersion","model","brand","screenSize","userAgent"}`。
-支持版本：2.1.2 / 2.2.2 / 2.2.3 / 3.1.0 / 3.2.3 / 3.3.0 / 3.3.1 / 3.3.4 / 3.3.9 / 4.0.2 / 4.2.1。
+Returns `{"sensor","androidVersion","model","brand","screenSize","userAgent"}`.
+Supported versions: 2.1.2 / 2.2.2 / 2.2.3 / 3.1.0 / 3.2.3 / 3.3.0 / 3.3.1 / 3.3.4 / 3.3.9 / 4.0.2 / 4.2.1.
 
-## 9. 如何 pin 对版本（jadx / frida）
+## 9. How to pin the right version (jadx / frida)
 
-- **jadx**：反编译 App，搜字符串 `Akamai BMPSDK/`（UA 模板 `Akamai BMPSDK/<version> (Android; ...)`）或类名含 `bmsdk`/`BotManager`。版本号即 BMP version。
-- **frida**：hook sensor 生成的返回点，dump 出 sensor 串 —— pipe 串第一段就是版本号（如 `3.3.4`）。同时对照真实 sensor 的字段集与 generator 输出 diff，确认协议一致。
-- 版本不对 → 字段序号/集合/协议头不匹配 → 即便加密正确也 403。
+- **jadx**: decompile the app and search for the string `Akamai BMPSDK/` (the UA template `Akamai BMPSDK/<version> (Android; ...)`) or class names containing `bmsdk`/`BotManager`. The version number is the BMP version.
+- **frida**: hook the return point of sensor generation and dump the sensor string — the first segment of the pipe string is the version number (e.g. `3.3.4`). At the same time, diff the real sensor's field set against the generator output to confirm the protocol matches.
+- Wrong version → the field ordering/set/protocol header does not match → 403 even if the encryption is correct.
 
-## 10. 通过率工程（移动端）
+## 10. Pass-rate engineering (mobile)
 
-- TLS：Go `bogdanfinn/tls-client`（impersonate okhttp/chrome），Python `curl_cffi`。
-- 设备池：扩充真实 `devices.json`，一机一指纹，避免高并发复用同一指纹。
-- IP：住宅/移动 IP，换 IP；单 IP 高并发会被拉黑。
-- abck 握手：见 SKILL.md 状态机；每次回写 `_abck`/`bm_sz`。
+- TLS: Go `bogdanfinn/tls-client` (impersonate okhttp/chrome), Python `curl_cffi`.
+- Device pool: expand the real `devices.json`, one fingerprint per device, and avoid reusing the same fingerprint under high concurrency.
+- IP: residential/mobile IP, and rotate IPs; high concurrency from a single IP will get it blacklisted.
+- abck handshake: see the state machine in SKILL.md; write back `_abck`/`bm_sz` each time.

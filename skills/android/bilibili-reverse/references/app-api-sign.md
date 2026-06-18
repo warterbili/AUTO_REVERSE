@@ -14,7 +14,8 @@ Given the request parameter map (without `sign`):
 1. **Sort by key** — lexicographically (alphabetical). Java wraps the map in `new TreeMap(map)`
    before the JNI call, so the native side receives a `SortedMap`.
 2. **URL-encode each value** — full percent-encoding, equivalent to `quote(v, safe='')`. Non-ASCII
-   and special characters are encoded; keys are not. (e.g. `message=哈哈` → `message=%E5%93%88%E5%93%88`,
+   and special characters are encoded; keys are not. (e.g. a CJK `message` value such as `haha`
+   written in Chinese → `message=%E5%93%88%E5%93%88`,
    `statistics={...}` → `statistics=%7B...%7D`.)
 3. **Concatenate** — `key1=val1&key2=val2&...` in sorted order with encoded values.
 4. **MD5 streaming** (the load-bearing detail):
@@ -202,7 +203,7 @@ Reimplement `make_sign()`; computed sign equals captured sign → algorithm conf
 ## 5. Gotchas
 
 1. **Spawn mode uses the package name** (`tv.danmaku.bili`); attach mode uses the display name
-   (`哔哩哔哩`). Don't mix them.
+   (the localized `Bilibili` app label). Don't mix them.
 2. **Never `Java.use().implementation = ...`** — mutating the ART method table is detected; the app
    dies in ~3 s. Pure native `Interceptor.attach` only.
 3. **`RegisterNatives` is not the export name** — use the mangled

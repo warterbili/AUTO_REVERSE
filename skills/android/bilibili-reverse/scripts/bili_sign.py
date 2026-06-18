@@ -49,7 +49,7 @@ def make_sign(params: dict) -> str:
     """
     # Step 1: sort by key, URL-encode each value, join "k=v&..."
     # The native serializer percent-encodes non-ASCII / special chars,
-    # e.g. message=哈哈 -> %E5%93%88%E5%93%88, statistics={...} -> %7B...%7D
+    # e.g. message=<CJK chars> -> %E5%93%88%E5%93%88, statistics={...} -> %7B...%7D
     sorted_params = "&".join(
         f"{k}={quote(str(v), safe='')}"
         for k, v in sorted(params.items())

@@ -398,7 +398,7 @@ entries:
      source: https://github.com/CYRUS-STUDIO/ARM64Emulator, install: "git clone https://github.com/CYRUS-STUDIO/ARM64Emulator"}
   - {id: tiktok-six-shen-douyinx, name: "douyinX-all/tiktok-X-Ladon-X-Argus-X-Gorgon-X-Khronos-X-Medusa-X-Helios", type: script, domain: native, bundled: false, status: active,
      capability: "Python-wrapped TikTok/Douyin protocol covering the six native signature headers (X-Ladon/Argus/Gorgon/Khronos/Medusa/Helios) for video-list, play-count and device-registration APIs.",
-     when_to_use: "When building TikTok/Douyin app-protocol clients needing the full 六神 header set together with device-register and list/play-count endpoint flows, not just one signer. Reference for how the six headers compose into a request.",
+     when_to_use: "When building TikTok/Douyin app-protocol clients needing the full six-god header set together with device-register and list/play-count endpoint flows, not just one signer. Reference for how the six headers compose into a request.",
      source: https://github.com/douyinX-all/tiktok-X-Ladon-X-Argus-X-Gorgon-X-Khronos-X-Medusa-X-Helios, install: "git clone https://github.com/douyinX-all/tiktok-X-Ladon-X-Argus-X-Gorgon-X-Khronos-X-Medusa-X-Helios"}
   - {id: ctf-super-hub, name: "ctf-super-hub", type: skill, domain: native, bundled: false, status: active,
      capability: "Beginner-oriented CTF/RE Claude Code skill bundle with auto-routing across challenge types plus brainstorm, teaching, contest, and hint-only modes.",

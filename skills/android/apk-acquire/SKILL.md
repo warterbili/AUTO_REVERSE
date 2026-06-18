@@ -1,6 +1,6 @@
 ---
 name: apk-acquire
-description: Fully automatic APK acquisition for Android reversing. Given a package name, it obtains the APK through the first route that works — pull from a connected adb device, use a local file, or download from APKPure's direct-link endpoint (XAPK with splits or single APK) — then optionally installs it back to a device and verifies the package name. This is Phase 0 (Intake) of the auto_reverse orchestrator: it answers "I don't have the APK yet, get it for me" without manual confirmation. Trigger terms: get the apk, download apk, acquire apk, pull apk, apk 自动获取, 下载apk, 安装apk, app 没装/本地没有.
+description: Fully automatic APK acquisition for Android reversing. Given a package name, it obtains the APK through the first route that works — pull from a connected adb device, use a local file, or download from APKPure's direct-link endpoint (XAPK with splits or single APK) — then optionally installs it back to a device and verifies the package name. This is Phase 0 (Intake) of the auto_reverse orchestrator: it answers "I don't have the APK yet, get it for me" without manual confirmation. Trigger terms: get the apk, download apk, acquire apk, pull apk, automatic apk acquisition, download apk, install apk, app not installed / not available locally.
 ---
 
 # APK Acquire — Phase 0 Intake helper

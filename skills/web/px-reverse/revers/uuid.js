@@ -1,37 +1,37 @@
 /**
- * PX UUID v1 生成器
+ * PX UUID v1 generator
  *
- * 还原自 main.js line 1257-1349
- * PX 使用 UUID v1 (时间戳 + 随机节点), 不是 v4
+ * Reversed from main.js line 1257-1349
+ * PX uses UUID v1 (timestamp + random node), not v4
  *
- * 函数对照:
- *   Gr() → getRandomBytes    随机字节生成
- *   Lr[] → byteToHex         byte→hex 查找表
- *   Qr() → formatUUID        16 字节 → UUID 字符串
- *   ta() → uuidV1            UUID v1 核心算法
- *   Xa() → getUUID           带缓存的获取入口
+ * Function mapping:
+ *   Gr() → getRandomBytes    random byte generation
+ *   Lr[] → byteToHex         byte→hex lookup table
+ *   Qr() → formatUUID        16 bytes → UUID string
+ *   ta() → uuidV1            UUID v1 core algorithm
+ *   Xa() → getUUID           cached fetch entry point
  *
- * 用法:
+ * Usage:
  *   const { uuidV1, getUUID } = require('./uuid')
- *   uuidV1()   // 每次生成新 UUID
- *   getUUID()  // 单例, 首次生成后缓存
+ *   uuidV1()   // generate a new UUID each time
+ *   getUUID()  // singleton, cached after first generation
  */
 
 const crypto = require('crypto');
 
-// ═══ Gr() — 随机字节生成 (main.js:1261-1281) ═══
+// ═══ Gr() — random byte generation (main.js:1261-1281) ═══
 function getRandomBytes() {
     const buf = new Uint8Array(16);
     crypto.getRandomValues(buf);
     return buf;
 }
 
-// ═══ Lr[] — byte→hex 查找表 (main.js:1282-1283) ═══
+// ═══ Lr[] — byte→hex lookup table (main.js:1282-1283) ═══
 const byteToHex = [];
 for (let i = 0; i < 256; i++)
     byteToHex[i] = (i + 256).toString(16).substr(1);
 
-// ═══ Qr() — 16字节 → UUID 字符串 (main.js:1284-1288) ═══
+// ═══ Qr() — 16 bytes → UUID string (main.js:1284-1288) ═══
 function formatUUID(bytes, offset) {
     const n = offset || 0;
     const r = byteToHex;
@@ -43,19 +43,19 @@ function formatUUID(bytes, offset) {
          + r[bytes[n + 13]] + r[bytes[n + 14]] + r[bytes[n + 15]];
 }
 
-// ═══ 初始化状态 (main.js:1289-1293) ═══
-// Jr = Gr() — 初始随机字节
+// ═══ initialize state (main.js:1289-1293) ═══
+// Jr = Gr() — initial random bytes
 const initRandom = getRandomBytes();
-// zr = node — 6字节随机节点 (首字节 OR 1 = multicast bit)
+// zr = node — 6-byte random node (first byte OR 1 = multicast bit)
 const node = [1 | initRandom[0], initRandom[1], initRandom[2],
               initRandom[3], initRandom[4], initRandom[5]];
-// Kr = clockseq — 14位随机时钟序列
+// Kr = clockseq — 14-bit random clock sequence
 let clockseq = 16383 & (initRandom[6] << 8 | initRandom[7]);
 // qr = lastMsecs, $r = lastNsecs
 let lastMsecs = 0;
 let lastNsecs = 0;
 
-// ═══ ta() → uuidV1 — UUID v1 核心 (main.js:1294-1331) ═══
+// ═══ ta() → uuidV1 — UUID v1 core (main.js:1294-1331) ═══
 function uuidV1(options) {
     options = options || {};
 
@@ -80,8 +80,8 @@ function uuidV1(options) {
     lastNsecs = nsecs;
     clockseq = s;
 
-    // 时间戳: 自 1582-10-15 以来的 100ns 间隔
-    // 122192928e5 = 0x01B21DD213814000 (格里高利历偏移)
+    // timestamp: 100ns intervals since 1582-10-15
+    // 122192928e5 = 0x01B21DD213814000 (Gregorian calendar offset)
     msecs += 122192928e5;
 
     // time_low (4 bytes)
@@ -113,7 +113,7 @@ function uuidV1(options) {
     return formatUUID(buf);
 }
 
-// ═══ Xa() → getUUID — 带缓存的入口 (main.js:1343-1349) ═══
+// ═══ Xa() → getUUID — cached entry point (main.js:1343-1349) ═══
 let cachedUUID = null;
 
 function getUUID() {

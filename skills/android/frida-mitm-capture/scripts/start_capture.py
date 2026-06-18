@@ -238,7 +238,7 @@ def main():
         print(c("green", "✅ App is ready! Traffic is being captured."))
         print()
         print(c("bold", "👉 Perform the action you want to capture on the phone."))
-        print(c("bold", "   When done, tell Claude \"done\" or \"好了\"."))
+        print(c("bold", "   When done, tell Claude \"done\"."))
         print()
         print(c("dim", f"   Live log: {session_dir}/captured.jsonl"))
         print(c("dim", f"   When done, run: python stop_analyze.py -o {session_dir}"))

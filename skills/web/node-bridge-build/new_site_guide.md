@@ -1,223 +1,223 @@
-# 新站点 Bridge 适配教程（9 步实操）
+# New-Site Bridge Adaptation Tutorial (9-step walkthrough)
 
-> 把 iFood 模板适配到新站点。**每步显式标注用哪个上游 skill**。
+> Adapt the iFood template to a new site. **Each step explicitly notes which upstream skill to use.**
 >
-> 假设新站点叫 `<site>`，目标是产出 `node_bridge/<site>/` + 跑通拿到目标 cookie。
+> Assume the new site is called `<site>`; the goal is to produce `node_bridge/<site>/` + get it working and obtain the target cookie.
 
-> 🔝 **跑不通时升级到 sdenv**：[https://github.com/pysunday/sdenv](https://github.com/pysunday/sdenv)
-> 判定条件见步骤末尾的"跑不通怎么办" + [`methodology.md §7`](methodology.md#7-何时升级到-sdenv)。
-
----
-
-## 流程总览
-
-```
-[1] 抓 + 锁定 SDK             ← cdp-browser
-[2] 识别基础常量              ← 看 SDK / 抓真请求
-[3] 复制 ifood 模板           ← bash
-[4] 改 SDK 路径 + 常量        ← Edit
-[5] dump 真 Chrome 指纹       ← cdp-browser ⭐
-[6] 第一次跑 + 收 crash       ← jni-env-patching ① + ②
-[7] 配 TLS 层                 ← curl_cffi_integrate
-[8] 差异比对 + 迭代修         ← cdp-browser + jni-env-patching ③
-[9] 验证 + 写 journal         ← live_validation
-```
-
-预估总耗时 **4-8 小时**（同 PX 厂，第一次做）。
+> 🔝 **When it does not work, upgrade to sdenv**: [https://github.com/pysunday/sdenv](https://github.com/pysunday/sdenv)
+> For the decision criteria, see "What to do when it does not work" at the end + [`methodology.md §7`](methodology.md#7-when-to-upgrade-to-sdenv).
 
 ---
 
-## Step 1：抓 + 锁定 SDK
+## Workflow overview
 
-**用 skill**：`cdp-browser`
+```
+[1] Capture + lock the SDK         ← cdp-browser
+[2] Identify basic constants       ← read the SDK / capture real requests
+[3] Copy the ifood template        ← bash
+[4] Change SDK path + constants    ← Edit
+[5] Dump real Chrome fingerprints  ← cdp-browser ⭐
+[6] First run + collect crashes    ← jni-env-patching ① + ②
+[7] Configure the TLS layer        ← curl_cffi_integrate
+[8] Differential comparison + iterate ← cdp-browser + jni-env-patching ③
+[9] Validate + write the journal   ← live_validation
+```
+
+Estimated total time **4-8 hours** (same PX vendor, first time doing it).
+
+---
+
+## Step 1: Capture + lock the SDK
+
+**Skill used**: `cdp-browser`
 
 ```bash
-# 启 Chrome + 访问目标站点
+# launch Chrome + visit the target site
 python ~/projects/Sourcing-AI-Skills/cdp-browser/scripts/cdp.py start
 python ~/projects/Sourcing-AI-Skills/cdp-browser/scripts/cdp.py navigate "https://www.<site>.com"
 
-# 抓 SDK 加载请求（PX SDK URL 通常含 client.px-cloud.net 或 sensor.<site>.com）
+# capture the SDK load request (the PX SDK URL usually contains client.px-cloud.net or sensor.<site>.com)
 python ~/projects/Sourcing-AI-Skills/cdp-browser/scripts/cdp.py network 15 | \
     jq '.[] | select(.request.url | test("client\\.px-cloud|sensor\\.|main\\.min\\.js"))'
 
-# 下载 SDK 锁定（用 mitmproxy / curl / DevTools save-as）
+# download and lock the SDK (via mitmproxy / curl / DevTools save-as)
 curl -o stample/<site>/source/main.min.js https://client.px-cloud.net/<APP_ID>/main.min.js
 sha256sum stample/<site>/source/main.min.js > stample/<site>/source/SDK_INFO.md
 ```
 
-**期望产出**：`stample/<site>/source/main.min.js` (锁定 SDK) + SHA256 记录。
+**Expected output**: `stample/<site>/source/main.min.js` (locked SDK) + a SHA256 record.
 
 ---
 
-## Step 2：识别基础常量
+## Step 2: Identify basic constants
 
-抓 SDK 加载页面的真实 collector POST 请求，提取 4 个常量：
+Capture the real collector POST request from the page that loads the SDK, and extract 4 constants:
 
-| 常量 | 怎么找 | 例（iFood） |
+| Constant | How to find it | Example (iFood) |
 |---|---|---|
-| **AppID** | SDK URL 路径 / collector URL host | `PXO1GDTa7Q` |
-| **Collector URL** | DevTools Network 看 collector POST 域名 | `https://collector-pxo1gdta7q.px-cloud.net/api/v2/collector` |
-| **Cookie 名** | response 的 set-cookie / `do` array bake 指令 | `_px3` (iFood) / `_px2` (Grubhub) |
-| **目标域** | 业务 API 主域 | `cw-marketplace.ifood.com.br` |
+| **AppID** | SDK URL path / collector URL host | `PXO1GDTa7Q` |
+| **Collector URL** | DevTools Network, look at the collector POST domain | `https://collector-pxo1gdta7q.px-cloud.net/api/v2/collector` |
+| **Cookie name** | the response's set-cookie / `do` array bake instruction | `_px3` (iFood) / `_px2` (Grubhub) |
+| **Target domain** | the business API main domain | `cw-marketplace.ifood.com.br` |
 
 ```bash
-# 用 cdp-browser 抓 collector POST 提取 AppID
+# use cdp-browser to capture the collector POST and extract the AppID
 python ~/projects/Sourcing-AI-Skills/cdp-browser/scripts/cdp.py network 20 | \
     jq '.[] | select(.request.url | contains("collector")) | .request.url'
 # → https://collector-PXOXXXXXX.px-cloud.net/api/v2/collector?app=PXOXXXXXX&tag=...
 #                                                            ↑ AppID
 ```
 
-**期望产出**：4 个常量记入 stample/<site>/source/SDK_INFO.md。
+**Expected output**: the 4 constants recorded in stample/<site>/source/SDK_INFO.md.
 
 ---
 
-## Step 3：复制 ifood 模板
+## Step 3: Copy the ifood template
 
 ```bash
 cd <repo-root>
 cp -r node_bridge/ifood node_bridge/<site>
 cd node_bridge/<site>
 
-# 把锁定 SDK 放进去
+# put the locked SDK in place
 cp ../../stample/<site>/source/main.min.js perimeterx/
 
-# 清掉 iFood 残留
+# clear out iFood leftovers
 rm -rf node_modules .checkpoint
 ```
 
-**期望产出**：`node_bridge/<site>/` 目录完整，含 iFood 模板代码 + 新站点 SDK。
+**Expected output**: a complete `node_bridge/<site>/` directory containing the iFood template code + the new site's SDK.
 
 ---
 
-## Step 4：改 SDK 路径 + 常量
+## Step 4: Change SDK path + constants
 
-改 **3 个文件** 里的常量（用 grep 找位置）：
+Change the constants in **3 files** (use grep to find the locations):
 
-### 4.1 `px_node_bridge.js` 改 SDK 路径（如果 SDK 文件名不一样）
+### 4.1 `px_node_bridge.js` — change the SDK path (if the SDK file name is different)
 
 ```javascript
-// 默认 main.min.js — 如果 SDK 文件名是 init.js / sensor.js 之类，改这行
+// defaults to main.min.js — if the SDK file name is init.js / sensor.js or similar, change this line
 const pxSdkPath = path.join(__dirname, 'perimeterx/main.min.js');
 ```
 
-### 4.2 `px_cookie_generator.py` 改 4 个常量
+### 4.2 `px_cookie_generator.py` — change 4 constants
 
 ```python
-# 原 iFood：
+# original iFood:
 SITE_BASE      = "https://www.ifood.com.br"
 COLLECTOR_BASE = "https://collector-pxo1gdta7q.px-cloud.net"
 APP_ID         = "PXO1GDTa7Q"
 COOKIE_NAME    = "_px3"
 
-# 改成 <site>：
+# change to <site>:
 SITE_BASE      = "https://www.<site>.com"
 COLLECTOR_BASE = "https://collector-<appid_lowercase>.px-cloud.net"
 APP_ID         = "<APP_ID>"
 COOKIE_NAME    = "_px<2or3>"
 ```
 
-### 4.3 `px-node-env/env/builder.js` 改 targetUrl
+### 4.3 `px-node-env/env/builder.js` — change targetUrl
 
 ```javascript
 buildEnvironment({
-    targetUrl: 'https://www.<site>.com',     // ← 改这里
-    userAgent: '...'                          // 通常不变（chrome131）
+    targetUrl: 'https://www.<site>.com',     // ← change here
+    userAgent: '...'                          // usually unchanged (chrome131)
 })
 ```
 
-**期望产出**：4 个常量全部对应新站点。
+**Expected output**: all 4 constants correspond to the new site.
 
 ---
 
-## Step 5：dump 真 Chrome 指纹（关键一步）⭐
+## Step 5: Dump real Chrome fingerprints (the critical step) ⭐
 
-**用 skill**：`cdp-browser`
+**Skill used**: `cdp-browser`
 
-执行 [`methodology.md §3 dump 模板`](methodology.md#3-cdp-browser-skill-详细-dump-模板直接-paste-用) 的 5 组命令，输出**直接 paste** 进对应 env 文件：
+Run the 5 command groups from [`methodology.md §3 dump templates`](methodology.md#3-cdp-browser-skill-detailed-dump-templates-paste-and-use), and paste the output **directly** into the corresponding env files:
 
 ```bash
-# 5.1 navigator → paste 进 env/navigator.js
+# 5.1 navigator → paste into env/navigator.js
 python ~/projects/Sourcing-AI-Skills/cdp-browser/scripts/cdp.py navigate "https://www.<site>.com"
 python ~/projects/Sourcing-AI-Skills/cdp-browser/scripts/cdp.py eval "
-  JSON.stringify({...})   # 用 methodology.md §3.1 完整模板
+  JSON.stringify({...})   # use the full template from methodology.md §3.1
 " > /tmp/<site>_navigator_dump.json
 
-# 5.2 screen + window → paste 进 env/builder.js + env/px_intercept.js
+# 5.2 screen + window → paste into env/builder.js + env/px_intercept.js
 python ~/projects/Sourcing-AI-Skills/cdp-browser/scripts/cdp.py eval "
-  JSON.stringify({...})   # 用 methodology.md §3.2
+  JSON.stringify({...})   # use methodology.md §3.2
 " > /tmp/<site>_screen_dump.json
 
-# 5.3 window enumerable keys → paste 进 env/px_intercept.js
+# 5.3 window enumerable keys → paste into env/px_intercept.js
 python ~/projects/Sourcing-AI-Skills/cdp-browser/scripts/cdp.py eval "
   Object.keys(window).filter(k => !k.startsWith('_')).sort()
 " > /tmp/<site>_window_keys.json
 
-# 5.4 Canvas hash 校准（用 methodology.md §3.4）
-# → 用同样的 JS 跑我们 bridge → diff hash → 调 env/canvas.js
+# 5.4 Canvas hash calibration (use methodology.md §3.4)
+# → run the same JS through our bridge → diff the hash → adjust env/canvas.js
 ```
 
-**关键**：把 dump 出的真值**逐字段** paste 进对应 env/*.js 的 hardcoded 部分。
+**Key point**: paste the dumped real values **field by field** into the hardcoded sections of the corresponding env/*.js.
 
-**期望产出**：
-- `env/navigator.js` 含真 Chrome 的 navigator 完整属性
-- `env/builder.js` 含真 screen / window 尺寸
-- `env/px_intercept.js` 含真 Chrome `Object.keys(window)` 的差集补全
+**Expected output**:
+- `env/navigator.js` containing the full navigator properties of real Chrome
+- `env/builder.js` containing the real screen / window dimensions
+- `env/px_intercept.js` containing the complement of real Chrome's `Object.keys(window)` difference set
 
 ---
 
-## Step 6：第一次跑 + 收 crash
+## Step 6: First run + collect crashes
 
 ```bash
 cd node_bridge/<site>
 npm install --ignore-scripts
-npm install canvas@3        # Windows 必须用 @3 prebuilt
+npm install canvas@3        # Windows must use @3 prebuilt
 
-# 跑 Python 协调器（带代理）
+# run the Python coordinator (with proxy)
 SESSION="$(date +%s)$RANDOM"
-export HTTPS_PROXY="http://<user>:<pwd>@<host>:<port>"   # 对应 <site> 所在地区
+export HTTPS_PROXY="http://<user>:<pwd>@<host>:<port>"   # matching the region <site> is in
 python px_cookie_generator.py 2>&1 | tee /tmp/<site>_first_run.log
 ```
 
-**典型第一次跑会崩**。看 `[NODE]` stderr：
+**The first run typically crashes.** Look at `[NODE]` stderr:
 
-| crash 类型 | jni-env-patching 步骤 | 修复方法 |
+| Crash type | jni-env-patching step | Fix |
 |---|---|---|
-| `TypeError: Cannot read property X of undefined` | ① 识别 crash | 缺 X → 补到对应 env 文件 |
-| `TypeError: navigator.userAgentData.brands is not a function` | ① + ② | 缺 userAgentData → 补 env/navigator.js |
-| `TypeError: window.AudioContext is not a constructor` | ① + ② | 缺 AudioContext → 补 env/audio.js |
-| SDK 不崩但 PX 给 403 / px-captcha | ③ 给合理值不对 | 跳到 Step 8 差异比对 |
+| `TypeError: Cannot read property X of undefined` | ① identify the crash | X is missing → patch it into the corresponding env file |
+| `TypeError: navigator.userAgentData.brands is not a function` | ① + ② | userAgentData missing → patch env/navigator.js |
+| `TypeError: window.AudioContext is not a constructor` | ① + ② | AudioContext missing → patch env/audio.js |
+| SDK does not crash but PX returns 403 / px-captcha | ③ the reasonable value is wrong | Jump to Step 8 differential comparison |
 
-每个 crash 处理：
-1. 看错在哪个 API
-2. **用 cdp-browser dump 真 Chrome 对应 API 的值**（jni-env-patching ② "看真环境"）
-3. paste 进对应 env/*.js（jni-env-patching ③ "给合理值"）
-4. 重跑
+Handle each crash:
+1. See which API the error is in
+2. **Use cdp-browser to dump the real Chrome value of the corresponding API** (jni-env-patching ② "inspect the real environment")
+3. Paste it into the corresponding env/*.js (jni-env-patching ③ "supply a reasonable value")
+4. Re-run
 
-直到 stderr 没有 TypeError。
+Until there are no more TypeErrors in stderr.
 
-**期望产出**：bridge 跑完不崩 + Node 输出 type=result JSON。但可能 _px3 还为空（继续 Step 7-8）。
+**Expected output**: the bridge finishes without crashing + Node outputs the type=result JSON. But _px3 may still be empty (continue with Steps 7-8).
 
 ---
 
-## Step 7：配 TLS 层
+## Step 7: Configure the TLS layer
 
-**用 skill**：`curl_cffi_integrate_scrapy_performance`
+**Skill used**: `curl_cffi_integrate_scrapy_performance`
 
-检查 `px_cookie_generator.py` 的 session 配置：
+Check the session configuration in `px_cookie_generator.py`:
 
 ```python
-# 必须有这行
+# this line must exist
 self.session = curl_requests.Session(impersonate="chrome131")
 ```
 
-**关键 check**：
-- ✅ impersonate 用 `chrome131`（跟 env/navigator.js 的 UA Chrome/131 对齐）
-- ✅ Session 复用同一个（不要每次请求新建 session — TLS handshake 信息会变）
-- ✅ 如果 site 是 HTTP/2 强制，确认 curl_cffi 是 0.7+（早期版本 H2 支持差）
+**Key checks**:
+- ✅ impersonate uses `chrome131` (aligned with the UA Chrome/131 in env/navigator.js)
+- ✅ reuse the same Session (do not create a new session per request — TLS handshake info would change)
+- ✅ if the site enforces HTTP/2, confirm curl_cffi is 0.7+ (early versions have poor H2 support)
 
 ```python
-# 验证 TLS 指纹正确
+# verify the TLS fingerprint is correct
 python -c "
 from curl_cffi import requests
 s = requests.Session(impersonate='chrome131')
@@ -228,50 +228,50 @@ print('JA3:', d['tls']['ja3_hash'])
 print('JA4:', d['tls']['ja4'])
 print('HTTP/2 settings:', d['http2']['sent_frames'])
 "
-# 期望 JA3 跟真 Chrome 131 一致
+# expect JA3 to match real Chrome 131
 ```
 
-**期望产出**：TLS 指纹完全模拟真 Chrome 131。
+**Expected output**: the TLS fingerprint fully impersonates real Chrome 131.
 
 ---
 
-## Step 8：差异比对 + 迭代修 ⭐
+## Step 8: Differential comparison + iterate ⭐
 
-**核心一环**：跑通了不崩但 _px3 评分低 → 用差异比对找出**哪个字段错**。
+**The core link**: it runs without crashing but the _px3 score is low → use differential comparison to find **which field is wrong**.
 
-**用 skill**：`cdp-browser` + `jni-env-patching` ③④
+**Skills used**: `cdp-browser` + `jni-env-patching` ③④
 
-### 8.1 抓真 Chrome 的 collector POST body
+### 8.1 Capture real Chrome's collector POST body
 
 ```bash
-# 启 Chrome + clean session + 抓 30s
+# launch Chrome + clean session + capture for 30s
 python ~/projects/Sourcing-AI-Skills/cdp-browser/scripts/cdp.py start
 python ~/projects/Sourcing-AI-Skills/cdp-browser/scripts/cdp.py navigate "https://www.<site>.com"
 python ~/projects/Sourcing-AI-Skills/cdp-browser/scripts/cdp.py network 30 > /tmp/<site>_real_chrome_traffic.json
 
-# 提取 collector POST body
+# extract the collector POST body
 jq '.[] | select(.request.url | contains("collector")) | .request.postData' \
    /tmp/<site>_real_chrome_traffic.json > /tmp/<site>_real_post.txt
 ```
 
-### 8.2 抓我们 bridge 的 collector POST body
+### 8.2 Capture our bridge's collector POST body
 
-修改 `px_cookie_generator.py` 的 `_proxy_request` 把 request body dump 到文件：
+Modify the `_proxy_request` in `px_cookie_generator.py` to dump the request body to a file:
 
 ```python
 def _proxy_request(self, msg):
-    # 加这两行 (调试)
+    # add these two lines (debugging)
     with open(f'/tmp/<site>_bridge_post_{msg["id"]}.txt', 'w') as f:
         f.write(msg.get('body') or '')
-    # ... 原代码
+    # ... original code
 ```
 
-跑 bridge 拿到 dump。
+Run the bridge to get the dump.
 
-### 8.3 diff EV1 / EV2 字段
+### 8.3 diff the EV1 / EV2 fields
 
 ```bash
-# 用 revers/payload.js 解码（项目已有解码工具）
+# decode using revers/payload.js (the project already has a decoding tool)
 node skill/AI_re/scripts/decode_payload.js /tmp/<site>_real_post.txt > /tmp/<site>_real_decoded.json
 node skill/AI_re/scripts/decode_payload.js /tmp/<site>_bridge_post.txt > /tmp/<site>_bridge_decoded.json
 
@@ -279,136 +279,136 @@ node skill/AI_re/scripts/decode_payload.js /tmp/<site>_bridge_post.txt > /tmp/<s
 diff <(jq -S . /tmp/<site>_real_decoded.json) <(jq -S . /tmp/<site>_bridge_decoded.json)
 ```
 
-**输出形式**：
+**Output form**:
 
 ```diff
 - "field_001": "Win32"
 + "field_001": "MacIntel"
-     ↑ navigator.platform 错 → 改 env/navigator.js
+     ↑ navigator.platform is wrong → fix env/navigator.js
 - "field_034": "5da3b8e2..."
 + "field_034": "00000000..."
-     ↑ canvas hash 错 → 检查 env/canvas.js + @napi-rs/canvas 字体
+     ↑ canvas hash is wrong → check env/canvas.js + @napi-rs/canvas fonts
 - "field_087": "<hash>"
 + "field_087": "<other_hash>"
-     ↑ Object.keys(window) hash 错 → 加 missing prop 到 env/px_intercept.js
+     ↑ Object.keys(window) hash is wrong → add the missing prop to env/px_intercept.js
 ```
 
-### 8.4 逐字段修
+### 8.4 Fix field by field
 
-每个 diff：
-1. 用 **cdp-browser** 查真 Chrome 对应 API 的真值
-2. paste 真值进 env/*.js
-3. 重跑 → 重新 diff
-4. 字段越来越少 diff 直到 EV1/EV2 完全一致
+For each diff:
+1. Use **cdp-browser** to look up the real Chrome value of the corresponding API
+2. Paste the real value into env/*.js
+3. Re-run → re-diff
+4. The fields diff fewer and fewer until EV1/EV2 match completely
 
-**期望产出**：bridge 跑通拿到非空 _px3 (例 `len > 500`)。
+**Expected output**: the bridge runs and obtains a non-empty _px3 (e.g. `len > 500`).
 
 ---
 
-## Step 9：验证 + 写 journal
+## Step 9: Validate + write the journal
 
-### 9.1 端到端业务 API 调通
+### 9.1 End-to-end business API call works
 
-参考 `stample/live_validation/journal/2026-05-21.md` 的模板：
+Reference the template in `stample/live_validation/journal/2026-05-21.md`:
 
 ```bash
-# 1. 拿到 _px3 (Step 8 已成)
-# 2. 用这个 _px3 调 <site> 真业务 API
+# 1. obtain _px3 (done in Step 8)
+# 2. use this _px3 to call the real <site> business API
 python -c "
 from px_cookie_generator import PXCookieGenerator
 gen = PXCookieGenerator(verbose=True, proxy='$HTTPS_PROXY')
 px3 = gen.generate()
-# 用 _px3 调业务 API
+# use _px3 to call the business API
 import curl_cffi.requests as r
 resp = r.get('https://<site>/v1/api/...', cookies={'_px<n>': px3}, ...)
 print('Business API:', resp.status_code, resp.text[:200])
 "
 ```
 
-期望 HTTP 200 + 真业务数据。
+Expect HTTP 200 + real business data.
 
-### 9.2 写 journal
+### 9.2 Write the journal
 
-复制 `stample/live_validation/journal/2026-05-21.md` 模板，改成 `<YYYY-MM-DD>.md`：
+Copy the `stample/live_validation/journal/2026-05-21.md` template and rename it to `<YYYY-MM-DD>.md`:
 
 ```markdown
-# YYYY-MM-DD <site> Node Bridge 实战记录
+# YYYY-MM-DD <site> Node Bridge Field Record
 
-## 双站实测结论
-- <site>: _px<n> via bridge + 业务 API HTTP 200 ✓
+## Dual-site test conclusion
+- <site>: _px<n> via bridge + business API HTTP 200 ✓
 
 ## Part 1 · <site>
-### 1.1 接口介绍 (...)
-### 1.2 风控架构 (...)
-### 1.3 IP 要求 (...)
-### 1.4 实战代码 → node_bridge/<site>/
-### 1.5 实测请求 + 响应（完整 HTTP）
-### 1.6 PX 研究 insights（这次发现的新东西）
+### 1.1 API introduction (...)
+### 1.2 Risk-control architecture (...)
+### 1.3 IP requirements (...)
+### 1.4 Working code → node_bridge/<site>/
+### 1.5 Live request + response (full HTTP)
+### 1.6 PX research insights (the new things discovered this time)
 
-## 踩坑列表
+## Pitfall list
 - ...
 ```
 
-### 9.3 写本 site 的 README
+### 9.3 Write this site's README
 
-`node_bridge/<site>/README.md` 加：
+Add to `node_bridge/<site>/README.md`:
 
 ```markdown
 # Node Bridge — <site>
 
-## SDK 版本
+## SDK version
 SHA: <sha256>
-锁定日期: YYYY-MM-DD
+Locked date: YYYY-MM-DD
 
-## 跑通命令
+## Working commands
 \`\`\`bash
 npm install
-export HTTPS_PROXY='http://<user>:<pwd>@<host>:<port>'   # <地区> 住宅
+export HTTPS_PROXY='http://<user>:<pwd>@<host>:<port>'   # <region> residential
 python px_cookie_generator.py
 \`\`\`
 
-## 期望输出
+## Expected output
 \`\`\`
 ✅ _px<n> SUCCESS! len=...
    first 80: ...
    _pxvid: ...
 \`\`\`
 
-## 跟 ifood 模板的差异
+## Differences from the ifood template
 - AppID: ...
 - Collector: ...
 - Cookie: ...
-- env/navigator.js 改动: ...
+- env/navigator.js changes: ...
 
 ## journal
-- 第一次跑通: stample/live_validation/journal/YYYY-MM-DD.md
+- First working run: stample/live_validation/journal/YYYY-MM-DD.md
 ```
 
-**期望产出**：`node_bridge/<site>/README.md` + journal entry 完整。
+**Expected output**: a complete `node_bridge/<site>/README.md` + journal entry.
 
 ---
 
-## 完成 checklist
+## Completion checklist
 
-- [ ] Step 1：SDK 锁定 + SHA 记录
-- [ ] Step 2：4 个常量识别
-- [ ] Step 3：模板复制成功
-- [ ] Step 4：3 文件常量改对
-- [ ] Step 5：5 组真 Chrome dump paste 进 env/
-- [ ] Step 6：bridge 不崩，拿到 type=result JSON
-- [ ] Step 7：TLS 用 chrome131
-- [ ] Step 8：EV1/EV2 diff 字段全部一致
-- [ ] Step 9：业务 API 200 + journal 写完
-
----
-
-## 跑不通怎么办？
-
-按 [`methodology.md §7 何时升级到 sdenv`](methodology.md#7-何时升级到-sdenv) 的决策树判断：
-
-- **报错是 `typeof document.all`、`Function.prototype.toString`、`Error().stack` 之类的 V8-level 检测** → 升级 sdenv
-- **就是简单缺 API / 缺值不对** → 继续按 §2 4 手段迭代
+- [ ] Step 1: SDK locked + SHA recorded
+- [ ] Step 2: 4 constants identified
+- [ ] Step 3: template copied successfully
+- [ ] Step 4: 3-file constants changed correctly
+- [ ] Step 5: 5 real Chrome dump groups pasted into env/
+- [ ] Step 6: bridge does not crash, obtains type=result JSON
+- [ ] Step 7: TLS uses chrome131
+- [ ] Step 8: EV1/EV2 diff fields all match
+- [ ] Step 9: business API 200 + journal written
 
 ---
 
-*教程 v1.0 · 基于 iFood 实战编写 · 2026-05-22*
+## What to do when it does not work
+
+Judge using the decision tree in [`methodology.md §7 When to upgrade to sdenv`](methodology.md#7-when-to-upgrade-to-sdenv):
+
+- **The error is a V8-level detection such as `typeof document.all`, `Function.prototype.toString`, or `Error().stack`** → upgrade to sdenv
+- **It is simply a missing API / wrong value** → keep iterating using the 4 techniques in §2
+
+---
+
+*Tutorial v1.0 · written based on iFood field practice · 2026-05-22*

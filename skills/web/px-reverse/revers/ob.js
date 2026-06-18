@@ -1,48 +1,48 @@
 /**
- * PX ob 响应解码 + 指令执行
+ * PX ob response decode + instruction execution
  *
- * 还原自 main.js line 500-509 (Et/gt) + line 1423-1505 (eh/ih) + captcha.js:7165 (poi/PoW)
+ * Reconstructed from main.js line 500-509 (Et/gt) + line 1423-1505 (eh/ih) + captcha.js:7165 (poi/PoW)
  *
- * ═══ 输入 ═══
- *   responseJson: String — collect/bundle 响应体 JSON, 含 .ob 或 .do 字段
- *   gt:           String — XOR 种子, 来自 main.js Et(), 如 "DXJ9dEscZAAJeA=="
- *                          每次 PX 脚本加载会变, 必须从当前版本 main.js 提取
+ * ═══ Input ═══
+ *   responseJson: String — collect/bundle response body JSON, contains .ob or .do field
+ *   gt:           String — XOR seed, from main.js Et(), e.g. "DXJ9dEscZAAJeA=="
+ *                          changes on every PX script load, must be extracted from the current version's main.js
  *
- * ═══ 输出 ═══
+ * ═══ Output ═══
  *   Object — {
- *     segments: String[],         // 解码后的原始段
- *     results:  Object[],         // 每段 handler 执行结果 { handler, args, result }
- *     state:    Object            // handler 设置的全局状态 (jf, no, qa, ao 等)
+ *     segments: String[],         // decoded raw segments
+ *     results:  Object[],         // per-segment handler execution result { handler, args, result }
+ *     state:    Object            // global state set by handlers (jf, no, qa, ao etc.)
  *   }
  *
- * ═══ 算法链 ═══
- *   1. xorKey = parseInt(ml(gt), 10) % 128    — gt 哈希 → XOR key
+ * ═══ Algorithm chain ═══
+ *   1. xorKey = parseInt(ml(gt), 10) % 128    — gt hash → XOR key
  *   2. ob = JSON.parse(response).ob || .do
  *   3. decoded = base64(ob) → XOR(xorKey)
  *   4. segments = decoded.split("~~~~")
- *   5. 每段: fields = seg.split("|"), shift() 取 handler key (丢弃, 不依赖)
- *   6. 按参数特征自动识别 handler 类型 (不依赖 key 名, 兼容所有 PX 版本)
- *   7. "cc" 标记段优先执行 (unshift 到队头)
- *   8. 执行 handler, 收集 state 和 results
+ *   5. each segment: fields = seg.split("|"), shift() to get handler key (discarded, not relied on)
+ *   6. auto-detect handler type by argument signature (does not rely on key name, compatible with all PX versions)
+ *   7. "cc"-tagged segments execute first (unshift to front of queue)
+ *   8. execute handler, collect state and results
  *
- * ═══ state 字段 (POST 参数来源) ═══
- *   state.no     = 服务器时间戳 (用于 payload 交织 + sid 隐写)
- *   state.qa     = challenge hash → cs 参数
- *   state.vid    = visitor ID → vid 参数 (ob handler "00I0I0")
- *   state.cts    = client timestamp UUID → cts 参数 (ob handler "0III0000")
- *   state.pxsid  = session UUID → sid 参数的 UUID 部分 (ob handler "I0III0")
- *   state.jf     = 控制标志 ("cu")
- *   state.ao     = 状态码 ("401")
+ * ═══ state fields (source of POST parameters) ═══
+ *   state.no     = server timestamp (used for payload interleaving + sid steganography)
+ *   state.qa     = challenge hash → cs parameter
+ *   state.vid    = visitor ID → vid parameter (ob handler "00I0I0")
+ *   state.cts    = client timestamp UUID → cts parameter (ob handler "0III0000")
+ *   state.pxsid  = session UUID → UUID part of sid parameter (ob handler "I0III0")
+ *   state.jf     = control flag ("cu")
+ *   state.ao     = status code ("401")
  *
- * 用法:
+ * Usage:
  *   const processOb = require('./ob')
  *   const { segments, results, state } = processOb(responseJson, gt)
- *   const sid = processOb.buildSid(state)   // pxsid + hh(no) 隐写
+ *   const sid = processOb.buildSid(state)   // pxsid + hh(no) steganography
  */
 
 const crypto = require('crypto');
 
-// ═══ ml() — 哈希函数, 返回 3 位数字字符串 (main.js:2131) ═══
+// ═══ ml() — hash function, returns a 3-digit numeric string (main.js:2131) ═══
 
 function ml(t) {
     let e = 0;
@@ -51,7 +51,7 @@ function ml(t) {
     return (e % 900 + 100).toString();
 }
 
-// ═══ ee() — XOR 编解码 (main.js:666-670) ═══
+// ═══ ee() — XOR encode/decode (main.js:666-670) ═══
 
 function xor(t, key) {
     let n = '';
@@ -66,16 +66,16 @@ function sha256(data) {
     return crypto.createHash('sha256').update(data, 'utf8').digest('hex');
 }
 
-// ═══ solvePow — PoW 求解器 (captcha.js:7165-7170 + 7411) ═══
+// ═══ solvePow — PoW solver (captcha.js:7165-7170 + 7411) ═══
 // PX1135 = PX762 = Bs
 //
-// 输入:
-//   targetHash: String — 目标 SHA-256 hash
-//   suffix:     String — 前缀字符串
-//   difficulty: Number — 搜索位数 (默认 16)
+// Input:
+//   targetHash: String — target SHA-256 hash
+//   suffix:     String — prefix string
+//   difficulty: Number — number of search bits (default 16)
 //
-// 输出:
-//   { answer, counter, elapsed } 或 null
+// Output:
+//   { answer, counter, elapsed } or null
 
 function solvePow(targetHash, suffix, difficulty) {
     difficulty = +difficulty || 16;
@@ -95,7 +95,7 @@ function solvePow(targetHash, suffix, difficulty) {
     return null;
 }
 
-// ═══ decodeOb — ob 字段解码 ═══
+// ═══ decodeOb — decode the ob field ═══
 
 function decodeOb(responseJson, gt) {
     const xorKey = parseInt(ml(gt), 10) % 128;
@@ -108,10 +108,10 @@ function decodeOb(responseJson, gt) {
     return { xorKey, segments };
 }
 
-// ═══ UUID 正则 ═══
+// ═══ UUID regex ═══
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-// ═══ hh() — sid 隐写编码 (main.js:4366-4373) ═══
+// ═══ hh() — sid steganographic encoding (main.js:4366-4373) ═══
 function hh(t) {
     let r = '';
     for (let i = 0; i < t.length; i++)
@@ -119,12 +119,12 @@ function hh(t) {
     return r;
 }
 
-// ═══ 特征匹配规则 ═══
-// 不依赖 handler key 名, 按参数内容自动识别 handler 类型
-// 每条规则: { name, match(args), exec(state, args) }
+// ═══ signature matching rules ═══
+// does not rely on handler key name, auto-detects handler type by argument content
+// each rule: { name, match(args), exec(state, args) }
 
 const HANDLER_RULES = [
-    // ── set_cookie (oh) ── args[0]=cookieName 含 "px", 5 个参数
+    // ── set_cookie (oh) ── args[0]=cookieName contains "px", 5 arguments
     {
         name: 'set_cookie',
         match: (args) => args.length >= 4 && /^_?px/i.test(args[0]),
@@ -166,7 +166,7 @@ const HANDLER_RULES = [
             return { type: 'pow_challenge', uuid, port: +port, hash, suffix, extra: +extra, tag };
         }
     },
-    // ── visual challenge (PX12634) ── 5 args, 前 4 小数字, 第 5 是 64hex
+    // ── visual challenge (PX12634) ── 5 args, first 4 small numbers, 5th is 64hex
     {
         name: 'visual_challenge',
         match: (args) => args.length === 5 && /^\d{1,4}$/.test(args[0])
@@ -177,7 +177,7 @@ const HANDLER_RULES = [
                      widthJump: +wJump, heightJump: +hJump, hash };
         }
     },
-    // ── timestamp (ch) ── 1 arg, 13 位时间戳
+    // ── timestamp (ch) ── 1 arg, 13-digit timestamp
     {
         name: 'timestamp',
         match: (args) => args.length === 1 && /^1[5-9]\d{11}$/.test(args[0]),
@@ -194,7 +194,7 @@ const HANDLER_RULES = [
             state.qa = args[0];
         }
     },
-    // ── vid (00I0I0) ── 3 args, UUID + TTL数字 + flag
+    // ── vid (00I0I0) ── 3 args, UUID + TTL number + flag
     {
         name: 'vid',
         match: (args) => args.length === 3 && UUID_RE.test(args[0]) && /^\d+$/.test(args[1]),
@@ -221,7 +221,7 @@ const HANDLER_RULES = [
             return { type: 'pxsid', value: args[0] };
         }
     },
-    // ── session ID (fh) ── 1-2 args, 第一个是 16+ 位纯数字
+    // ── session ID (fh) ── 1-2 args, first one is 16+ digits of pure numbers
     {
         name: 'session_id',
         match: (args) => (args.length === 1 || args.length === 2) && /^\d{16,}$/.test(args[0]),
@@ -230,7 +230,7 @@ const HANDLER_RULES = [
             state.eo = args[1] || null;
         }
     },
-    // ── status code (ah) ── 1 arg, 3 位数字 (如 401, 680)
+    // ── status code (ah) ── 1 arg, 3-digit number (e.g. 401, 680)
     {
         name: 'status_code',
         match: (args) => args.length === 1 && /^\d{3}$/.test(args[0]),
@@ -238,7 +238,7 @@ const HANDLER_RULES = [
             state.ao = args[0];
         }
     },
-    // ── app ID ── 1 arg, 12-30 字符, 含小写字母和数字
+    // ── app ID ── 1 arg, 12-30 chars, contains lowercase letters and digits
     {
         name: 'app_id',
         match: (args) => args.length === 1 && /^[a-z0-9]{12,30}$/.test(args[0]),
@@ -246,7 +246,7 @@ const HANDLER_RULES = [
             state.appId = args[0];
         }
     },
-    // ── control flag (jf) ── 1 arg, 2-4 字符短字符串 (如 "cu")
+    // ── control flag (jf) ── 1 arg, 2-4 char short string (e.g. "cu")
     {
         name: 'control_flag',
         match: (args) => args.length === 1 && /^[a-z]{2,4}$/.test(args[0]),
@@ -254,7 +254,7 @@ const HANDLER_RULES = [
             state.jf = args[0];
         }
     },
-    // ── feature flags ── 1 arg, "key:val,key:val" 格式
+    // ── feature flags ── 1 arg, "key:val,key:val" format
     {
         name: 'feature_flags',
         match: (args) => args.length === 1 && /^[a-z]+:\d+(,[a-z]+:\d+)*$/.test(args[0]),
@@ -268,7 +268,7 @@ const HANDLER_RULES = [
             return { type: 'feature_flags', items };
         }
     },
-    // ── cookie config (ff) ── 3 args, name/ttl/value, name 是短字符串
+    // ── cookie config (ff) ── 3 args, name/ttl/value, name is a short string
     {
         name: 'cookie_config',
         match: (args) => (args.length === 3 || args.length === 4)
@@ -280,7 +280,7 @@ const HANDLER_RULES = [
             return { type: 'cookie_config', name, ttl: +ttl, value };
         }
     },
-    // ── storage TTL ── 5 args, args[0] 是 key, args[1] 是数字 TTL
+    // ── storage TTL ── 5 args, args[0] is the key, args[1] is the numeric TTL
     {
         name: 'storage_ttl',
         match: (args) => args.length === 5 && /^\d+$/.test(args[1]),
@@ -289,7 +289,7 @@ const HANDLER_RULES = [
                      value: args[2], param: args[3], extra: args[4] };
         }
     },
-    // ── captcha control (OllOlOOO) ── 1 arg, 小负数或小数字, 传给 PX764
+    // ── captcha control (OllOlOOO) ── 1 arg, small negative or small number, passed to PX764
     {
         name: 'captcha_control',
         match: (args) => args.length === 1 && /^-?\d{1,3}$/.test(args[0])
@@ -307,7 +307,7 @@ const HANDLER_RULES = [
     },
 ];
 
-// ═══ detectHandler — 按参数特征匹配 handler ═══
+// ═══ detectHandler — match handler by argument signature ═══
 
 function detectHandler(args) {
     for (const rule of HANDLER_RULES) {
@@ -316,10 +316,10 @@ function detectHandler(args) {
     return null;
 }
 
-// ═══ executeSegments — 段处理器 ═══
-// 1. 每段 "|" 分割, shift() 丢弃 handler key
-// 2. "cc" 标记 → 延迟, unshift 到队头
-// 3. 按特征匹配执行
+// ═══ executeSegments — segment processor ═══
+// 1. split each segment by "|", shift() discards the handler key
+// 2. "cc" tag → defer, unshift to front of queue
+// 3. execute by signature matching
 
 function executeSegments(segments, state) {
     let deferred = null;
@@ -329,11 +329,11 @@ function executeSegments(segments, state) {
         const seg = segments[i];
         if (!seg) continue;
         const fields = seg.split('|');
-        const key = fields.shift(); // handler key (仅记录, 不用于匹配)
+        const key = fields.shift(); // handler key (recorded only, not used for matching)
 
         if (fields[0] === 'cc') {
-            // "cc" 既是延迟标记, 也是实际的 cookie/config name
-            // 不从 args 中去掉, 原样传给 handler
+            // "cc" is both the defer tag and the actual cookie/config name
+            // do not remove it from args, pass it to the handler as-is
             deferred = { key, args: fields };
             continue;
         }
@@ -358,7 +358,7 @@ function executeSegments(segments, state) {
     return results;
 }
 
-// ═══ processOb — 主入口 ═══
+// ═══ processOb — main entry point ═══
 
 function processOb(responseJson, gt) {
     const { xorKey, segments } = decodeOb(responseJson, gt);
@@ -367,9 +367,9 @@ function processOb(responseJson, gt) {
     return { xorKey, segments, results, state };
 }
 
-// ═══ buildSid — 从 state 构造 sid (含隐写) ═══
+// ═══ buildSid — build sid from state (with steganography) ═══
 // sid = pxsid + hh(no)
-// 首次请求 (无 ob 响应): 返回 null, mh() 不发 sid 参数
+// first request (no ob response): returns null, mh() does not send the sid parameter
 
 function buildSid(state) {
     if (!state.pxsid && !state.no) return null;
@@ -378,15 +378,15 @@ function buildSid(state) {
     return (uuid || null) && (uuid + hh(String(ts)));
 }
 
-// ═══ getParams — 从 state 提取 POST 所需的所有 ob 参数 ═══
+// ═══ getParams — extract all ob parameters needed for the POST from state ═══
 
 function getParams(state) {
     return {
         vid: state.vid || null,      // → vid=
         cts: state.cts || null,      // → cts=
         cs: state.qa || null,        // → cs=
-        sid: buildSid(state),        // → sid= (含隐写)
-        no: state.no || null,        // 服务器时间戳 → payload 交织用
+        sid: buildSid(state),        // → sid= (with steganography)
+        no: state.no || null,        // server timestamp → used for payload interleaving
     };
 }
 

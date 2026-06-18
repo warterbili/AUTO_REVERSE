@@ -1,38 +1,38 @@
 /**
- * PX pc (payload checksum) 生成器
+ * PX pc (payload checksum) generator
  *
- * 还原自 main.js line 75-84 (R/HMAC-MD5) + line 299-329 (it/序列化) + line 596-609 (jt/数字提取)
+ * Reversed from main.js line 75-84 (R/HMAC-MD5) + line 299-329 (it/serialization) + line 596-609 (jt/digit extraction)
  *
- * ═══ 输入 ═══
- *   events: Array — 事件数组 (PX collect payload 中的 events)
- *   uuid:   String — UUID v1, 如 "eb30dfdf-11c5-11f1-..."
- *   tag:    String — 固定值 "O2MKZn0OEhI/ag=="
+ * ═══ Input ═══
+ *   events: Array — event array (the events in the PX collect payload)
+ *   uuid:   String — UUID v1, e.g. "eb30dfdf-11c5-11f1-..."
+ *   tag:    String — fixed value "O2MKZn0OEhI/ag=="
  *   ft:     Number — bundle=388, collector=330
  *
- * ═══ 输出 ═══
- *   String — ~16 位纯数字字符串, 如 "9751268234020178"
+ * ═══ Output ═══
+ *   String — ~16-digit numeric string, e.g. "9751268234020178"
  *
- * ═══ 算法链 ═══
- *   1. data = serialize(events)        — PX 自定义 JSON 序列化 (非标准 JSON.stringify!)
+ * ═══ Algorithm chain ═══
+ *   1. data = serialize(events)        — PX custom JSON serialization (not standard JSON.stringify!)
  *   2. salt = "uuid:tag:ft"
  *   3. hmac = HMAC-MD5(key=salt, data=data) → 32 hex chars
- *   4. 遍历 hmac 每个字符:
- *      - 数字 (0-9, ascii 48-57) → 保留到 digits
- *      - 字母 (a-f)              → charCode % 10 追加到 letters (a→7 b→8 c→9 d→0 e→1 f→2)
- *   5. 拼接: result = digits + letters
- *   6. 间隔取: pc = result[0] + result[2] + result[4] + ...
+ *   4. Iterate over each character of hmac:
+ *      - digit (0-9, ascii 48-57) → kept in digits
+ *      - letter (a-f)             → charCode % 10 appended to letters (a→7 b→8 c→9 d→0 e→1 f→2)
+ *   5. Concatenate: result = digits + letters
+ *   6. Take every other char: pc = result[0] + result[2] + result[4] + ...
  *
- * ═══ 调用链 (main.js) ═══
+ * ═══ Call chain (main.js) ═══
  *   mh() line 4384 → h = jt(it(events), [ka(), e[bn], e[En]].join(":"))
  *                         ↑ jt  ↑ it       uuid   tag    ft
  *
- * 用法:
+ * Usage:
  *   const generatePC = require('./pc')
  *   const pc = generatePC(events, uuid, tag, ft)
  */
 
 // ═══════════════════════════════════════
-//  MD5 核心 (main.js line 69-206)
+//  MD5 core (main.js line 69-206)
 // ═══════════════════════════════════════
 
 // w() — 32-bit words → binary string (line 69)
@@ -49,7 +49,7 @@ function N(t, e) {
     return (t >> 16) + (e >> 16) + (n >> 16) << 16 | 65535 & n;
 }
 
-// X() — MD5 基础变换 (line 179)
+// X() — MD5 base transform (line 179)
 function X(t, e, n, r, a, o) {
     const i = N(N(e, t), N(r, o));
     return N(i << a | i >>> 32 - a, n);
@@ -90,7 +90,7 @@ function O(t) {
     return unescape(encodeURIComponent(t));
 }
 
-// M() — MD5 核心变换 (line 88-163)
+// M() — MD5 core transform (line 88-163)
 function M(t, e) {
     t[e >> 5] |= 128 << e % 32;
     t[14 + (e + 64 >>> 9 << 4)] = e;
@@ -181,13 +181,13 @@ function U(t) {
 /**
  * MD5 / HMAC-MD5
  *
- * 输入:
- *   data: String — 待哈希的数据
- *   key:  String — HMAC 密钥 (可选, 不传=普通MD5)
- *   raw:  Boolean — true 返回 binary, false 返回 hex (可选, 默认 false)
+ * Input:
+ *   data: String — the data to hash
+ *   key:  String — HMAC key (optional, omit = plain MD5)
+ *   raw:  Boolean — true returns binary, false returns hex (optional, default false)
  *
- * 输出:
- *   String — 32 hex chars (raw=false) 或 16 bytes binary string (raw=true)
+ * Output:
+ *   String — 32 hex chars (raw=false) or 16-byte binary string (raw=true)
  */
 function hmacMD5(data, key, raw) {
     if (!key) return raw ? md5Raw(data) : U(md5Raw(data));
@@ -195,7 +195,7 @@ function hmacMD5(data, key, raw) {
     return hmacMD5Raw(key, data);
 }
 
-// V() — 普通 MD5 → binary string (line 202)
+// V() — plain MD5 → binary string (line 202)
 function md5Raw(t) {
     return w(M(B(O(t)), 8 * O(t).length));
 }
@@ -220,38 +220,38 @@ function hmacMD5Raw(key, data) {
 //  jt() → generatePC (main.js line 596-609)
 // ═══════════════════════════════════════
 
-// 常量 (main.js line 590-592)
+// constants (main.js line 590-592)
 const DIGIT_LOW  = 48;  // '0' ascii — Dt
 const DIGIT_HIGH = 57;  // '9' ascii — Gt
 const MOD_BASE   = 10;  // Ht
 
 /**
- * 生成 pc 校验值
+ * Generate the pc checksum value
  *
- * @param {Array} events — 事件数组
+ * @param {Array} events — event array
  * @param {String} uuid — UUID v1
- * @param {String} tag — 固定值 "O2MKZn0OEhI/ag=="
+ * @param {String} tag — fixed value "O2MKZn0OEhI/ag=="
  * @param {Number} ft — bundle=388, collector=330
- * @returns {String} ~16 位纯数字字符串
+ * @returns {String} ~16-digit numeric string
  */
 function generatePC(events, uuid, tag, ft) {
     const data = serialize(events);
     const salt = uuid + ':' + tag + ':' + ft;
     const n = hmacMD5(data, salt);  // 32 hex chars
 
-    // 分离数字和字母→数字
+    // separate digits and letters→digits
     let digits = '';
     let letters = '';
     for (let r = 0; r < n.length; r++) {
         const a = n.charCodeAt(r);
         if (a >= DIGIT_LOW && a <= DIGIT_HIGH)
-            digits += n[r];           // '0'-'9' 直接保留
+            digits += n[r];           // '0'-'9' kept as-is
         else
             letters += a % MOD_BASE;  // 'a'→7, 'b'→8, 'c'→9, 'd'→0, 'e'→1, 'f'→2
     }
     const combined = digits + letters;
 
-    // 间隔取: [0], [2], [4], ...
+    // take every other char: [0], [2], [4], ...
     let pc = '';
     for (let o = 0; o < combined.length; o += 2)
         pc += combined[o];
@@ -261,7 +261,7 @@ function generatePC(events, uuid, tag, ft) {
 
 // ═══════════════════════════════════════
 //  it() → serialize (main.js line 299-329)
-//  PX 自定义 JSON 序列化 (非标准 JSON.stringify)
+//  PX custom JSON serialization (not standard JSON.stringify)
 // ═══════════════════════════════════════
 
 const ESCAPE_RE = /[\\\"\u0000-\u001f\u007f-\u009f\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g;
@@ -274,27 +274,27 @@ function escapeChar(ch) {
     return ESCAPE_MAP[ch] || '\\u' + ('0000' + ch.charCodeAt(0).toString(16)).slice(-4);
 }
 
-// ut() — 引号包裹 + 转义 (line 355)
+// ut() — wrap in quotes + escape (line 355)
 function quoteString(t) {
     ESCAPE_RE.lastIndex = 0;
     return '"' + (ESCAPE_RE.test(t) ? t.replace(ESCAPE_RE, escapeChar) : t) + '"';
 }
 
 /**
- * PX 自定义 JSON 序列化
+ * PX custom JSON serialization
  *
- * 输入:
- *   value: Any — 要序列化的值 (通常是 events 数组)
+ * Input:
+ *   value: Any — the value to serialize (usually the events array)
  *
- * 输出:
- *   String — 类 JSON 字符串, 与标准 JSON.stringify 的差异:
- *            - undefined → "undefined" (带引号)
+ * Output:
+ *   String — JSON-like string, differences from standard JSON.stringify:
+ *            - undefined → "undefined" (with quotes)
  *            - NaN/Infinity → "null"
  *            - RegExp → "null"
- *            - Date → "YYYY-M-DTHHH:MM:SS.mmm" (无补零)
- *            - 属性值为 undefined 的 key 不跳过 (输出 "undefined")
+ *            - Date → "YYYY-M-DTHHH:MM:SS.mmm" (no zero-padding)
+ *            - keys whose value is undefined are not skipped (output "undefined")
  *
- * 注意: pc 校验值依赖此函数的精确输出, 不能用 JSON.stringify 替代!
+ * Note: the pc checksum depends on the exact output of this function, it cannot be replaced with JSON.stringify!
  */
 function serialize(e) {
     const type = typeof e;

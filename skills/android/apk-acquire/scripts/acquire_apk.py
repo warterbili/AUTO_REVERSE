@@ -40,7 +40,6 @@ CHROME_UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
 # Known adb locations to try if it's not on PATH (Windows-friendly + generic).
 ADB_HINTS = [
     "adb",
-    r"C:\Users\admin\AppData\安卓_sdktools\platform-tools-latest-windows\platform-tools\adb.exe",
     os.path.expanduser("~/Android/Sdk/platform-tools/adb"),
     os.path.expanduser("~/Library/Android/sdk/platform-tools/adb"),
 ]

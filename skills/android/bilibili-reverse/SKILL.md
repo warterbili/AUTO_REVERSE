@@ -1,6 +1,6 @@
 ---
 name: bilibili-reverse
-description: Bilibili (哔哩哔哩 / b站) Android API reverse-engineering skill — reconstruct Bilibili's APP-API protection and request signing end to end. Covers the APP-API `sign` parameter (appkey + appSecret + MD5 over sorted params, computed inside libbili.so), the `x-bili-ticket` JWT / GenWebTicket HMAC, the OAuth2 `access_key` / `refresh_token` refresh flow, native gRPC capture, native SSL plaintext interception (SSL_write/SSL_read), and the comment API (/x/v2/reply/add). Use when the user mentions bilibili, b站, 哔哩哔哩, BiliDroid, libbili.so, APP-API sign, appkey 1d8b6e7d45233436, x-bili-ticket, access_key / refresh_token refresh, or any reversing of Bilibili Android API requests.
+description: Bilibili (Bilibili / B-site) Android API reverse-engineering skill — reconstruct Bilibili's APP-API protection and request signing end to end. Covers the APP-API `sign` parameter (appkey + appSecret + MD5 over sorted params, computed inside libbili.so), the `x-bili-ticket` JWT / GenWebTicket HMAC, the OAuth2 `access_key` / `refresh_token` refresh flow, native gRPC capture, native SSL plaintext interception (SSL_write/SSL_read), and the comment API (/x/v2/reply/add). Use when the user mentions bilibili, B-site, Bilibili, BiliDroid, libbili.so, APP-API sign, appkey 1d8b6e7d45233436, x-bili-ticket, access_key / refresh_token refresh, or any reversing of Bilibili Android API requests.
 languages: [en, zh]
 status: validated against BiliDroid 8.83.0 (build 8830500); sign / ticket / access_key / comment all confirmed against live captures
 ---
@@ -24,7 +24,7 @@ session data**: all tokens are placeholders, and every script reads secrets from
 
 Trigger keywords:
 
-- `bilibili`, `b站`, `哔哩哔哩`, `BiliDroid`, `tv.danmaku.bili`
+- `bilibili`, `B-site`, `Bilibili`, `BiliDroid`, `tv.danmaku.bili`
 - `libbili.so`, `libignet.so`, `libmsaoaidsec.so`
 - `sign`, `appkey 1d8b6e7d45233436`, `appSecret`, `signQuery`
 - `x-bili-ticket`, `GenWebTicket`, `GetTicket`

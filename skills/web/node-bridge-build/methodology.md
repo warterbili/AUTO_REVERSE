@@ -1,59 +1,65 @@
-# Node Bridge 补环境方法论
+# Node Bridge Environment-Patching Methodology
 
-> 本文档面向 **AI agent 自动构建 node_bridge**。沉淀的核心问题：
-> **怎么知道要补什么？怎么补合理？跑不通怎么排查？什么时候放弃升级到 sdenv？**
+> This document is aimed at an **AI agent automatically building a node_bridge**. The core questions it distills:
+> **How do you know what to patch? How do you patch it reasonably? How do you troubleshoot when it does not work? When do you give up and upgrade to sdenv?**
 
-> 🔝 **后手项目**：[**sdenv** — https://github.com/pysunday/sdenv](https://github.com/pysunday/sdenv)
-> · 718⭐ · jsdom fork 改 C++ · 配套纯算 [rs-reverse](https://github.com/pysunday/rs-reverse)
-> · 详细借鉴见本文档 §5，升级决策见 §7
+> 🔝 **Fallback project**: [**sdenv** — https://github.com/pysunday/sdenv](https://github.com/pysunday/sdenv)
+> · 718⭐ · jsdom fork with C++ modifications · paired pure-algorithm project [rs-reverse](https://github.com/pysunday/rs-reverse)
+> · For detailed lessons drawn from it see §5 of this document, for the upgrade decision see §7
 
 ---
 
-## 0. 三技能合成图 ⭐
+## 0. Three-skill synthesis diagram ⭐
 
-Node bridge **不是从零长出来的**，是 3 个上游 skill + jsdom + 11 env 模块 + Python TLS 层的**有机合成**：
+The node bridge **does not grow from scratch** — it is an **organic synthesis** of 3 upstream skills + jsdom + 11 env modules + a Python TLS layer:
 
 ```
    ┌─────────────────────────────┐    ┌──────────────────────────────┐
    │   cdp-browser skill         │    │   jni-env-patching skill     │
-   │   (上游 — 真值采集)          │    │   (方法论 — 4 步法)           │
+   │   (upstream — value capture)│    │   (methodology — 4-step)      │
    │                             │    │                              │
-   │   - 启真 Chrome             │    │   ① 识别 crash 报错           │
-   │   - eval 任意 JS dump 真值   │    │   ② 看真环境 (Java/Chrome)    │
-   │   - 抓 navigator/screen     │    │   ③ 给合理值                  │
-   │   - 抓 canvas/audio hash    │    │   ④ 不确定时 hook 真机/真 Chrome │
-   │   - 抓 collector POST 真包  │    │                              │
+   │   - launch real Chrome      │    │   ① identify the crash error  │
+   │   - eval arbitrary JS, dump │    │   ② inspect real env (Java/   │
+   │     real values             │    │      Chrome)                  │
+   │   - capture navigator/screen│    │   ③ supply reasonable values  │
+   │   - capture canvas/audio    │    │   ④ when unsure, hook real    │
+   │     hash                    │    │      device / real Chrome     │
+   │   - capture real collector  │    │                              │
+   │     POST packets            │    │                              │
    └──────────┬──────────────────┘    └──────────┬───────────────────┘
               │                                   │
-              │   (类比关系)                       │
-              │   JNI 补 Android Java 层  ≡   env/ 补 Browser DOM 层
+              │   (analogy)                       │
+              │   JNI patches Android Java layer  ≡   env/ patches Browser DOM layer
               │                                   │
               ▼                                   ▼
    ┌────────────────────────────────────────────────────────────────┐
    │            node_bridge/<site>/                                  │
    │                                                                  │
    │   ┌────────────────────────────────────────────────────────┐   │
-   │   │ Layer 1: env/*.js (11 个补环境模块)                     │   │
-   │   │  ← cdp-browser dump 的 hardcode 真值                    │   │
-   │   │  ← jni-env-patching 4 步法迭代出来的 mock 集合          │   │
-   │   │  ← 每个模块对应一类 fingerprint API                     │   │
-   │   │     (navigator/canvas/audio/fonts/events/...)           │   │
+   │   │ Layer 1: env/*.js (11 env-patching modules)             │   │
+   │   │  ← hardcoded real values dumped by cdp-browser          │   │
+   │   │  ← the mock set iterated out via the jni-env-patching    │   │
+   │   │     4-step method                                       │   │
+   │   │  ← each module corresponds to one class of fingerprint  │   │
+   │   │     API (navigator/canvas/audio/fonts/events/...)       │   │
    │   └────────────────────────────────────────────────────────┘   │
    │                                                                  │
    │   ┌────────────────────────────────────────────────────────┐   │
    │   │ Layer 2: px_node_bridge.js                              │   │
-   │   │  ← JSDOM (jsdom@22 npm 包) 提供 window/document         │   │
-   │   │  ← 重写 window.XMLHttpRequest / window.fetch            │   │
-   │   │     → 拦截但不发，输出 JSON 给 Python                   │   │
-   │   │  ← 处理 PX bake|cookie 指令 (do[] 数组)                 │   │
+   │   │  ← JSDOM (jsdom@22 npm package) provides window/document│   │
+   │   │  ← overrides window.XMLHttpRequest / window.fetch       │   │
+   │   │     → intercepts but does not send, outputs JSON to     │   │
+   │   │       Python                                            │   │
+   │   │  ← handles PX bake|cookie instructions (the do[] array) │   │
    │   └────────────────────────────────────────────────────────┘   │
    │                                                                  │
    │   ┌────────────────────────────────────────────────────────┐   │
    │   │ Layer 3: px_cookie_generator.py                         │◀──┐
-   │   │  ← Python 主进程，spawn Node bridge                     │   │
-   │   │  ← curl_cffi(impersonate='chrome131') 真发请求          │   │
-   │   │  ← stdio IPC: 收 Node 输出 / 写 Node 输入                │   │
-   │   │  ← 解析最终 _px3 cookie                                  │   │
+   │   │  ← Python main process, spawns the Node bridge          │   │
+   │   │  ← curl_cffi(impersonate='chrome131') actually sends    │   │
+   │   │     the requests                                        │   │
+   │   │  ← stdio IPC: receives Node output / writes Node input  │   │
+   │   │  ← parses the final _px3 cookie                         │   │
    │   └────────────────────────────────────────────────────────┘   │
    └────────────────────────────────────────────────────────────────┘
                                                                        │
@@ -61,59 +67,62 @@ Node bridge **不是从零长出来的**，是 3 个上游 skill + jsdom + 11 en
                                   │
                                   ▼
                   ┌───────────────────────────────────────┐
-                  │   curl_cffi_integrate skill (网络层)   │
+                  │   curl_cffi_integrate skill (network)  │
                   │                                        │
-                  │   - chrome131 TLS 完整模拟             │
-                  │   - HTTP/2 SETTINGS 帧 / WINDOW_UPDATE │
-                  │   - JA3 / JA4 指纹自动匹配             │
-                  │   - 自动复用 Chrome 的 cipher 顺序     │
+                  │   - full chrome131 TLS impersonation   │
+                  │   - HTTP/2 SETTINGS frames / WINDOW_   │
+                  │     UPDATE                             │
+                  │   - automatic JA3 / JA4 fingerprint    │
+                  │     matching                           │
+                  │   - automatically reuses Chrome's      │
+                  │     cipher order                       │
                   └───────────────────────────────────────┘
 ```
 
-## 0.x 三技能贡献映射
+## 0.x Three-skill contribution mapping
 
-| 关注点 | 提供 skill | 在 bridge 里的角色 | 落地文件 |
+| Concern | Providing skill | Role in the bridge | Where it lands |
 |---|---|---|---|
-| 怎么知道真 Chrome 的值 | **cdp-browser** | 一次性 dump 真 Chrome JS 值 | `env/*.js` 里 hardcoded 数据的**来源** |
-| 怎么决定补什么 + 怎么改 | **jni-env-patching** | 迭代方法论（4 步法） | `env/*.js` 怎么从空白长成 11 个文件 |
-| 怎么让 PX 不识破 TLS | **curl_cffi_integrate** | 网络层 TLS 模拟 | `px_cookie_generator.py` 用 chrome131 |
-| 怎么搭建假浏览器世界 | **本 skill + jsdom** | DOM 容器 + 11 env + IPC 拦截 | `px_node_bridge.js + env/*.js` |
-| 怎么 dump fingerprint hashes | **cdp-browser** | 抓 canvas/audio/font 真 hash | `env/canvas.js` + `env/audio.js` |
+| How to know the real Chrome values | **cdp-browser** | One-time dump of real Chrome JS values | The **source** of the hardcoded data in `env/*.js` |
+| How to decide what to patch + how to change it | **jni-env-patching** | Iterative methodology (the 4-step method) | How `env/*.js` grows from blank into 11 files |
+| How to keep PX from detecting the TLS | **curl_cffi_integrate** | Network-layer TLS impersonation | `px_cookie_generator.py` uses chrome131 |
+| How to build the fake browser world | **this skill + jsdom** | DOM container + 11 env + IPC interception | `px_node_bridge.js + env/*.js` |
+| How to dump fingerprint hashes | **cdp-browser** | Capture the real canvas/audio/font hashes | `env/canvas.js` + `env/audio.js` |
 
 ---
 
-## 1. 核心原则（借自 jni-env-patching）
+## 1. Core principle (borrowed from jni-env-patching)
 
-**"先看真环境再给合理值。禁止盲目补环境。"**
+**"Inspect the real environment first, then supply reasonable values. No blind environment patching."**
 
-类比关系：
+The analogy:
 
-| 维度 | JNI 补环境（Android）| **Browser 补环境（本 skill）** |
+| Dimension | JNI env patching (Android) | **Browser env patching (this skill)** |
 |---|---|---|
-| 平台 | unidbg + Android SO | Node + jsdom |
-| 缺失 | JNI 回 Java 层 callback | Browser API (navigator/canvas/audio) |
-| 报错形式 | `UnsupportedOperationException` | `TypeError: ... is not a function` |
-| 解决方式 | `AbstractJni` override callback | `env/*.js` override window 属性 |
-| 看真环境 | JADX / apktool smali 读 Java 层 | DevTools / **cdp-browser** 读真 Chrome |
-| 不确定时 | Frida hook 真机 | **cdp-browser** dump 真 Chrome |
+| Platform | unidbg + Android SO | Node + jsdom |
+| Missing piece | JNI callback to the Java layer | Browser API (navigator/canvas/audio) |
+| Error form | `UnsupportedOperationException` | `TypeError: ... is not a function` |
+| Resolution | `AbstractJni` override callback | `env/*.js` override of window properties |
+| Inspecting the real env | JADX / apktool smali reading the Java layer | DevTools / **cdp-browser** reading real Chrome |
+| When unsure | Frida hook on a real device | **cdp-browser** dump of real Chrome |
 
-**禁止做的事**：
-- 给 random 值（如 `screen.width = 1234`）→ 跟真 Chrome 一致才有意义
-- 抄网上别的项目的 mock 值 → 那些可能针对别的厂商，PX 不认
-- 试图 mock 全部 browser API → 不可能（DOM 有 1000+ API）
+**Things you must not do**:
+- Supply random values (e.g. `screen.width = 1234`) → only meaningful if it matches real Chrome
+- Copy mock values from other projects online → those may target a different vendor, and PX will not accept them
+- Try to mock every browser API → impossible (the DOM has 1000+ APIs)
 
 ---
 
-## 2. 4 个发现手段（怎么找出要补什么）⭐⭐
+## 2. The 4 discovery techniques (how to find out what to patch) ⭐⭐
 
-### 手段 1：静态 grep（粗筛 SDK）
+### Technique 1: Static grep (coarse SDK filtering)
 
 ```bash
 # beautify SDK
 npx js-beautify perimeterx/<sdk>.js > /tmp/sdk_pretty.js
-wc -l /tmp/sdk_pretty.js   # 通常 10000+ 行
+wc -l /tmp/sdk_pretty.js   # usually 10000+ lines
 
-# grep 已知 fingerprint API 调用
+# grep for known fingerprint API calls
 grep -n "navigator\.userAgent" /tmp/sdk_pretty.js
 grep -n "Object\.keys(window)" /tmp/sdk_pretty.js
 grep -n "canvas\.toDataURL\|getContext('2d')" /tmp/sdk_pretty.js
@@ -124,56 +133,56 @@ grep -n "performance\.memory\|performance\.now" /tmp/sdk_pretty.js
 grep -n "WebGLRenderingContext\|getSupportedExtensions" /tmp/sdk_pretty.js
 ```
 
-每个 grep 命中找到 wrapper 函数名（minified 是 `xS()`、`hQ()` 这种 2-3 字符）。
+Each grep hit points to a wrapper function name (minified ones look like `xS()`, `hQ()` — 2-3 characters).
 
-**产出**：怀疑的 wrapper 函数清单（10-20 个）。
+**Output**: a list of suspected wrapper functions (10-20 of them).
 
-### 手段 2：动态断点（真 Chrome + DevTools）
+### Technique 2: Dynamic breakpoints (real Chrome + DevTools)
 
 ```bash
-# 用 cdp-browser skill 启真 Chrome
+# launch real Chrome via the cdp-browser skill
 python ~/projects/Sourcing-AI-Skills/cdp-browser/scripts/cdp.py start
 python ~/projects/Sourcing-AI-Skills/cdp-browser/scripts/cdp.py navigate "https://<target_site>"
 
 # DevTools Console:
-debug(xS)      // 给 SDK 的 xS 函数下断点
-debug(mh)      // 给 SDK 的 mh 函数下断点
+debug(xS)      // set a breakpoint on the SDK's xS function
+debug(mh)      // set a breakpoint on the SDK's mh function
 
-# 重新加载页面 → SDK 跑到这些函数时断下
-# 看 call stack / arguments / 内部逻辑
+# reload the page → the SDK breaks when it reaches these functions
+# inspect the call stack / arguments / internal logic
 ```
 
-**产出**：每个 wrapper 干啥的清晰理解（指纹采集 / hash / 序列化）。
+**Output**: a clear understanding of what each wrapper does (fingerprint collection / hash / serialization).
 
-### 手段 3：差异比对 ⭐（最高效）
+### Technique 3: Differential comparison ⭐ (most efficient)
 
-**核心思路**：同时跑 SDK 在两个环境，diff EV2 POST body：
+**Core idea**: run the SDK in two environments simultaneously and diff the EV2 POST body:
 
 ```python
-# A. 真 Chrome 抓 collector POST body
+# A. capture the collector POST body from real Chrome
 import subprocess
 real_post = subprocess.check_output(['python', cdp_script, 'network', '15'])
-# 提取 collector POST 的 payload field
+# extract the payload field of the collector POST
 
-# B. JSDOM (无 env mock 时) 抓 POST body
-node_post = run_bridge_no_mocks()  # 我们的 bridge 输出
+# B. capture the POST body from JSDOM (with no env mock)
+node_post = run_bridge_no_mocks()  # output from our bridge
 
-# 解码 + diff EV2 字段
+# decode + diff the EV2 fields
 diff_ev2(real_post, node_post)
-# 输出形如:
+# output looks like:
 #   field_001: 'Win32' vs 'MacIntel'         → navigator.platform mismatch
 #   field_034: '5da3b8...' vs '00000000...'   → canvas hash mismatch
 #   field_087: hash_A vs hash_B               → Object.keys(window) mismatch
 ```
 
-**产出**：精确知道哪些字段错 → 直接对应补哪个 API。这是**最经济**的手段，每次迭代都用。
+**Output**: knowing exactly which fields are wrong → directly corresponds to which API to patch. This is the **most economical** technique, used on every iteration.
 
-### 手段 4：Proxy 监听（神级 trick）
+### Technique 4: Proxy interception (god-tier trick)
 
-把 navigator/document/window 包成 Proxy，**记录 SDK 实际读了哪些属性**：
+Wrap navigator/document/window in a Proxy to **record which properties the SDK actually reads**:
 
 ```javascript
-// 在 env/builder.js 加 (调试期间)
+// add in env/builder.js (during debugging)
 window.navigator = new Proxy(window.navigator, {
     get(target, prop) {
         console.log(`[PX-READ] navigator.${String(prop)}`);
@@ -187,27 +196,27 @@ window.screen = new Proxy(window.screen, {
     }
 });
 
-// 跑 SDK → 控制台看 PX 实际读了哪些属性
+// run the SDK → in the console, see which properties PX actually read
 //   [PX-READ] navigator.userAgent
-//   [PX-READ] navigator.userAgentData      ← 这个 jsdom 没有
-//   [PX-READ] navigator.connection         ← 这个 jsdom 没有
+//   [PX-READ] navigator.userAgentData      ← jsdom does not have this
+//   [PX-READ] navigator.connection         ← jsdom does not have this
 //   [PX-READ] navigator.hardwareConcurrency
 //   ... (50+ properties)
 //   [PX-READ] screen.width
 //   [PX-READ] screen.colorDepth
 ```
 
-**产出**：必须 mock 的 API 完整清单。
+**Output**: a complete list of the APIs that must be mocked.
 
-**注意**：Proxy 不能装在已经 freeze 的对象上（jsdom 有些 prototype 是 frozen）。失败时 fallback 到 `Object.defineProperty` 加 getter。
+**Note**: a Proxy cannot be installed on an already-frozen object (some jsdom prototypes are frozen). When it fails, fall back to adding a getter with `Object.defineProperty`.
 
 ---
 
-## 3. cdp-browser skill 详细 dump 模板（直接 paste 用）
+## 3. cdp-browser skill detailed dump templates (paste-and-use)
 
-dump 真 Chrome 的标准命令集，输出**直接 paste 进 env/*.js**：
+The standard command set for dumping real Chrome, whose output is **pasted directly into env/*.js**:
 
-### 3.1 navigator 完整 dump
+### 3.1 Full navigator dump
 
 ```bash
 python ~/projects/Sourcing-AI-Skills/cdp-browser/scripts/cdp.py navigate "https://www.<site>.com"
@@ -275,17 +284,17 @@ python ~/projects/Sourcing-AI-Skills/cdp-browser/scripts/cdp.py eval "
 "
 ```
 
-### 3.3 window 的 enumerable keys（关键 — PX 用 Object.keys(window) 算 hash）
+### 3.3 window enumerable keys (critical — PX uses Object.keys(window) to compute a hash)
 
 ```bash
 python ~/projects/Sourcing-AI-Skills/cdp-browser/scripts/cdp.py eval "
   Object.keys(window).filter(k => !k.startsWith('_')).sort()
 "
-# 输出 ~250 个 keys 数组
-# diff 跟 jsdom Object.keys(window) → 差异就是 px_intercept.js 要补的
+# outputs an array of ~250 keys
+# diff against jsdom Object.keys(window) → the difference is what px_intercept.js must patch
 ```
 
-### 3.4 Canvas fingerprint hash 校准（用于 env/canvas.js）
+### 3.4 Canvas fingerprint hash calibration (for env/canvas.js)
 
 ```bash
 python ~/projects/Sourcing-AI-Skills/cdp-browser/scripts/cdp.py eval "
@@ -300,79 +309,79 @@ python ~/projects/Sourcing-AI-Skills/cdp-browser/scripts/cdp.py eval "
   ctx.fillText('BrowserLeaks,com <canvas> 1.0', 2, 15);
   c.toDataURL().slice(-50)
 "
-# 真 Chrome 输出: '...some-base64-tail-50-chars'
-# 我们的 bridge 用 @napi-rs/canvas 跑同样代码 → 输出应该一致
-# 不一致 → @napi-rs/canvas 版本/字体配置不对
+# real Chrome output: '...some-base64-tail-50-chars'
+# our bridge runs the same code with @napi-rs/canvas → output should match
+# if it does not match → the @napi-rs/canvas version / font configuration is wrong
 ```
 
-### 3.5 collector POST body 抓取（用于差异比对）
+### 3.5 Collector POST body capture (for differential comparison)
 
 ```bash
-# 启 Chrome + network capture + 触发 PX SDK 跑
+# launch Chrome + network capture + trigger the PX SDK run
 python ~/projects/Sourcing-AI-Skills/cdp-browser/scripts/cdp.py navigate "https://www.<site>.com"
 python ~/projects/Sourcing-AI-Skills/cdp-browser/scripts/cdp.py network 30 > /tmp/real_chrome_traffic.json
 
-# 提取 collector POST request bodies
+# extract the collector POST request bodies
 jq '.[] | select(.request.url | contains("collector"))' /tmp/real_chrome_traffic.json
 ```
 
 ---
 
-## 4. jni-env-patching 4 步法在本 skill 的具体应用
+## 4. Concrete application of the jni-env-patching 4-step method in this skill
 
-| jni-env-patching 步骤 | Node bridge 等价做法 | 落地 |
+| jni-env-patching step | Node bridge equivalent | Implementation |
 |---|---|---|
-| ① 识别 crash 报错 | 看 `[NODE]` stderr 的 TypeError | `TypeError: Cannot read property 'X' of undefined` → 缺 X |
-| ② 在 Java 层看语义 | 用 **cdp-browser** dump 真 Chrome 对应属性 | `cdp eval "JSON.stringify(navigator.X)"` |
-| ③ 给随机且合理的值 | hardcode dump 出来的真 Chrome 值进 `env/<file>.js` | 不要随机 — 跟真 Chrome 完全一致 |
-| ④ 不确定时 hook 真机 | DevTools 在 SDK wrapper 函数上断点，看真值 | `debug(xS)` + breakpoint |
+| ① Identify the crash error | Read the TypeError in `[NODE]` stderr | `TypeError: Cannot read property 'X' of undefined` → X is missing |
+| ② Read the semantics in the Java layer | Use **cdp-browser** to dump the corresponding real Chrome property | `cdp eval "JSON.stringify(navigator.X)"` |
+| ③ Supply a random but reasonable value | Hardcode the dumped real Chrome value into `env/<file>.js` | Do not randomize — match real Chrome exactly |
+| ④ When unsure, hook a real device | Set a DevTools breakpoint on the SDK wrapper function and inspect the real value | `debug(xS)` + breakpoint |
 
-完全同构 —— 平台和宿主不同但方法论 1:1 对应。
+Fully isomorphic — the platform and host differ, but the methodology maps 1:1.
 
 ---
 
-## 5. 从 sdenv 借鉴的 4 个点 ⭐
+## 5. The 4 lessons borrowed from sdenv ⭐
 
-sdenv (https://github.com/pysunday/sdenv, 718⭐) 是公开补环境框架 ceiling。值得借鉴：
+sdenv (https://github.com/pysunday/sdenv, 718⭐) is the public ceiling for environment-patching frameworks. Worth borrowing from:
 
-### 5.1 ⭐ C++ 层修 jsdom 根问题
+### 5.1 ⭐ Fixing jsdom's root problems at the C++ layer
 
-sdenv 维护 `sdenv-jsdom` (jsdom 的 fork)，改 C++ 源码修一些 **JS 层永远绕不过的检测**：
+sdenv maintains `sdenv-jsdom` (a fork of jsdom) that modifies the C++ source to fix some **detections that can never be bypassed at the JS layer**:
 
 ```javascript
-// HTML5 规范规定 document.all 必须是 truthy 但 typeof === 'undefined'
-typeof document.all === 'undefined' && document.all   // 真 browser: true
+// the HTML5 spec mandates that document.all must be truthy but typeof === 'undefined'
+typeof document.all === 'undefined' && document.all   // real browser: true
 
-// 真 Chrome: typeof = 'undefined', value = HTMLAllCollection (truthy)
-// 标准 jsdom: typeof = 'object', value = HTMLAllCollection   ← 一查就死
-// sdenv-jsdom: 改 C++ binding 让 typeof 返 'undefined' 同时保 truthy
+// real Chrome:   typeof = 'undefined', value = HTMLAllCollection (truthy)
+// standard jsdom: typeof = 'object',    value = HTMLAllCollection   ← detected instantly
+// sdenv-jsdom:   modifies the C++ binding so typeof returns 'undefined' while staying truthy
 ```
 
-**我们 node_bridge 没做这个** — JS 层 mock 不可能 override `typeof` 行为（这是 V8/C++ 层规定的）。
+**Our node_bridge does not do this** — JS-layer mocks cannot override `typeof` behavior (that is dictated by the V8/C++ layer).
 
-**何时升级 sdenv**：碰到 `typeof document.all`、`Function.prototype.toString` 的 V8-level 检测时（见 §7）。
+**When to upgrade to sdenv**: when you hit V8-level detection of `typeof document.all` or `Function.prototype.toString` (see §7).
 
-### 5.2 Plugin 化 env（不是单 site 写死）
+### 5.2 Plugin-ized env (not hardcoded per single site)
 
-sdenv 的目录结构：
+sdenv's directory structure:
 
 ```
 sdenv/
-├── sdenv-jsdom         ← 通用底层 fork
+├── sdenv-jsdom         ← generic low-level fork
 └── sdenv-extend/
     ├── plugins/
-    │   ├── ruishu/     ← 瑞数特化 patches
-    │   ├── akamai/     ← Akamai 特化
-    │   └── generic/    ← 通用 (UA / screen / canvas)
+    │   ├── ruishu/     ← Ruishu-specific patches
+    │   ├── akamai/     ← Akamai-specific
+    │   └── generic/    ← generic (UA / screen / canvas)
 ```
 
-每个 site 一个 plugin，generic 部分共享。我们对比：
+One plugin per site, with the generic part shared. By comparison ours:
 
 ```
-node_bridge/ifood/px-node-env/env/     ← iFood + PX 混合，没拆开
+node_bridge/ifood/px-node-env/env/     ← iFood + PX mixed, not split apart
 ```
 
-**借鉴**：重构成 plugin 形式（在新站点适配时考虑）：
+**Lesson**: refactor into a plugin form (consider this when adapting to a new site):
 ```
 node_bridge/
 ├── env-core/         ← Chrome generic
@@ -384,141 +393,141 @@ node_bridge/
 
 ### 5.3 Proxy-wrapped window for dev logging
 
-sdenv 工程化了"手段 4"（Proxy 监听）：
+sdenv has engineered "Technique 4" (Proxy interception):
 
 ```javascript
-// sdenv 用法
+// sdenv usage
 const env = createSdenv({
     window: {
         proxy: {
-            logger: 'all',          // 记录所有读写
-            errorOnUnknown: false   // 读未定义属性不抛错
+            logger: 'all',          // log all reads and writes
+            errorOnUnknown: false   // do not throw when reading undefined properties
         }
     }
 });
-// → 跑 SDK → 控制台流式输出所有 window/document 访问
+// → run the SDK → the console streams all window/document accesses
 ```
 
-**借鉴**：在我们 env/builder.js 加可选 `DEBUG_PROXY=1` 开关，开启所有 navigator/window/document Proxy 监听。
+**Lesson**: add an optional `DEBUG_PROXY=1` switch to our env/builder.js that enables Proxy interception on all navigator/window/document.
 
-### 5.4 双轨架构（bridge + 纯算）
+### 5.4 Dual-track architecture (bridge + pure algorithm)
 
-sdenv 配套 [rs-reverse](https://github.com/pysunday/rs-reverse)（瑞数纯算）—— **双仓**。
-我们项目 = **单仓内**的 `node_bridge/` + `revers/`。
+sdenv pairs with [rs-reverse](https://github.com/pysunday/rs-reverse) (Ruishu pure algorithm) — **two repos**.
+Our project = `node_bridge/` + `revers/` **within a single repo**.
 
-无所谓优劣，**架构同构**。
+Neither is inherently better; the **architecture is isomorphic**.
 
 ---
 
-## 6. happy-dom / linkedom 为什么 PX 跑不通（避坑）
+## 6. Why PX does not work with happy-dom / linkedom (pitfall avoidance)
 
-很多人会问 "用 happy-dom 不比 jsdom 快吗？"。**对 PX 反爬场景**它们都跑不通：
+Many people ask, "Isn't happy-dom faster than jsdom?" **For the PX anti-bot scenario**, none of them work:
 
-| 替代品 | 速度 | 不能用的原因 |
+| Alternative | Speed | Reason it cannot be used |
 |---|---|---|
-| **happy-dom** | 比 jsdom 快 2-3x | 缺 `MutationObserver` / `IntersectionObserver` / `PerformanceObserver` / `requestIdleCallback` 等 PX SDK 必用 API。**PX 第一行 init code 就崩**。 |
-| **linkedom** | 极快（无 JS engine） | **不能跑 JS** —— 只 parse HTML。PX SDK 是 10000 行 JS，linkedom 直接读不进去。 |
-| **deno_dom** | Rust 实现 | Deno 生态独立，curl_cffi / node 包都不能用。Python 协调器接不上。 |
+| **happy-dom** | 2-3x faster than jsdom | Missing `MutationObserver` / `IntersectionObserver` / `PerformanceObserver` / `requestIdleCallback` and other APIs the PX SDK requires. **PX crashes on the very first line of init code.** |
+| **linkedom** | Extremely fast (no JS engine) | **Cannot run JS** — it only parses HTML. The PX SDK is 10000 lines of JS, which linkedom simply cannot load. |
+| **deno_dom** | Rust implementation | The Deno ecosystem is standalone; curl_cffi / node packages cannot be used. The Python coordinator cannot connect to it. |
 
-**结论**：jsdom 是当前唯一可行的 base。要更狠的去 sdenv（jsdom fork）。再狠的去真 Chrome（puppeteer/playwright stealth）。
+**Conclusion**: jsdom is currently the only viable base. For something tougher, go to sdenv (a jsdom fork). For something tougher still, go to real Chrome (puppeteer/playwright stealth).
 
 ---
 
-## 7. 何时升级到 sdenv ⭐
+## 7. When to upgrade to sdenv ⭐
 
-**升级决策树**：
+**Upgrade decision tree**:
 
 ```
-跑通了？─→ 不动它（继续用我们 bridge）
+Working? ─→ leave it alone (keep using our bridge)
    │
-   ▼ 没跑通
+   ▼ not working
    │
-看 stderr / SDK 报错 / response body 特征：
+look at stderr / SDK errors / response body characteristics:
    │
-   ├── HTML px-captcha + 评分极低 → 加更多 env mock，参考 §2.3 差异比对
+   ├── HTML px-captcha + extremely low score → add more env mocks, see §2.3 differential comparison
    │
-   ├── HTML "challenge-platform / Cloudflare" → 加 BR/US 住宅代理 + UA 跟 IP 地区一致
+   ├── HTML "challenge-platform / Cloudflare" → add a BR/US residential proxy + a UA consistent with the IP region
    │
-   ├── SDK 调用 `typeof document.all` 返 'object' → ⭐ 升级 sdenv
+   ├── SDK calls `typeof document.all` and it returns 'object' → ⭐ upgrade to sdenv
    │
-   ├── SDK 调用 `Function.prototype.toString` 检测 native 代码标记 → ⭐ 升级 sdenv
+   ├── SDK calls `Function.prototype.toString` to detect the native-code marker → ⭐ upgrade to sdenv
    │
-   ├── SDK 用 `new Proxy(window, ...)` 在 V8 引擎层检测 → ⭐ 升级 sdenv
+   ├── SDK uses `new Proxy(window, ...)` to detect at the V8 engine layer → ⭐ upgrade to sdenv
    │
-   ├── SDK 检查 `Error().stack` 调用栈含 'jsdom' → ⭐ 升级 sdenv 或改栈名
+   ├── SDK checks `Error().stack` and the call stack contains 'jsdom' → ⭐ upgrade to sdenv or rename the stack
    │
-   └── 评分够但 cookie 老被服务端拒 → 网络层 / TLS / IP 评分问题（curl_cffi chrome131 校准）
+   └── score is high enough but the cookie keeps getting rejected by the server → network-layer / TLS / IP-score issue (calibrate curl_cffi chrome131)
 ```
 
-### sdenv 集成快速指南
+### sdenv integration quick guide
 
 ```bash
-# 1. 装 sdenv
+# 1. install sdenv
 npm install sdenv-jsdom sdenv-extend
 
-# 2. 替换 px_node_bridge.js 顶部
-# 原:
+# 2. replace the top of px_node_bridge.js
+# original:
 const { JSDOM } = require('jsdom');
-# 改成:
-const { JSDOM } = require('sdenv-jsdom');   // jsdom fork 接口兼容
+# change to:
+const { JSDOM } = require('sdenv-jsdom');   // jsdom fork, interface-compatible
 
-# 3. 关键 stub 由 sdenv-extend 提供:
+# 3. key stubs are provided by sdenv-extend:
 const { applyPxPatches } = require('sdenv-extend');
-applyPxPatches(window);   // 这里抽象掉 px_intercept.js 的活
+applyPxPatches(window);   // this abstracts away the work of px_intercept.js
 ```
 
-**注意**：sdenv-extend 自带的 patches 主要针对**瑞数 VMP**，PX-specific 的还是要自己写 plugin。但底层 jsdom fork 已经帮你解决 spec-quirk 类问题。
+**Note**: the patches that ship with sdenv-extend mainly target the **Ruishu VMP**; PX-specific ones still have to be written yourself as a plugin. But the underlying jsdom fork already solves the spec-quirk class of problems for you.
 
-### 何时不升级
+### When not to upgrade
 
-| 场景 | 不升级，继续用我们 bridge |
+| Scenario | Do not upgrade, keep using our bridge |
 |---|---|
-| 跑通了 + 评分够 | 不要画蛇添足 |
-| iFood / Grubhub PX 中等难度 | 我们 bridge 已经足够 |
-| 不愿引入新 jsdom fork 依赖 | 维护两套 jsdom 增加复杂度 |
+| Working + score high enough | Do not gild the lily |
+| iFood / Grubhub PX, medium difficulty | Our bridge is already sufficient |
+| Unwilling to introduce a new jsdom fork dependency | Maintaining two jsdom variants adds complexity |
 
 ---
 
-## 8. 踩坑速查（来自实战）
+## 8. Pitfall quick reference (from real-world practice)
 
-| 现象 | 原因 | 修复 |
+| Symptom | Cause | Fix |
 |---|---|---|
-| `npm install canvas` 失败（MSBuild error） | Windows 缺 MSBuild | `npm install canvas@3` (有 Windows prebuild) |
-| SDK 卡在 `/ns` 不发后续 POST | Node 默认 TLS != Chrome，PX 识别 abort | 必须 Python curl_cffi chrome131，**不能**直接跑 generate_px.js standalone |
-| Bridge 30s timeout 不够拿 _px3 | SDK 链路 4 个 collector POST，慢链路超时 | `px_node_bridge.js` setTimeout 改大到 60s |
-| Python 报 `[Errno 22] Invalid argument` | Node bridge 已 exit，Python 还在 write stdin | px_cookie_generator.py 已加 BrokenPipeError 容错 |
-| 单次 curl 请求超时（15s） | 代理慢链路 + 默认 timeout 太短 | `timeout=30` |
-| 首页访问 403 | 没用对应地区代理（BR for iFood, US for Grubhub） | 设 HTTPS_PROXY 为正确地区住宅 |
-| Proxy 监听报"Cannot redefine property" | jsdom 把某些属性 freeze | fallback 到 `Object.defineProperty` 加 getter |
-| canvas hash 跟真 Chrome 对不上 | `@napi-rs/canvas` 字体配置缺 | 加载 dejavu / liberation 字体集 |
-| `Object.keys(window)` hash 错 | 缺 visualViewport / cookieStore / scheduler 等 prop | 全部补到 `env/px_intercept.js` |
+| `npm install canvas` fails (MSBuild error) | Windows lacks MSBuild | `npm install canvas@3` (has a Windows prebuild) |
+| SDK stuck at `/ns`, does not send subsequent POSTs | Node's default TLS != Chrome, PX detects and aborts | Must use Python curl_cffi chrome131; you **cannot** run generate_px.js standalone directly |
+| Bridge 30s timeout is not enough to get _px3 | The SDK flow has 4 collector POSTs; a slow link times out | Increase the `px_node_bridge.js` setTimeout to 60s |
+| Python reports `[Errno 22] Invalid argument` | The Node bridge has already exited while Python is still writing stdin | px_cookie_generator.py already has BrokenPipeError tolerance |
+| A single curl request times out (15s) | Slow proxy link + default timeout too short | `timeout=30` |
+| Homepage access returns 403 | Not using the corresponding regional proxy (BR for iFood, US for Grubhub) | Set HTTPS_PROXY to a residential proxy in the correct region |
+| Proxy interception reports "Cannot redefine property" | jsdom froze certain properties | Fall back to adding a getter with `Object.defineProperty` |
+| canvas hash does not match real Chrome | `@napi-rs/canvas` is missing font configuration | Load the dejavu / liberation font sets |
+| `Object.keys(window)` hash is wrong | Missing props such as visualViewport / cookieStore / scheduler | Patch them all into `env/px_intercept.js` |
 
 ---
 
-## 9. 工作量预估（参考）
+## 9. Effort estimates (reference)
 
-| 场景 | 工作量 | 工种 |
+| Scenario | Effort | Type of work |
 |---|---|---|
-| 跑通 ifood/ 模板（验证环境） | 30 min | DevOps |
-| **现有 ifood 改 SDK 版本（同 SDK 升级）** | 10 min | 改路径 + 替换文件 |
-| **复制 ifood 模板到新站点（同 PX 厂）** | 4-8 h | 改 5 个常量 + 校准 1-2 个 env 文件 |
-| **适配到新反爬厂（如瑞数）** | 1-3 天 + 考虑升级 sdenv | 写新 plugin |
-| **首次为新反爬厂逆向 + 写 bridge** | 1-2 周 | 高 — 类似 sdenv 作者最初的工作量 |
+| Get the ifood/ template working (verify the environment) | 30 min | DevOps |
+| **Update an existing ifood SDK version (same SDK, upgraded)** | 10 min | Change paths + replace files |
+| **Copy the ifood template to a new site (same PX vendor)** | 4-8 h | Change 5 constants + calibrate 1-2 env files |
+| **Adapt to a new anti-bot vendor (e.g. Ruishu)** | 1-3 days + consider upgrading to sdenv | Write a new plugin |
+| **First-time reverse engineering of a new anti-bot vendor + writing a bridge** | 1-2 weeks | High — comparable to the sdenv author's original effort |
 
 ---
 
-## 10. 写好的 env/ 长什么样（参考 ifood/）
+## 10. What well-written env/ looks like (see ifood/)
 
-每个 env/*.js 文件应该：
+Each env/*.js file should:
 
-1. **顶部注释**写"补什么 + 为啥要补"
-2. **导出一个安装函数**（`installXxx(window)`），由 builder.js 调用
-3. **打印 `[XX] installed`** 让 stderr 能看到加载顺序
-4. **值用真 Chrome dump 来的 hardcode**，不要随机
-5. **支持 `DEBUG=1` env var** 开启 Proxy 监听（5.3 借自 sdenv）
+1. **Top comment** stating "what is being patched + why"
+2. **Export an install function** (`installXxx(window)`), called by builder.js
+3. **Print `[XX] installed`** so the load order is visible in stderr
+4. **Use hardcoded values dumped from real Chrome**, not random ones
+5. **Support a `DEBUG=1` env var** to enable Proxy interception (5.3, borrowed from sdenv)
 
-参考：`node_bridge/ifood/px-node-env/env/navigator.js` 是最标准的实现。
+Reference: `node_bridge/ifood/px-node-env/env/navigator.js` is the most standard implementation.
 
 ---
 
-*方法论 v1.0 · 2026-05-22 · iFood _px3 实战跑通验证*
+*Methodology v1.0 · 2026-05-22 · verified working against iFood _px3 in the field*
