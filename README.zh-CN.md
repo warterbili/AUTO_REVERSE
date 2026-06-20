@@ -4,10 +4,12 @@
 
 <br>
 
+[![CI](https://img.shields.io/github/actions/workflow/status/warterbili/AUTO_REVERSE/validate.yml?style=for-the-badge&label=CI&logo=githubactions&logoColor=white)](https://github.com/warterbili/AUTO_REVERSE/actions/workflows/validate.yml)
 [![License](https://img.shields.io/badge/license-MIT-22c55e?style=for-the-badge)](LICENSE)
 [![Catalog](https://img.shields.io/badge/catalog-750%2B-6366f1?style=for-the-badge)](catalog/)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-plugin-d97757?style=for-the-badge)](#-快速上手)
 [![Python](https://img.shields.io/badge/python-3.10%2B-3776ab?style=for-the-badge&logo=python&logoColor=white)](#b-克隆用于开发--独立使用)
+[![Stars](https://img.shields.io/github/stars/warterbili/AUTO_REVERSE?style=for-the-badge&logo=github&color=f59e0b)](https://github.com/warterbili/AUTO_REVERSE/stargazers)
 [![PRs](https://img.shields.io/badge/PRs-welcome-ec4899?style=for-the-badge)](#-扩展项目)
 
 <samp>**[是什么](#-是什么)** · **[如何运作](#-如何运作)** · **[实战案例](#-实战案例)** · **[快速上手](#-快速上手)** · **[扩展项目](#-扩展项目)** · **[负责任使用](#-负责任使用)**</samp>

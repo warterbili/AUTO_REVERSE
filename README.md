@@ -4,10 +4,12 @@
 
 <br>
 
+[![CI](https://img.shields.io/github/actions/workflow/status/warterbili/AUTO_REVERSE/validate.yml?style=for-the-badge&label=CI&logo=githubactions&logoColor=white)](https://github.com/warterbili/AUTO_REVERSE/actions/workflows/validate.yml)
 [![License](https://img.shields.io/badge/license-MIT-22c55e?style=for-the-badge)](LICENSE)
 [![Catalog](https://img.shields.io/badge/catalog-750%2B-6366f1?style=for-the-badge)](catalog/)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-plugin-d97757?style=for-the-badge)](#-quick-start)
 [![Python](https://img.shields.io/badge/python-3.10%2B-3776ab?style=for-the-badge&logo=python&logoColor=white)](#b-clone-for-development--standalone-use)
+[![Stars](https://img.shields.io/github/stars/warterbili/AUTO_REVERSE?style=for-the-badge&logo=github&color=f59e0b)](https://github.com/warterbili/AUTO_REVERSE/stargazers)
 [![PRs](https://img.shields.io/badge/PRs-welcome-ec4899?style=for-the-badge)](#-extending)
 
 <samp>**[What it is](#-what-it-is)** · **[How it works](#-how-it-works)** · **[Case study](#-case-study)** · **[Quick start](#-quick-start)** · **[Extending](#-extending)** · **[Responsible use](#-responsible-use)**</samp>
