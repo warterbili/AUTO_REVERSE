@@ -20,6 +20,10 @@ All notable changes to auto_reverse are documented here. The format is based on
     url) and drives intake → fingerprint → plan → static → native, writing every artifact
     plus a machine-readable `status.json` and `report.md`. Resumable; phases needing a
     device/GUI/human are emitted as explicit `next_actions` with the exact command — never faked.
+    - **Auto-unpack**: when the fingerprint flags a packer (Tencent Legu / Bangcle / 360
+      etc.) and a device + frida-server are present, runs `frida-dexdump` to dump the
+      released DEX from memory into `unpacked/` (else an honest `needs_device` hand-off).
+      Also flipped the `android-unpacking` skill `archived → active`.
     - **Native auto-targeting**: ranks every `.so` across the splits by detection/crypto
       signal (name + raw-bytes scan for frida/ptrace/maps/AES/HMAC/…, framework libs
       penalised), auto-extracts the top-scored one, and decompiles it headlessly via

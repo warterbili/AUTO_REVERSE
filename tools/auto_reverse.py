@@ -230,6 +230,39 @@ class Run:
         json.dump(plan, open(out, "w", encoding="utf-8"), indent=2, ensure_ascii=False)
         self.record("2-plan", "ok", f"playbook={pb}", out)
 
+    def unpack(self):
+        """If the fingerprint found a packer, dump the released DEX from memory (frida-dexdump)."""
+        fp = self._fp()
+        packing = (fp.get("packing") or "").lower()
+        if not packing or "none" in packing:
+            self.record("1b-unpack", "skipped", "not packed (real dex present)"); return
+        outdir = self.d("unpacked")
+        if os.path.isdir(outdir) and any(f.endswith(".dex") for f in os.listdir(outdir)) and not self.force:
+            self.record("1b-unpack", "cached", "unpacked dex already present"); return
+        pkg, serial = self._pkg(), self._adb_device()
+        if not serial or pkg == "<package>":
+            self.record("1b-unpack", "needs_device",
+                        f"packed ({packing.split(';')[0]}) — needs a device with the app installed to dump DEX from memory")
+            self.need("unpack", "run the app on a device and dump the real DEX the packer releases",
+                      f"frida-dexdump -U -f {pkg} -o {outdir}")
+            return
+        if not sh(["adb", "-s", serial, "shell", "pidof", "frida-server"], timeout=8)[1].strip():
+            self.record("1b-unpack", "needs_device", f"device {serial} present but frida-server not running")
+            self.need("frida-server", "start frida-server, then dump the released DEX",
+                      f"python tools/adapters/frida_server.py  # then: frida-dexdump -U -f {pkg} -o {outdir}")
+            return
+        fdd = ensure_tool("frida-dexdump") or "frida-dexdump"
+        os.makedirs(outdir, exist_ok=True)
+        print(f"  [unpack] {os.path.basename(str(fdd))} -U -f {pkg} → unpacked/  (spawns app, dumps released DEX)")
+        rc, o, e = sh([fdd, "-U", "-f", pkg, "-o", outdir], timeout=300)
+        dex = [f for f in os.listdir(outdir) if f.endswith(".dex")] if os.path.isdir(outdir) else []
+        if dex:
+            self.record("1b-unpack", "ok", f"dumped {len(dex)} real DEX → unpacked/ (decompile THESE, not the stub)", outdir)
+        else:
+            self.record("1b-unpack", "partial", f"frida-dexdump returned no DEX: {(e or o).strip()[:80]}")
+            self.need("unpack", "frida-dexdump got nothing — try a stronger unpacker",
+                      f"python tools/fetch.py frida-dex-dump   # or BlackDex / youpk / fart from catalog")
+
     def static(self):
         out = self.d("03-static", "findings.json")
         if self.have("03-static/findings.json"):
@@ -462,7 +495,7 @@ class Run:
 
     def go(self):
         print(f"[auto_reverse] target={self.target} type={self.type} → workspace/{self.slug}/")
-        self.init(); self.intake(); self.fingerprint(); self.plan()
+        self.init(); self.intake(); self.fingerprint(); self.unpack(); self.plan()
         self.static(); self.native(); self.dynamic_and_verify(); self.finalize()
 
 

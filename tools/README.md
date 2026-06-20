@@ -8,7 +8,7 @@ sub-folder nesting (which would only lengthen the invocation paths).
 
 | Tool | What it does |
 |---|---|
-| **`auto_reverse.py`** | **The headless from-zero driver.** `python tools/auto_reverse.py <apk\|package-id\|url>` runs intake → fingerprint → plan → static → native (auto-targets the .so), writes every artifact + `status.json` + `report.md`. Resumable. **Missing tools (jadx/ghidra/…) are auto-fetched into the project** (`tools/bin` / `.venv`) via `fetch.py`, then used — so it works on a fresh clone. `--auto-capture` adds a hands-off dynamic capture; phases needing a device/GUI/human become explicit `next_actions` (never faked). |
+| **`auto_reverse.py`** | **The headless from-zero driver.** `python tools/auto_reverse.py <apk\|package-id\|url>` runs intake → fingerprint → **unpack (auto frida-dexdump if a packer is detected + a device is present)** → plan → static → native (auto-targets the .so), writes every artifact + `status.json` + `report.md`. Resumable. **Missing tools (jadx/ghidra/frida-dexdump/…) are auto-fetched into the project** (`tools/bin` / `.venv`) via `fetch.py`, then used — so it works on a fresh clone. `--auto-capture` adds a hands-off dynamic capture; phases needing a device/GUI/human become explicit `next_actions` (never faked). |
 | **`oracle.py`** | **Phase-7 verifier.** `oracle.py replay --from 06-synthesize/request.json --expect-status 200` — replays a synthesized request and judges the response (exit 0 = VERIFIED, 1 = REJECTED). What makes a run self-checking instead of hallucinated. |
 | **`workspace.py`** | `workspace.py init <target>` — scaffold `workspace/<slug>/{00-intake … 07-verify}` + a `meta.json` stub. |
 

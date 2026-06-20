@@ -19,10 +19,10 @@ entries:
      capability: "jadx/Vineflower decompilation + Kotlin/R8 name recovery + modern-framework API extraction (Retrofit/Ktor/Apollo)",
      when_to_use: "When the target is Kotlin / heavily R8-obfuscated, or when batch-extracting API endpoints + call chains",
      source: https://github.com/SimoneAvogadro/android-reverse-engineering-skill, note: "Can be upgraded for free to the Vineflower 1.12+ engine"}
-  - {id: android-unpacking, name: Android Unpacking, type: skill, domain: android, bundled: true, status: archived,
-     capability: "frida-dexdump in-memory DEX dumping",
+  - {id: android-unpacking, name: Android Unpacking, type: skill, domain: android, bundled: true, status: active,
+     capability: "frida-dexdump in-memory DEX dumping (whole-release packers: Tencent Legu / Bangcle / 360). Auto-run by tools/auto_reverse.py when a packer is fingerprinted and a device is present.",
      when_to_use: "When jadx shows only the packer stub and not the real business code (packed/hardened apps)",
-     source: https://github.com/hluwa/frida-dexdump, note: "frida-dexdump is archived; for newer packers prefer frida_dex_dump below"}
+     source: https://github.com/hluwa/frida-dexdump, note: "the bundled skill is active; the underlying frida-dexdump upstream is archived — for newer/aggressive packers prefer frida_dex_dump / BlackDex / FART below"}
   - {id: frida-hooking, name: Frida Hooking, type: skill, domain: android, bundled: true, status: active,
      capability: "Java/Native hooking, RegisterNatives tracing, strace",
      when_to_use: "When you need to precisely hook a specific method / native function to capture arguments → return values",
