@@ -1,5 +1,14 @@
 # auto_reverse global configuration. The installer/adapters read from here; users can override in config/local.yaml (gitignored).
 # Key rule: never hard-code personal absolute paths — use placeholders or a "logical name on PATH."
+#
+# PERSONAL TOOL PATHS (for any agent/user reading this): if you keep reversing tools outside PATH
+# (e.g. a portable jadx/ghidra/wireshark under your home dir), register them in config/local.yaml
+# (gitignored — only your machine) so doctor.py / auto_reverse find them:
+#   tool_paths:                  # explicit <tool-id> -> absolute path (use when the dir name != tool, e.g. wireshark/ holds tshark)
+#     tshark: C:/Users/you/AppData/wireshark/tshark.exe
+#   tool_search_roots:           # roots scanned (root/*, root/AppData/*, each + /bin) for a tool's binary
+#     - C:/Users/you/AppData
+# _toolspec.resolve() checks these first, so your local installs show up without editing shared code.
 
 paths:
   tools_root_env: AUTO_REVERSE_TOOLS    # environment variable name pointing to the tools install dir (on this machine = auto_reverseTOOL)
