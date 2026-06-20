@@ -130,5 +130,5 @@ All notable changes to auto_reverse are documented here. The format is based on
 - **Claude Code plugin** manifest (`.claude-plugin/marketplace.json`).
 - First sanitized end-to-end case study: `cases/dailypay-castleio-android/`.
 
-[Unreleased]: https://github.com/<your-org>/auto_reverse/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/<your-org>/auto_reverse/releases/tag/v0.1.0
+[Unreleased]: https://github.com/warterbili/AUTO_REVERSE/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/warterbili/AUTO_REVERSE/releases/tag/v0.1.0

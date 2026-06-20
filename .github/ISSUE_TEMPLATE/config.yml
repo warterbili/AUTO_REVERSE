@@ -1,8 +1,8 @@
 blank_issues_enabled: false
 contact_links:
   - name: 🔒 Report a security vulnerability
-    url: https://github.com/<your-org>/auto_reverse/security/advisories/new
+    url: https://github.com/warterbili/AUTO_REVERSE/security/advisories/new
     about: Privately report a vulnerability in the project itself (see SECURITY.md). Do not open a public issue.
   - name: 💬 Questions & discussion
-    url: https://github.com/<your-org>/auto_reverse/discussions
+    url: https://github.com/warterbili/AUTO_REVERSE/discussions
     about: Ask a question or discuss an approach.

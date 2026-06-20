@@ -168,7 +168,7 @@ end-to-end verified**. → Read the full write-up:
 The repo ships a plugin manifest (`.claude-plugin/marketplace.json`). Add it as a marketplace and install the `auto-reverse` plugin, which registers the **brain** orchestrator skill:
 
 ```
-/plugin marketplace add <your-org>/auto_reverse
+/plugin marketplace add warterbili/AUTO_REVERSE
 /plugin install auto-reverse
 ```
 
@@ -182,7 +182,7 @@ Then just tell Claude Code what you want, e.g. *"reverse this APK"* or *"find th
 <br>
 
 ```bash
-git clone <repo-url> auto_reverse
+git clone https://github.com/warterbili/AUTO_REVERSE.git auto_reverse
 cd auto_reverse
 ```
 

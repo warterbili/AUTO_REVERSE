@@ -169,7 +169,7 @@ stateDiagram-v2
 仓库自带一个插件清单（`.claude-plugin/marketplace.json`）。把它添加为一个市场（marketplace），再安装 `auto-reverse` 插件，即可注册**大脑**编排器技能：
 
 ```
-/plugin marketplace add <your-org>/auto_reverse
+/plugin marketplace add warterbili/AUTO_REVERSE
 /plugin install auto-reverse
 ```
 
@@ -183,7 +183,7 @@ stateDiagram-v2
 <br>
 
 ```bash
-git clone <repo-url> auto_reverse
+git clone https://github.com/warterbili/AUTO_REVERSE.git auto_reverse
 cd auto_reverse
 ```
 
