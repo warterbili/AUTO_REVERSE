@@ -15,12 +15,30 @@ Cross-platform, zero third-party dependencies.
 """
 import argparse
 import json
+import subprocess
 import sys
 
 sys.path.insert(0, __import__("os").path.dirname(__import__("os").path.abspath(__file__)))
 from _toolspec import TOOLS, resolve, OSKEY, PROJECT_ROOT  # noqa: E402
 
-PRESENT = {"present-venv", "present-bin", "present-path", "present-venv?"}
+PRESENT = {"present-venv", "present-bin", "present-path", "present-venv?", "present-device"}
+
+
+def frida_server_on_device():
+    """frida-server is a device-side binary, not a host tool. If an adb device has it
+    running, report that instead of a misleading 'missing' (it lives on the phone)."""
+    try:
+        devs = subprocess.run(["adb", "devices"], capture_output=True, text=True, timeout=8)
+        lines = [l for l in devs.stdout.splitlines()[1:] if "\tdevice" in l]
+        if not lines:
+            return None
+        serial = lines[0].split("\t")[0]
+        ps = subprocess.run(["adb", "-s", serial, "shell", "pidof", "frida-server"],
+                            capture_output=True, text=True, timeout=8)
+        pid = ps.stdout.strip()
+        return f"running on device {serial} (pid {pid})" if pid else None
+    except Exception:
+        return None
 
 
 def scan(domain=None):
@@ -31,6 +49,10 @@ def scan(domain=None):
         if spec.get("os") and OSKEY not in spec["os"]:
             continue  # tool not applicable to the current OS (e.g. GDA is Windows-only)
         status, loc = resolve(tid)
+        if tid == "frida-server" and status not in PRESENT:
+            dev = frida_server_on_device()
+            if dev:
+                status, loc = "present-device", dev
         rows.append({"id": tid, "domain": spec.get("domain"), "kind": spec["kind"],
                      "status": status, "location": loc, "present": status in PRESENT,
                      "optional": spec.get("optional", False), "alt": spec.get("alt", []),

@@ -1,6 +1,7 @@
-# Per-target artifacts (including APK/.so/plaintext traffic) — not committed; only the sanitized cases/ are committed
+# The workspace/ dir itself is committed (other users need it; it's the designated working area),
+# but per-target artifacts inside it (APK/.so/plaintext traffic) are NOT — only sanitized cases/ are.
 workspace/*
-!workspace/.gitkeep
+!workspace/README.md
 
 # Machine-specific / generated
 config/local.yaml
@@ -10,7 +11,12 @@ config/local.yaml
 # Scratch / planning notes (not committed)
 tmp/
 
+# MCP server runtime workspaces (regenerated at runtime; not committed)
+apktool_mcp_server_workspace/
+
 # python / node
+.venv/
+venv/
 __pycache__/
 *.pyc
 node_modules/

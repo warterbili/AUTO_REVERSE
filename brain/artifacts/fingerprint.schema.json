@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "auto_reverse/fingerprint.schema.json",
+  "title": "Phase 1 — fingerprint.json",
+  "type": "object",
+  "required": ["phase", "status", "target", "app_framework", "next_chain", "open_questions"],
+  "additionalProperties": true,
+  "properties": {
+    "phase": {"const": "fingerprint"},
+    "status": {"enum": ["ok", "partial", "blocked"]},
+    "target": {"type": "string"},
+    "acquired": {"type": "array", "items": {"type": "string"}},
+    "app_framework": {
+      "type": "string",
+      "description": "e.g. 'React Native + Hermes', 'Flutter', 'Unity/IL2CPP', 'Native Java/Kotlin'"
+    },
+    "evidence_framework": {"type": "array", "items": {"type": "string"}},
+    "packing": {"type": "string", "description": "'none' or the detected packer"},
+    "dex_count": {"type": "integer"},
+    "protections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "evidence"],
+        "properties": {
+          "name": {"type": "string"},
+          "evidence": {"type": "string"},
+          "impact": {"type": "string"}
+        }
+      }
+    },
+    "antibot_fingerprint_sdks": {
+      "type": "array",
+      "description": "dedicated anti-bot / risk SDKs — these take precedence over the framework row",
+      "items": {
+        "type": "object",
+        "required": ["name", "evidence"],
+        "properties": {
+          "name": {"type": "string"},
+          "layer": {"type": "string"},
+          "package": {"type": "string"},
+          "evidence": {"type": "string"},
+          "header": {"type": "string"},
+          "route_to": {"type": "string", "description": "the skill/target to route to (e.g. castle-reverse)"}
+        }
+      }
+    },
+    "coverage_check": {
+      "type": "string",
+      "description": "result of checking catalog/targets.yaml — covered (which asset) or genuinely uncovered"
+    },
+    "next_chain": {"type": "string", "description": "the analysis chain this fingerprint dictates"},
+    "open_questions": {"type": "array", "items": {"type": "string"}}
+  }
+}

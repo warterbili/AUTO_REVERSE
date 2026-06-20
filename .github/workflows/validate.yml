@@ -1,0 +1,56 @@
+name: validate catalog
+
+on:
+  # Run on anything the validators read — catalog/skills/cases AND the docs whose counts
+  # doccheck enforces (README/brain/AGENTS) AND the checker scripts themselves (tools/).
+  push:
+    branches: [main]
+    paths:
+      - "catalog/**"
+      - "skills/**"
+      - "cases/**"
+      - "tools/**"
+      - "brain/**"
+      - "mcp/**"
+      - "TARGETS.md"
+      - "README.md"
+      - "README.zh-CN.md"
+      - "AGENTS.md"
+      - ".github/workflows/validate.yml"
+  pull_request:
+    paths:
+      - "catalog/**"
+      - "skills/**"
+      - "cases/**"
+      - "tools/**"
+      - "brain/**"
+      - "mcp/**"
+      - "TARGETS.md"
+      - "README.md"
+      - "README.zh-CN.md"
+      - "AGENTS.md"
+      - ".github/workflows/validate.yml"
+
+jobs:
+  validate:
+    name: catalog schema + unique ids + targets index
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dev dependency (pyyaml)
+        run: python -m pip install --upgrade pyyaml
+
+      - name: Validate catalog
+        run: python catalog/validate.py
+
+      - name: Smoke-test catalog (lint — install schemes, placeholders, source URLs)
+        run: python tools/smoketest.py lint
+
+      - name: Doc-drift check (README counts vs live catalog/skills)
+        run: python tools/doccheck.py

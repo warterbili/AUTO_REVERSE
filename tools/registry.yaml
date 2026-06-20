@@ -94,12 +94,17 @@ native:
     check: "ida/idat present"
     optional: true
   - id: capa
-    purpose: Native capability identification (crypto/anti-debug/network + addresses)
+    purpose: Native capability identification (crypto/anti-debug/network + addresses). NOTE pip capa has no rules — fetch capa-rules and pass -r; arm64 needs --backend ghidra.
     install: "pip install flare-capa"
     url: https://github.com/mandiant/capa
     check: "capa --version"
+  - id: capa-rules
+    purpose: Rule set for capa (required — pip capa ships without it). Pass via 'capa -r tools/bin/capa-rules'. Use the tag matching your capa version.
+    install: "git clone --depth 1 https://github.com/mandiant/capa-rules"
+    url: https://github.com/mandiant/capa-rules
+    check: "test -d tools/bin/capa-rules"
   - id: floss
-    purpose: .so string deobfuscation (stack/encoded strings)
+    purpose: String deobfuscation for Windows PE / shellcode ONLY (rejects ELF/.so). For Android .so use strings / rabin2 / Ghidra.
     install: "pip install flare-floss"
     url: https://github.com/mandiant/flare-floss
     check: "floss --version"

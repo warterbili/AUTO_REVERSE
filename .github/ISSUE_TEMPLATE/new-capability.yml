@@ -1,0 +1,69 @@
+name: "➕ New capability (catalog entry)"
+description: Propose a tool, skill, MCP server, or script to add to the catalog.
+title: "[catalog] add <tool name>"
+labels: ["catalog", "enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for growing the catalog! Most capabilities are just one YAML entry.
+        See [`catalog/SCHEMA.md`](../../catalog/SCHEMA.md) and
+        [CONTRIBUTING.md](../CONTRIBUTING.md). **Write everything in English.**
+  - type: input
+    id: name
+    attributes:
+      label: Name
+      placeholder: My Tool
+    validations:
+      required: true
+  - type: dropdown
+    id: domain
+    attributes:
+      label: Domain
+      options: [android, ios, native, windows, web, framework, mcp]
+    validations:
+      required: true
+  - type: dropdown
+    id: type
+    attributes:
+      label: Type
+      options: [tool, skill, mcp, script, agent, platform]
+    validations:
+      required: true
+  - type: input
+    id: source
+    attributes:
+      label: Source URL
+      placeholder: https://github.com/owner/my-tool
+    validations:
+      required: true
+  - type: textarea
+    id: capability
+    attributes:
+      label: Capability (one line)
+      description: What does it do?
+    validations:
+      required: true
+  - type: textarea
+    id: when_to_use
+    attributes:
+      label: when_to_use (★ the routing key)
+      description: >
+        Be concrete — name the situation, the target type, and when to prefer this over
+        alternatives. This is how the brain decides to call it.
+    validations:
+      required: true
+  - type: input
+    id: install
+    attributes:
+      label: Install command (for bundled:false tools)
+      placeholder: pip install my-tool   ·   or leave blank if obtained manually from source
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: This capability is not already in the catalog.
+          required: true
+        - label: I will use it only against authorized targets (see SECURITY.md).
+          required: true

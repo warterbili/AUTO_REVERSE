@@ -53,8 +53,12 @@ def main():
             # ── non-fatal warnings ──
             if fdom and e.get("domain") != fdom:
                 warnings.append(f"{where}: domain '{e.get('domain')}' != file domain '{fdom}' (may mis-route)")
-            if e.get("bundled") is False and e.get("type") in INSTALLABLE and not e.get("install"):
-                warnings.append(f"{where}: bundled:false {e.get('type')} has no install command")
+            # An on-demand tool must be provisionable: either an `install` command
+            # (auto-fetchable) or at least a `source` URL (obtained manually). An
+            # entry with neither cannot be provisioned at all — that's the real bug.
+            if (e.get("bundled") is False and e.get("type") in INSTALLABLE
+                    and not e.get("install") and not e.get("source")):
+                warnings.append(f"{where}: bundled:false {e.get('type')} has neither install nor source — not provisionable")
 
     if warnings:
         print(f"⚠️  {len(warnings)} warning(s):")
@@ -64,6 +68,22 @@ def main():
         print("\n".join("  " + x for x in errors))
         sys.exit(1)
     print(f"✅ catalog validation passed: {total} entries, all ids unique.")
+
+    # Also validate the target-coverage index (catalog/targets.yaml ↔ TARGETS.md).
+    sys.path.insert(0, HERE)
+    import targets as targets_mod
+    t_errors, t_warnings = targets_mod.validate(targets_mod.load_targets(), set(seen))
+    if t_warnings:
+        print(f"⚠️  targets.yaml: {len(t_warnings)} warning(s):")
+        print("\n".join("  " + x for x in t_warnings))
+    if t_errors:
+        print(f"❌ targets.yaml: {len(t_errors)} issue(s):")
+        print("\n".join("  " + x for x in t_errors))
+        sys.exit(1)
+    if open(targets_mod.TARGETS_MD, encoding="utf-8").read() != targets_mod.render(targets_mod.load_targets()):
+        print("❌ TARGETS.md is out of sync with targets.yaml. Run: python catalog/targets.py --write")
+        sys.exit(1)
+    print("✅ targets index passed: TARGETS.md in sync with targets.yaml.")
 
 
 if __name__ == "__main__":

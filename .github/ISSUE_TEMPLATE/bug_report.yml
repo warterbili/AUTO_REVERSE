@@ -1,0 +1,47 @@
+name: "🐞 Bug report"
+description: Something in the brain, tooling, or a bundled skill is broken.
+title: "[bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Do not** paste real credentials, private keys, customer data, or unredacted
+        third-party traffic. For a security vulnerability in the project itself, follow
+        [SECURITY.md](../SECURITY.md) instead of opening a public issue.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. ...
+        2. ...
+    validations:
+      required: true
+  - type: textarea
+    id: env
+    attributes:
+      label: Environment
+      description: OS, Python / JDK / Node versions, and which component (brain / catalog / tools / a skill).
+      placeholder: |
+        OS:        Windows 11
+        Python:    3.11
+        Component: tools/fetch.py
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: I reproduced this against the current `main`.
+          required: true
+        - label: My report contains no real credentials, keys, or PII.
+          required: true

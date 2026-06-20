@@ -1,0 +1,107 @@
+# Target coverage index — the single source of truth for TARGET-SPECIFIC reversing assets.
+#
+# This file answers ONE question: "have we already reversed target X, and where is it?"
+# It is NOT the capability catalog (that's android.yaml/web.yaml/... — generic tools &
+# methodologies). This file lists only assets tied to a concrete product/SDK.
+#
+# Maintained as data; validated and rendered by catalog/targets.py:
+#   python catalog/targets.py --check     # validate + verify TARGETS.md is in sync
+#   python catalog/targets.py --write     # regenerate TARGETS.md from this file
+#
+# Field reference
+#   id         unique, kebab-case
+#   name       display name
+#   aliases    keywords/package names that should resolve to this target (routing hints)
+#   domain     android | ios | native | windows | web
+#   protection one line: the protection/SDK and what is signed/encrypted
+#   approach   pure-algorithm | rpc-bypass | env-patching   (how it was solved)
+#   status     in-repo | in-repo+case | pointer-only
+#   assets[]   each: {kind, ref, path|url}
+#                kind  skill | case | script | tool | pointer
+#                ref   a catalog/*.yaml entry id (validated to exist)
+#                path  in-repo path (validated to exist on disk)   — for kind skill/case
+#                url   external URL                                 — for kind pointer
+#   summary    one line: what is reversed / produced
+
+targets:
+  - id: bilibili
+    name: Bilibili
+    aliases: [B站, tv.danmaku.bili, BiliDroid, libbili.so, "appkey 1d8b6e7d45233436"]
+    domain: android
+    protection: APP-API `sign` (sorted-params MD5 + 4×uint32 secret in libbili.so), `x-bili-ticket` (HMAC-SHA256 JWT), `access_key` OAuth2 dual-token refresh
+    approach: pure-algorithm
+    status: in-repo
+    assets:
+      - {kind: skill, ref: bilibili-reverse, path: skills/android/bilibili-reverse}
+    summary: Full native-Java algorithm reconstruction — regenerate sign/ticket/access_key and replay any signed endpoint.
+
+  - id: castle-io
+    name: Castle.io
+    aliases: [io.castle.android, Highwind, X-Castle-Request-Token, x-castle-client-id, __cuid]
+    domain: web
+    protection: Castle anti-bot/device-fingerprint token — Android native v3.1.1 (hex-fp + 3-layer nibble-XOR + base64url) and web v11
+    approach: pure-algorithm
+    status: in-repo+case
+    assets:
+      - {kind: skill, ref: castle-reverse, path: skills/web/castle-reverse}
+      - {kind: case, path: cases/dailypay-castleio-android}
+    summary: Generator + decoder for X-Castle-Request-Token / x-castle-client-id; end-to-end verified on DailyPay (see case).
+
+  - id: perimeterx
+    name: PerimeterX / HUMAN
+    aliases: [_px3, _px2, _pxN, px-cloud.net, "sensor.grubhub.com", HUMAN Security]
+    domain: web
+    protection: PerimeterX/HUMAN sensor — _pxN cookies (payload/HMAC/OB/SID modules; WASM PoW)
+    approach: pure-algorithm
+    status: in-repo
+    assets:
+      - {kind: skill,   ref: px-reverse,               path: skills/web/px-reverse}
+      - {kind: skill,   ref: node-bridge-build,        path: skills/web/node-bridge-build}
+      - {kind: pointer, ref: perimeterx-re-warterbili, url: https://github.com/warterbili/PerimeterX_RE}
+      - {kind: pointer, ref: px3cookie-warterbili,     url: https://github.com/warterbili/px3cookie}
+    summary: Pure-algorithm _px3/_px2 cookie generation (no browser); jsdom env-patching bridge as fallback.
+
+  - id: ruishu
+    name: Ruishu / Rivers Security
+    aliases: [瑞数, Rivers, HTTP 412, "$_ts.cd", "$_ts.nsd", Cookie T]
+    domain: web
+    protection: Ruishu 412 protection — Cookie T generation + URL suffix (VM bytecode → Huffman/XOR/AES-CBC/CRC32)
+    approach: pure-algorithm
+    status: in-repo
+    assets:
+      - {kind: skill,   ref: ruishu-reverse,            path: skills/web/ruishu-reverse}
+      - {kind: pointer, ref: ruishu-reverse-walkthrough, url: https://github.com/warterbili/ruishu-re}
+    summary: Pure-algorithm Cookie T derivation; JsRpc universal-bypass as the alternate route.
+
+  - id: akamai
+    name: Akamai Bot Manager
+    aliases: [_abck, bm_sz, ak_bmsc, sbsd, sensor_data, BMP]
+    domain: web
+    protection: Akamai Bot Manager — _abck/bm_sz handshake + sensor_data POST (web sensor vs mobile BMP)
+    approach: pure-algorithm
+    status: in-repo
+    assets:
+      - {kind: skill, ref: akamai-reverse, path: skills/web/akamai-reverse}
+    summary: Fingerprint Akamai by its cookies and reverse the sensor_data / _abck handshake.
+
+  - id: bosszhipin
+    name: BOSS直聘 (Boss Zhipin)
+    aliases: [zhipin.com, __zp_stoken__, zp_token, zp_stoken, 直聘]
+    domain: web
+    protection: Boss Zhipin anti-crawler (`__zp_stoken__`) — strong anti-debugging + login-state binding
+    approach: rpc-bypass
+    status: pointer-only
+    assets:
+      - {kind: pointer, ref: bosszhipin-reverse-warterbili, url: https://github.com/warterbili/BossZhipin_reverse}
+    summary: NOT reversed as an algorithm — mitm-RPC pattern drives an already-logged-in real browser (see jsrpc-universal). Algorithm body lives in the external repo.
+
+  - id: shopee-food
+    name: Shopee Food (Vietnam)
+    aliases: [shopeefood, ShopeeFood, foody]
+    domain: web
+    protection: Shopee Food request signing (native signature)
+    approach: pure-algorithm
+    status: pointer-only
+    assets:
+      - {kind: pointer, ref: shopee-food-reverse-warterbili, url: https://github.com/warterbili/shopee_food_reverse}
+    summary: Pure-algorithm request-signature reimplementation (no browser/RPC). Lives in the external repo; not yet bundled in-repo.

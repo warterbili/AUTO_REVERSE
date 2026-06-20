@@ -1460,3 +1460,11 @@ entries:
      capability: "RAFT: self-hosted REST API Fuzz Testing service (Azure) bundling RESTler and other tools to embed API fuzzing into CI/CD.",
      when_to_use: "Fuzz / security-test a REST or GraphQL API from its OpenAPI/Swagger/GraphQL schema (property-based or mutation) on an authorized target.",
      source: https://github.com/microsoft/rest-api-fuzz-testing, install: "git clone https://github.com/microsoft/rest-api-fuzz-testing"}
+  - {id: humanify, name: "humanify", type: tool, domain: web, bundled: false, status: active,
+     capability: "LLM JS deobfuscator/un-minifier (jehna): the model only guesses identifier names while oxc does deterministic AST renames preserving scope/refs; supports OpenAI/Claude/Gemini/local Ollama; single binary, stdin/stdout, chains with webcrack. (v3+ is a Rust binary; pre-built releases also available.)",
+     when_to_use: "You have minified/obfuscated JS and want readable variable/function names without changing behaviour; run after webcrack unbundling.",
+     source: https://github.com/jehna/humanify, install: "cargo install --git https://github.com/jehna/humanify"}
+  - {id: jsir, name: "Google jsir / JSIR", type: tool, domain: web, bundled: false, status: active,
+     capability: "Google's open-source MLIR-based JavaScript IR framework behind CASCADE — replaces thousands of hand-written deobfuscation rules with compiler-IR passes to recover original strings and API names.",
+     when_to_use: "Building a robust IR-based JS deobfuscation pipeline (vs ad-hoc AST rules) — the framework Google's deployed CASCADE deobfuscator is built on; heavier setup (Bazel/MLIR).",
+     source: https://github.com/google/jsir, install: "git clone https://github.com/google/jsir"}

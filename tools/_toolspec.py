@@ -57,6 +57,9 @@ TOOLS = {
     "adb":    {"kind": "runtime", "domain": "android", "bin": "adb",
                "url": "https://developer.android.com/tools/releases/platform-tools",
                "note": "Android platform-tools; after extracting, add the directory to PATH"},
+    "tshark": {"kind": "runtime", "domain": "native", "bin": "tshark", "optional": True,
+               "url": "https://www.wireshark.org/download.html",
+               "note": "Wireshark CLI (pcap capture/analysis; needs Npcap). Not on PATH? register it in config/local.yaml (gitignored)."},
 
     # ── Android static ──
     "jadx": {"kind": "github-zip", "domain": "android", "bin": "jadx",
@@ -117,9 +120,80 @@ TOOLS = {
 }
 
 
+_LOCAL_CFG_CACHE = None
+
+
+def _local_config():
+    """Read config/local.yaml (gitignored personal overrides). pyyaml if present, else a
+    minimal fallback parser for `tool_paths:` (map) and `tool_search_roots:` (list).
+    Cached. Returns {} when absent — so other users are entirely unaffected."""
+    global _LOCAL_CFG_CACHE
+    if _LOCAL_CFG_CACHE is not None:
+        return _LOCAL_CFG_CACHE
+    cfg, path = {}, PROJECT_ROOT / "config" / "local.yaml"
+    if path.exists():
+        text = path.read_text(encoding="utf-8")
+        try:
+            import yaml
+            cfg = yaml.safe_load(text) or {}
+        except Exception:
+            cur = None
+            for raw in text.splitlines():
+                line = raw.split("#", 1)[0].rstrip()
+                if not line.strip():
+                    continue
+                if not line.startswith((" ", "\t")):
+                    key = line.split(":", 1)[0].strip()
+                    cfg[key] = {} if key == "tool_paths" else []
+                    cur = cfg[key]
+                else:
+                    s = line.strip()
+                    if isinstance(cur, list) and s.startswith("- "):
+                        cur.append(s[2:].strip())
+                    elif isinstance(cur, dict) and ":" in s:
+                        k, v = s.split(":", 1)
+                        cur[k.strip()] = v.strip()
+    _LOCAL_CFG_CACHE = cfg
+    return cfg
+
+
+def _personal_resolve(tool_id, spec):
+    """Find a tool via the user's personal config (explicit path, then search roots). Returns a path or None."""
+    cfg = _local_config()
+    p = (cfg.get("tool_paths") or {}).get(tool_id)
+    if p:
+        p = os.path.expanduser(os.path.expandvars(str(p)))
+        if os.path.exists(p):
+            return p
+    roots = cfg.get("tool_search_roots") or []
+    if not roots:
+        return None
+    import glob as _glob
+    binname = (spec or {}).get("bin") or (spec or {}).get("run") or tool_id
+    names = [binname + e for e in ((".exe", ".bat", ".cmd", "") if IS_WIN else ("",))]
+    for root in roots:
+        root = os.path.expanduser(os.path.expandvars(str(root)))
+        if not os.path.isdir(root):
+            continue
+        dirs = [root]
+        for pat in (os.path.join(root, "*"), os.path.join(root, "AppData", "*")):
+            dirs += [d for d in _glob.glob(pat) if os.path.isdir(d)]
+        for d in dirs:
+            for sub in ("", "bin"):
+                for nm in names:
+                    cand = os.path.join(d, sub, nm)
+                    if os.path.isfile(cand):
+                        return cand
+    return None
+
+
 def resolve(tool_id):
     """Return (status, location). status is one of present-venv|present-bin|present-path|missing."""
     spec = TOOLS.get(tool_id)
+    # personal override (config/local.yaml — gitignored) wins, so doctor reflects YOUR installs
+    pp = _personal_resolve(tool_id, spec)
+    if pp:
+        return "present-path", pp
     if not spec:
         return "unknown", None
     # pip: run script in the project venv -> system PATH

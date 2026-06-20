@@ -276,6 +276,10 @@ entries:
      capability: "Java unidbg-based emulation service that produces Meituan mtgsig 2.3 signatures, with native JNI env-patching wired up.",
      when_to_use: "When Meituan requests are rejected without mtgsig (version 2.3) and you want to generate it by emulating the app .so under unidbg as an HTTP service rather than calling a device. Reference for mtgsig 2.3 env-patching.",
      source: https://github.com/irabbit666666/unidbg-mt-server23, install: "git clone https://github.com/irabbit666666/unidbg-mt-server23"}
+  - {id: uiautomator2, name: "uiautomator2", type: tool, domain: android, bundled: false, status: active,
+     capability: "Python UI automation for Android (openatx): launch apps, find elements by text/resource-id, tap/swipe/type — richer than raw adb input. Backs unattended dynamic capture (drive the app while frida-mitm records).",
+     when_to_use: "You need to drive an app's UI without a human — replay a recorded tap-flow to hit a specific signed action during capture, or exercise the app to generate traffic. Used by tools/ui_exercise.py / auto_reverse.py --auto-capture (which also works with plain adb).",
+     source: https://github.com/openatx/uiautomator2, install: "pip install uiautomator2"}
   - {id: akamai-bmp-decrypt-yoghurtbot, name: "yoghurtbot/akamai-bmp-decrypt", type: script, domain: android, bundled: false, status: active,
      capability: "Snippet demonstrating how to decrypt the sensor strings produced by the Akamai Mobile SDK (BMP).",
      when_to_use: "When analyzing Akamai BMP (mobile SDK) traffic and you need to decrypt/inspect the encrypted sensor string from an Android app to understand its fields. Mobile BMP path, distinct from web sensor_data.",

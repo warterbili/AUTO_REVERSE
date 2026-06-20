@@ -177,7 +177,7 @@ entries:
   - {id: llm4decompile, name: "LLM4Decompile", type: tool, domain: native, bundled: false, status: active,
      capability: "Open LLM family (1.3B-33B) trained to decompile x86_64 binaries to C and to refine/clean Ghidra pseudocode into readable source.",
      when_to_use: "You have raw x86_64 assembly or messy Ghidra pseudocode and want an LLM to produce readable, recompilable-ish C to speed up understanding a function.",
-     source: https://github.com/albertan017/LLM4Decompile, install: "pip install llm4decompile"}
+     source: https://github.com/albertan017/LLM4Decompile, install: "git clone https://github.com/albertan017/LLM4Decompile"}
   - {id: reverser-ai, name: "reverser_ai", type: tool, domain: native, bundled: false, status: active,
      capability: "Local-LLM reverse-engineering assistant (runs on consumer hardware) that auto-suggests meaningful function names from Binary Ninja/decompiler output, fully offline.",
      when_to_use: "You're triaging many stripped functions in Binary Ninja and want offline, local-LLM auto-naming suggestions without sending code to a cloud API.",
@@ -186,6 +186,62 @@ entries:
      capability: "LLM extension for Ghidra adding AI function explanation/renaming and an MCP client so the model can drive tool-based analysis actions inside Ghidra.",
      when_to_use: "You work in Ghidra and want inline LLM explain/rename plus an MCP-driven agent loop over the decompiler, rather than copy-pasting pseudocode to an external chat.",
      source: https://github.com/symgraph/GhidrAssist, install: "git clone https://github.com/symgraph/GhidrAssist"}
+  - {id: sk2decompile, name: "SK2Decompile", type: tool, domain: native, bundled: false, status: active,
+     capability: "Two-phase neural decompiler (albertan017): phase 1 recovers structure (skeleton) as an obfuscated IR, phase 2 generates readable identifiers (skin); SOTA re-executability + ships the Decompile-Bench train/eval set.",
+     when_to_use: "You want higher-readability, more re-executable decompiled C than a single-shot LLM pass — structure first, then meaningful names; newer sibling of llm4decompile.",
+     source: https://github.com/albertan017/LLM4Decompile/tree/main/sk2decompile, install: "git clone https://github.com/albertan017/LLM4Decompile", alt_to: [llm4decompile]}
+  - {id: resym, name: "ReSym", type: tool, domain: native, bundled: false, status: active,
+     capability: "CCS'24 (Distinguished Paper) hybrid LLM + program analysis recovering variable names AND user-defined data-structure / field types from stripped binaries; consumes IDA/Ghidra decompiler output.",
+     when_to_use: "After decompiling a stripped binary you need recovered local-variable names and struct/field type definitions (not just renaming) to make pseudocode legible. See [[awesome-info-inferring-binary]] for TYGR/Idioms/OSPREY alternatives.",
+     source: https://github.com/lt-asset/resym, install: "git clone https://github.com/lt-asset/resym"}
+  - {id: gepetto, name: "Gepetto", type: tool, domain: native, bundled: false, status: active,
+     capability: "IDA Pro (>=7.6) plugin querying an LLM (OpenAI/Groq/Together/local) to explain decompiled functions and auto-rename variables from the Hex-Rays pseudocode context menu.",
+     when_to_use: "You work in IDA and want one-click LLM function explanation + variable renaming inline in the decompiler view (cloud or local model).",
+     source: https://github.com/JusticeRage/Gepetto, install: "git clone https://github.com/JusticeRage/Gepetto"}
+  - {id: aidapal, name: "aiDAPal", type: tool, domain: native, bundled: false, status: active,
+     capability: "IDA Pro plugin (Atredis) using a locally-running Ollama model fine-tuned on Hex-Rays pseudocode to suggest function/variable names and comments fully offline.",
+     when_to_use: "You want offline, local-LLM (Ollama) assistance in IDA fine-tuned specifically for Hex-Rays output, so no code leaves the machine. Complements [[gepetto]] (cloud) and [[reverser-ai]] (Binary Ninja).",
+     source: https://github.com/atredispartners/aidapal, install: "git clone https://github.com/atredispartners/aidapal"}
+  - {id: awesome-info-inferring-binary, name: "Awesome-Info-Inferring-Binary", type: platform, domain: native, bundled: false, status: active,
+     capability: "Curated index of papers + code for recovering variable names, types and structures from stripped binaries (ReSym, TYGR, Idioms, OSPREY, DIRTY, ...); a discovery list, not a runnable tool.",
+     when_to_use: "You need a stripped-binary symbol/type-recovery technique (variable renaming, struct/type inference) and want a curated map of the research and its code.",
+     source: https://github.com/Bin2Own/Awesome-Info-Inferring-Binary}
+  - {id: dirty, name: "DIRTY (CMU)", type: tool, domain: native, bundled: false, status: active,
+     capability: "Transformer model that augments decompiler (Hex-Rays) output with learned variable names AND types (matches developer names 66% / types 76%); ships the 1M-function DIRT dataset. The widely-cited pre-LLM baseline.",
+     when_to_use: "You want automated variable name + type recovery on decompiled stripped C, or a well-established baseline to compare against [[resym]]; research-grade code.",
+     source: https://github.com/CMUSTRUDEL/DIRTY, install: "git clone https://github.com/CMUSTRUDEL/DIRTY"}
+  - {id: tygr, name: "TYGR", type: tool, domain: native, bundled: false, status: active,
+     capability: "Graph-neural-network TYPE inference on stripped binaries (USENIX Security '24): encodes data-flow to recover basic + struct types, beating DIRTY/OSPREY on struct accuracy.",
+     when_to_use: "You specifically need recovered variable/struct TYPES (not names) on a stripped binary and want a GNN approach; pair with name recovery from [[resym]]/[[varbert]].",
+     source: https://github.com/sefcom/TYGR, install: "git clone https://github.com/sefcom/TYGR"}
+  - {id: varbert, name: "VarBERT", type: tool, domain: native, bundled: false, status: active,
+     capability: "BERT model predicting variable names + origins in decompiled code via transfer learning (Oakland '24); fine-tuned for IDA and Ghidra; usable via the binsync/varbert_api Python package.",
+     when_to_use: "You want a practical, decompiler-agnostic model to rename variables in pseudocode (lighter than an LLM, ships a pip API); alternative/baseline to [[resym]].",
+     source: https://github.com/sefcom/VarBERT, install: "git clone https://github.com/binsync/varbert_api"}
+  - {id: symgen, name: "SymGen", type: tool, domain: native, bundled: false, status: active,
+     capability: "Infers FUNCTION names for stripped binaries via domain-adapted LLMs (NDSS '25) — the LLM successor to SymLM; goes beyond classification to generate names for unseen functions.",
+     when_to_use: "Triaging a stripped binary full of sub_xxxx functions and you want LLM-generated meaningful function names to navigate (distinct from variable/type recovery). See [[awesome-info-inferring-binary]] for the wider field.",
+     source: https://github.com/OSUSecLab/SymGen, install: "git clone https://github.com/OSUSecLab/SymGen"}
+  - {id: oghidra, name: "OGhidra (LLNL)", type: agent, domain: native, bundled: false, status: active,
+     capability: "Lawrence Livermore agentic Ghidra driver: connects a LOCAL Ollama LLM to Ghidra and runs a Plan -> Execute -> Review -> Replan loop with context-budget management; works over GhidraMCP or headless PyGhidra.",
+     when_to_use: "You want a fully-local (no cloud) agent that autonomously explores a binary in Ghidra over multiple steps, not one-shot renaming. Best for exploration/naming/reporting; a human still verifies VM/heavily-obfuscated semantics. Alt to [[reva]] (Claude-driven).",
+     source: https://github.com/llnl/OGhidra, install: "git clone https://github.com/llnl/OGhidra && pip install -r requirements.txt"}
+  - {id: r2ai, name: "r2ai / decai", type: tool, domain: native, bundled: false, status: active,
+     capability: "LLM-based reversing inside radare2: r2ai adds function analysis / auto variable naming / vuln hints, the decai sub-plugin focuses on AI decompilation; an 'auto' mode chains inspect->decompile->find-issues->patch.",
+     when_to_use: "You live in radare2/r2 on the command line and want inline AI decompilation + analysis (local or cloud models) without leaving r2; pairs with the wider r2 toolset.",
+     source: https://github.com/radareorg/r2ai, install: "r2pm -Uci r2ai"}
+  - {id: recopilot, name: "ReCopilot", type: tool, domain: native, bundled: false, status: active,
+     capability: "QI-ANXIN XingTu Lab IDA Pro (>=9.0) plugin that calls their fine-tuned binary-analysis model (recopilot, served via API — not open weights) for function/variable name recovery, variable-type + struct recovery, code documentation and semantic code-homology search on decompiled pseudocode.",
+     when_to_use: "You work in IDA 9.0+ and want a binary-specialised model (vs a general chat model) to recover names/types/structs and summarise functions; note the model is API-served. See [[llm4decompile]] / [[resym]] for open alternatives.",
+     source: https://github.com/XingTuLab/recopilot, install: "git clone https://github.com/XingTuLab/recopilot"}
+  - {id: binaryai, name: "BinaryAI (Tencent)", type: platform, domain: native, bundled: false, status: active,
+     capability: "Tencent KeenLab online binary Software Composition Analysis: intelligent binary<->source function matching (Ghidra Pcode model) to identify which open-source third-party libraries/versions a stripped binary statically links.",
+     when_to_use: "You have a stripped binary / SDK .so and need to know which OSS components (and versions) it bundles — binary SCA / known-vuln surface; pairs with capa-triage before deep RE.",
+     source: https://www.binaryai.cn}
+  - {id: blackfyre, name: "Blackfyre", type: tool, domain: native, bundled: false, status: active,
+     capability: "Disassembler- and architecture-agnostic binary-analysis framework: a Ghidra plugin for data extraction plus a Python library that produces a normalized binary representation to feed AI/ML/NLP/LLM RE pipelines. From the Blackhat/RECON 'Automating RE with ML' course.",
+     when_to_use: "You're building ML/LLM RE pipelines and want a disassembler-agnostic extraction layer (vs hardcoding Ghidra/IDA APIs) as infrastructure to feed models.",
+     source: https://github.com/jonescyber-ai/Blackfyre, install: "git clone https://github.com/jonescyber-ai/Blackfyre && cd Blackfyre && pip install -e ."}
   - {id: oss-fuzz-gen, name: "OSS-Fuzz-Gen", type: tool, domain: native, bundled: false, status: active,
      capability: "Google framework that uses LLMs to auto-generate and auto-fix fuzz harnesses for C/C++/Java/Python and benchmark them against OSS-Fuzz; has found 30+ new bugs.",
      when_to_use: "You want LLM-assisted automatic fuzz-target generation for a C/C++/Java/Python library (improve coverage, find new crashes) integrated with the OSS-Fuzz workflow.",
@@ -511,3 +567,7 @@ entries:
      capability: "RTSP protocol fuzzer built on the boofuzz framework; concrete protocol fuzzer example.",
      when_to_use: "Fuzz a binary/protocol/parser (mutation or coverage-guided) to surface crashes/memory bugs in authorized research.",
      source: https://github.com/IncludeSecurity/RTSPhuzz, install: "git clone https://github.com/IncludeSecurity/RTSPhuzz && pip install boofuzz"}
+  - {id: tshark, name: "tshark / Wireshark", type: tool, domain: native, bundled: false, status: active,
+     capability: "Wireshark's CLI (tshark/dumpcap): live packet capture (needs Npcap/libpcap) + .pcap dissection / stats / field extraction; the binary backend that [[pyshark]] and the Wireshark MCP servers drive.",
+     when_to_use: "You need to capture or analyse raw network traffic / a .pcap (protocol dissection, follow streams, credential/field extraction) — drive it via [[pyshark]] or the wireshark-mcp. NOTE: a system tool (GUI installer + Npcap kernel driver), so it installs system-wide, NOT into tools/bin.",
+     source: https://www.wireshark.org/download.html, install: "winget install WiresharkFoundation.Wireshark"}

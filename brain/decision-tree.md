@@ -129,7 +129,7 @@ Step 2 — Language?
 Shared escalation target for Android-native-sign, iOS native, Windows native, and any standalone binary. Pick by ACTIVITY; full inventory is `catalog/native.yaml` (select by `when_to_use`).
 
 ```
-1. Triage / identify  → catalog: capa-triage (capabilities) · flare-floss (deobf strings) · yara-x · detect-it-easy (PE)
+1. Triage / identify  → catalog: capa-triage (capabilities; arm64 needs capa-rules + --backend ghidra) · flare-floss (deobf strings — **PE/shellcode only, not ELF/.so**) · yara-x · detect-it-easy (PE)
 2. Disassemble / decompile (pick one you have) →
    ├─ skill: ghidra-reverse-engineering (free, MCP-drivable) | ida-reverse-engineering (best decompiler)
    └─ catalog: binary-ninja · radare2 / rizin · cutter

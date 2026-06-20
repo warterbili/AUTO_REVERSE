@@ -17,6 +17,9 @@ Recover the JS/business logic from index.android.bundle (decompile Hermes byteco
    - Output: rn_kind (hermes|jsc), hermes_bytecode_version
 
 2A. **Decompile Hermes bytecode** (catalog: hermes-dec — preferred; hbctool — disasm/patch; hermes-decomp / hermes-rs — alternatives)
+   - **Fast recon first**: `python tools/hermes_strings.py <apk|bundle> --grep 'hmac|signature|bearer|api\.|x-'`
+     dumps the real string table one-per-line (plain `strings` fails — Hermes concatenates the table).
+     API hosts, header names, auth scheme, and crypto hints surface here in seconds.
    - hermes-dec disassembles + pseudo-decompiles the HBC across a wide version range → readable JS-like output
    - If hermes-dec can't match the version, hbctool disassembles to assembly (and can reassemble/patch the bundle)
    - Output: decompiled_js, string_table (API hosts, keys often appear here)

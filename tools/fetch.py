@@ -161,6 +161,58 @@ DISPATCH = {"pip": fetch_pip, "npm": fetch_npm, "github-jar": fetch_jar,
             "github-zip": fetch_zip, "github-asset": fetch_asset}
 
 
+def find_install(tool):
+    """Look up an `install` command for `tool` in tools/registry.yaml or catalog/*.yaml.
+
+    The curated TOOLS set in _toolspec.py covers the common path with zero deps; this
+    fallback fulfils the brain's promise that *any* `bundled:false` catalog id is
+    fetchable via `fetch.py <id>`. Returns (install_cmd, url) or (None, None).
+    Requires pyyaml (a dev dependency) for this extended path only.
+    """
+    try:
+        import yaml
+    except ImportError:
+        return ("__NO_YAML__", None)
+    root = Path(__file__).resolve().parent.parent
+    reg = root / "tools" / "registry.yaml"
+    if reg.exists():
+        doc = yaml.safe_load(reg.read_text(encoding="utf-8")) or {}
+        for section in doc.values():
+            if isinstance(section, list):
+                for e in section:
+                    if isinstance(e, dict) and e.get("id") == tool and e.get("install"):
+                        return (e["install"], e.get("url"))
+    for cat in sorted((root / "catalog").glob("*.yaml")):
+        if cat.name == "targets.yaml":
+            continue
+        doc = yaml.safe_load(cat.read_text(encoding="utf-8")) or {}
+        for e in doc.get("entries", []):
+            if isinstance(e, dict) and e.get("id") == tool and e.get("install"):
+                return (e["install"], e.get("source"))
+    return (None, None)
+
+
+def provision_from_install(tool, install):
+    """Run a catalog/registry `install` command, routing pip installs into the project venv."""
+    install = install.strip()
+    log(f"provisioning '{tool}' from catalog/registry: {install}")
+    m = re.match(r"^pip3?\s+install\s+(.+)$", install)
+    if m:
+        pip = ensure_venv()
+        subprocess.run([pip, "install", "--upgrade", *m.group(1).split()], check=True)
+        log(f"✅ {tool} → {venv_scripts()}")
+        return
+    if install.startswith("git clone"):
+        dest = BIN_DIR / tool
+        dest.mkdir(parents=True, exist_ok=True)
+        subprocess.run(install, shell=True, cwd=str(dest), check=True)
+        log(f"✅ {tool} → {dest}")
+        return
+    log("running the install command as-is (npm -g / release URL — may touch the global environment)")
+    subprocess.run(install, shell=True, check=True)
+    log(f"✅ {tool}")
+
+
 def main():
     ap = argparse.ArgumentParser(description="download tools on demand into the project")
     ap.add_argument("tool", nargs="?", help="tool id (see --list)")
@@ -178,8 +230,22 @@ def main():
 
     spec = TOOLS.get(args.tool)
     if not spec:
-        log(f"unknown tool {args.tool} (run python tools/fetch.py --list to see options)")
-        sys.exit(1)
+        # Fallback: provision any bundled:false catalog/registry tool via its install command.
+        install, url = find_install(args.tool)
+        if install == "__NO_YAML__":
+            log(f"unknown tool {args.tool}. Curated set: --list. To resolve from the "
+                f"full catalog, install pyyaml first: pip install pyyaml")
+            sys.exit(1)
+        if not install:
+            log(f"unknown tool {args.tool} (not in the curated set, registry.yaml, or catalog/*.yaml). "
+                f"Run python tools/fetch.py --list, or check the entry's 'install' field.")
+            sys.exit(1)
+        try:
+            provision_from_install(args.tool, install)
+        except Exception as e:
+            log(f"❌ failed: {e}\nmanual install: {url or '(see the catalog entry)'}")
+            sys.exit(1)
+        return
     if spec["kind"] == "runtime":
         log(f"{args.tool} is a runtime, please install it manually -> {spec['url']}")
         sys.exit(0)
