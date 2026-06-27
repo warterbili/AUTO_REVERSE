@@ -29,3 +29,13 @@ tools/bin/
 *.so
 *.jar
 !**/apktool*.jar
+
+# js-trace-engine generated output
+jt-out/
+skills/web/js-trace-engine/test/out*/
+skills/web/js-trace-engine/native/quickjs/quickjs/
+
+# Session secrets — captured cookies/tokens used by case reproduction scripts (NEVER commit)
+.cookies.json
+*.cookies.json
+cookies.json

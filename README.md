@@ -78,7 +78,7 @@ auto_reverse spans **both** sides of the offensive/analysis spectrum:
 
 <div align="center">
 <br>
-<sub><b>750+ routed capabilities · 27 bundled skills</b> — a floor, not a ceiling; it grows continuously</sub>
+<sub><b>750+ routed capabilities · 28 bundled skills</b> — a floor, not a ceiling; it grows continuously</sub>
 
 | 🌐 Web | ⚙️ Native | 🔌 MCP | 🤖 Android | 🍎 iOS | 📦 Frameworks | 🪟 Windows |
 |:---:|:---:|:---:|:---:|:---:|:---:|:---:|

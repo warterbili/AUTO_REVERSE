@@ -1,7 +1,7 @@
 # AGENTS.md — orientation for an AI/agent working in this repo
 
 Read this first. It's the map and the operating rules — the things you **can't cheaply
-infer by scanning** 750 catalog entries and 27 skills. Skim it, then dive into the specific
+infer by scanning** 750 catalog entries and 28 skills. Skim it, then dive into the specific
 files it points you to. (Claude Code users: `brain/SKILL.md` is the registered skill; this
 file is the tool-agnostic equivalent.)
 
@@ -43,9 +43,21 @@ It is **not** a monolithic tool. It is two layers:
 2. **The catalog is a routing index, not tested integration.** An entry's `install`/`source`
    may be wrong. Before relying on a `bundled:false` tool, verify it (`tools/smoketest.py
    probe --id <id>`), and don't trust a tool's output without checking it.
-3. **Verify, don't hallucinate.** A run isn't done until the **oracle** passes:
-   `tools/oracle.py replay --from 06-synthesize/request.json --expect-status 200`. Never
-   declare success on a plausible-looking algorithm — replay it.
+3. **Verify, don't hallucinate. NO GUESSING — about results OR causes.** A run isn't done until
+   the **oracle** passes: `tools/oracle.py replay --from 06-synthesize/request.json
+   --expect-status 200`. Never declare success on a plausible-looking algorithm — replay it.
+   This applies equally to **diagnoses**: never state *why* something failed (a root cause, a
+   "because the server binds X", a "it's risk-control") unless you have **isolated and verified
+   it**. Forbidden: presenting a hypothesis as a conclusion. Required instead:
+   - Label every claim **[verified]** (with the concrete checks) or **[hypothesis — untested]**.
+   - **Converge linearly**: change/test **one variable at a time**, confirm it, then move on.
+     Do not branch into parallel guesses — that never converges and yields wrong answers.
+   - **Reproduce before concluding** (≥3 independent runs for anything stochastic). One green
+     run is not a result; re-run it. A test that passes 1/3 has *not* passed.
+   - Distinguish "the code executed / I saw output" from "the conclusion is true." Verify the
+     conclusion, not the execution.
+   - When you don't know, say "unknown — here is the experiment that would settle it," and run
+     that experiment. Never fill the gap with a plausible story.
 4. **Prefer headless over GUI.** For native, use `analyzeHeadless` /
    `tools/ghidra_scripts/DumpDecomp.java` (the native phase auto-targets the right `.so`),
    not a GUI Ghidra+MCP that needs human clicks. Dynamic capture: `--auto-capture` drives the

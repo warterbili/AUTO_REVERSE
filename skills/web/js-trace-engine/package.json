@@ -1,0 +1,25 @@
+{
+  "name": "js-trace-engine",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Generic dynamic instrumentation / trace engine for heavily-obfuscated JS (anti-bot). AST probes + recursive eval/Function instrumentation + L2 anti-detection prelude, run in a Node harness on top of env-supplement-proxy.",
+  "type": "commonjs",
+  "bin": {
+    "js-trace": "./cli.js"
+  },
+  "scripts": {
+    "trace": "node cli.js trace",
+    "replace": "node cli.js replace",
+    "verify": "node cli.js verify",
+    "reqdiff": "node cli.js reqdiff",
+    "test": "node test/test-upgrade.js",
+    "selftest": "node cli.js trace test/sample-eval.js --out test/out --members"
+  },
+  "dependencies": {
+    "@babel/core": "^7.25.0"
+  },
+  "optionalDependencies": {
+    "chrome-remote-interface": "^0.33.3",
+    "webcrack": "^2.14.0"
+  }
+}
