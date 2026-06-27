@@ -16,6 +16,7 @@ const PATCHES = [
   [/\bXCIT\(\)\{/g, 'XCIT(){return;'],   // vendor-* probe setup (createElement div + console.log)
   [/function Bm\(\)\{/g, 'function Bm(){return;'], // main.js eject
   [/function Rm\(\)\{/g, 'function Rm(){return;'], // main.js native-tamper detector
+  [/(function t\(\)\{)(if\(Sign\.encryptPwd)/g, '$1return;$2'], // 2nd tamper detector (Sign.encryptPwd → OOM); ported from BossZhipin_reverse
   [/\(73===\w+\|\|74===\w+\)/g, '(!1)'],           // Ef: Ctrl/Cmd+Shift+I/J shortcut -> const-false
   [/\b123===\w+/g, '!1'],                          // Ef: F12 (keyCode 123) shortcut -> const-false
   [/\w+&&\w+<535/g, '!0'],                         // timing: __defineSetter__ frame-gap (<535) -> const-true

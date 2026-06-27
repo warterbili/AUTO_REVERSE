@@ -35,6 +35,11 @@ const BOSS = [
   { re: /\bXCIT\(\)\{/g, to: 'XCIT(){return;', note: 'XCIT (ES6 class method)' },
   { re: /function Bm\(\)\{/g, to: 'function Bm(){return;', note: 'Bm eject (open/close/history.back/blur/bomb)' },
   { re: /function Rm\(\)\{/g, to: 'function Rm(){return;', note: 'Rm native-method-tamper detector' },
+  // Second tamper detector — `function t(){if(Sign.encryptPwd(),…)` detonates OOM on a password-signature
+  // mismatch. Ported from the production BossZhipin_reverse framework (sites/boss/patches.py, verified
+  // there); anchored on `Sign.encryptPwd` so it can't hit any other `function t`. Insert `return;` before
+  // the check (equivalent to that framework's body-empty). This was the missing patch behind main.js=29-vs-30.
+  { re: /(function t\(\)\{)(if\(Sign\.encryptPwd)/g, to: '$1return;$2', note: 'function-t: Sign.encryptPwd tamper detector → blank' },
   // Layer 6 — Ef keyboard-shortcut detector. Force the keyCode tests const-false so the handler
   // stops preventDefault-ing DevTools shortcuts (the `if` guard never fires). Shape-based (the I/J/F12
   // keyCodes are the invariant), NOT identifier-based — `\w+` absorbs the minified keyCode var.

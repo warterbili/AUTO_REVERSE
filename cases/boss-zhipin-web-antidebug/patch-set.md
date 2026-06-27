@@ -5,7 +5,9 @@
 > They are **name-stable** (rely on shared class-method names `XCID`/`XCIT` and structural shapes — keyCodes, the
 > `535` timing threshold, the `.table,…clear` tuple — not per-bundle minified identifiers), so one set covers every
 > bundle. Each `*.js` from `static.zhipin.com` is fetched, run through these, cached by URL, and served from a local
-> HTTP proxy. The set now covers **all 7 detection layers** (#1–#9 = layers 1–5; #10–#12 = layers 6–7).
+> HTTP proxy. The set now covers **all 7 detection layers** (#1–#9 + `#6b` = layers 1–5, where `#6b` is the
+> `Sign.encryptPwd` tamper detector that brings parity with the production `BossZhipin_reverse` framework;
+> #10–#12 = layers 6–7).
 
 ```js
 const PATCHES = [
@@ -18,6 +20,7 @@ const PATCHES = [
   // ── Layer 1+2: native-tamper detector & eject/bomb trigger (main.js) ──
   [/function Bm\(\)\{/g, 'function Bm(){return;'], // #5 eject — blank whole fn, NEVER flip the gate
   [/function Rm\(\)\{/g, 'function Rm(){return;'], // #6 native-tamper detector
+  [/(function t\(\)\{)(if\(Sign\.encryptPwd)/g, '$1return;$2'], // #6b 2nd tamper detector (Sign.encryptPwd → OOM)
 
   // ── Layer 3: memory bombs (all bundles) ──
   [/new Array\(1e\d+\)/g, 'new Array(1)'], // #7  densify-bomb defused (Array.fill unit → 1)
@@ -40,17 +43,18 @@ const PATCHES = [
 
 ## Measured hit counts
 
-> The counts below were measured on the full live bundles with the **layer 1–5 set (#1–#9)** only.
-> Patches #10–#12 (layers 6–7) were added afterward and increase the per-bundle totals — `main.js`
-> carries `Ef` (Ctrl+Shift+I/J + F12) and the `<535` timing probe, so it gains several hits; the SPA
-> bundles gain hits only where they embed those layers. **Re-measure on the next live run** (the
-> exact full-bundle deltas were not captured at write time). On the bounded `source-excerpts.md`,
-> #10–#12 add **6** hits (4× I/J, 1× F12, 1× `<535`).
+> **Ground truth = the production `BossZhipin_reverse` framework** (`sites/boss/patches.py`), which measures
+> **main.js = 30, vendor-1 = 19** for the layer 1–5 set **including `#6b function-t`**. An earlier copy of
+> this table read `main.js = 29` because it was missing `#6b` — adding the `Sign.encryptPwd` tamper detector
+> reconciles 29 → **30**. Patches #10–#12 (layers 6–7) are an auto_reverse-only *extra* (the production
+> framework marks `Ef`/timing "optional, not shipped"); they add further hits to `main.js` — **re-measure on
+> the next live run** (exact full-bundle deltas not captured here). On the bounded `source-excerpts.md`,
+> #10–#12 add **6** hits (4× I/J, 1× F12, 1× `<535`); `#6b` does not appear in the excerpts.
 
-| Bundle | Patches applied (layers 1–5) | Notes |
+| Bundle | Patches applied (layers 1–5, incl. #6b) | Notes |
 |---|---|---|
 | `vendor-1.b980027c.js` | **19** | SPA anti-debug: XCID/XCIT (ES6) + bombs + clear (arrow + else) |
-| `main.js` | **29** | SEO anti-debug: XCID/XCIT (transpiled) + Bm/Rm + bombs + clear (IE fn + comma-tail) |
+| `main.js` | **30** | SEO anti-debug: XCID/XCIT (transpiled) + Bm/Rm + **function-t** + bombs + clear (IE fn + comma-tail) |
 | `app~3.832401b3.js` | **2** | bombs only |
 | other 24 bundles | **0** | jquery/vue/bossui/vendor-0..10/app~0,2/login/ka — no anti-debug |
 

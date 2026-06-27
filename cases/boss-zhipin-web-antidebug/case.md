@@ -61,7 +61,10 @@ Used the framework's CDP layer to drive a real logged-in browser:
 ### Phase 6/7 — Synthesize + Verify
 Built **`patch-all.js`** (this directory): a generic Mode-C patcher that intercepts **all** `static.zhipin.com/*.js`, fetches each original, applies the **universal regex patch set (all 7 detection layers)**, caches by URL, and serves from a local HTTP server via `Fetch.continueRequest({url})` redirect. See [`patch-set.md`](patch-set.md) for the annotated patches.
 
-**Measured patch hits:** `vendor-1` = 19, `main.js` = 29, `app~3` = 2, all other 24 bundles = 0 (they carry no anti-debug).
+**Measured patch hits (layers 1–5, incl. `#6b function-t`):** `vendor-1` = 19, `main.js` = 30, `app~3` = 2,
+all other 24 bundles = 0 (they carry no anti-debug). These match the production `BossZhipin_reverse` framework
+(`sites/boss/patches.py`) as ground truth; the earlier `main.js = 29` was missing the `Sign.encryptPwd` tamper
+detector (`#6b`). The layer-6/7 patches (#10–#12) are an auto_reverse-only extra and add further hits.
 
 **Verification (on an operator-driven job page, independent CDP probe):**
 
@@ -112,7 +115,8 @@ This case drove a Mode-C overhaul of `skills/web/js-trace-engine` (all done + Ch
   armed so SPA re-fetches keep getting patched.
 - **Rule-packs (`src/rule-packs.js`)** — `--rules boss|web-antidebug|<file>`; the `boss` preset is the
   patches from this case. `applyRules(code, BOSS)` reproduces the layer-1–5 hit counts (vendor-1=19,
-  main.js=29); the later layer-6/7 additions (#10–#12) raise those totals — re-measure on the next live run.
+  main.js=30, incl. `#6b function-t`, matching the production BossZhipin_reverse framework); the later
+  layer-6/7 additions (#10–#12) raise those totals — re-measure on the next live run.
 - **Verification (`src/cdp-verify.js`, `cli.js verify`)** — picks the real page target (not the
   devtools frontend), asserts no clear-flood / no redirect / not blurred / rendered; red-green + exit code.
 - **Anti-debug taxonomy (`src/anti-debug.js`)** — added memory-bomb shrink (`new Array(≥1e5)`/`repeat(≥1e4)`)
@@ -161,5 +165,5 @@ node cli.js verify --port 9540 --match zhipin --selector 'a[href*=job_detail]'
 ```
 
 The original standalone `patch-all.js` (kept in this directory for reference) is equivalent — it
-produces the identical hit counts (vendor-1=19, main.js=29) verified against the framework's
+produces the identical hit counts (vendor-1=19, main.js=30) verified against the framework's
 `transformJs(boss)`.

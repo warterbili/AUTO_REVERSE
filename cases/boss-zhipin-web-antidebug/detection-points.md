@@ -30,6 +30,14 @@ Techniques it combines:
 says `[native code]` → `Rm()` fails → feeds the `Bm` gate → punishment. **This is why runtime injection is the
 wrong tool against this target.** File replacement changes nothing about native methods, so `Rm()` stays happy.
 
+### Layer 1b — `function t()`: second tamper detector (`Sign.encryptPwd`)
+
+A separate integrity check — `function t(){if(Sign.encryptPwd(),…)` — recomputes a password/payload signature
+and **detonates the OOM bomb on mismatch**. It is independent of `Rm`/`Bm` (a different code path), so neutering
+`Rm` alone leaves it live. **Neutering:** insert `return;` at the top (equivalent to emptying the body), anchored
+on `Sign.encryptPwd` so no unrelated `function t` is touched. (Ground truth: this is patch `#6b`, ported from the
+production `BossZhipin_reverse` framework — it was the missing patch behind the `main.js` 29-vs-30 hit-count gap.)
+
 ---
 
 ## Layer 2 — `Bm()`: the eject action (and the memory-bomb trigger)
@@ -164,6 +172,7 @@ replacement avoids tripping either, because it neither hooks natives nor lets th
 | Layer | Primitive | Detects / does | Neutering strategy |
 |---|---|---|---|
 | 1 | `Rm()` | native-method tamper (toString/instanceof) | blank function (`return;`) |
+| 1b | `function t()` | `Sign.encryptPwd` signature-tamper → OOM | blank (insert `return;`), patch #6b |
 | 2 | `Bm()` | eject + bomb trigger, gated on genuineness | blank function — **never flip the gate** |
 | 3 | bombs | `Array.fill`/`repeat` × loop × recursion, GC-retained | `1eN → 1` |
 | 4 | `XCID`/`XCIT` | DevTools probe + console flood | return early (both syntaxes) |

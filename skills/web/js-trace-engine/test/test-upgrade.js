@@ -38,6 +38,11 @@ ok('boss pack blanks XCID/XCIT (both syntaxes) + Bm/Rm, never flips a gate', () 
   assert(/function Bm\(\)\{return;/.test(code) && /function Rm\(\)\{return;/.test(code), 'Bm/Rm not blanked');
   assert(!/if\(false\)/.test(code), 'must never introduce if(false) gate flips');
 });
+ok('boss pack blanks the function-t Sign.encryptPwd tamper detector (#6b, ground-truth parity)', () => {
+  const src = 'function t(){if(Sign.encryptPwd(),Sign.pwdDetail!==a)boom()}';
+  const { code } = applyRules(src, PACKS.boss);
+  assert(/function t\(\)\{return;if\(Sign\.encryptPwd/.test(code), 'function-t not blanked: ' + code);
+});
 ok('boss pack defuses memory bombs', () => {
   const src = 'new Array(1e4).fill("x"); "x".repeat(1e4); window[n]=new Array(1e9)';
   const { code } = applyRules(src, PACKS.boss);
