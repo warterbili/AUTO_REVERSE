@@ -5,6 +5,7 @@ workspace/*
 
 # Machine-specific / generated
 config/local.yaml
+.codex/
 .mcp.json
 *.log
 
