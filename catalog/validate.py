@@ -39,6 +39,8 @@ def main():
             for k in REQUIRED:
                 if k not in e:
                     errors.append(f"{where}: missing field {k}")
+                elif isinstance(e.get(k), str) and not e.get(k).strip():
+                    errors.append(f"{where}: empty required field {k}")
             if e.get("type") not in TYPES:
                 errors.append(f"{where}: invalid type {e.get('type')}")
             if e.get("status") not in STATUS:

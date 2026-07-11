@@ -43,6 +43,11 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
       - name: Install dev dependency (pyyaml)
         run: python -m pip install --upgrade pyyaml
 
@@ -54,3 +59,8 @@ jobs:
 
       - name: Doc-drift check (README counts vs live catalog/skills)
         run: python tools/doccheck.py
+
+      - name: JS trace engine tests
+        run: |
+          npm ci --prefix skills/web/js-trace-engine
+          npm test --prefix skills/web/js-trace-engine

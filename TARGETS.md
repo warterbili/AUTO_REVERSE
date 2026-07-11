@@ -30,7 +30,7 @@ The single source of truth for **target-specific** reversing assets — answers
 - **Bilibili** — Full native-Java algorithm reconstruction — regenerate sign/ticket/access_key and replay any signed endpoint.
   <br><sub>routing hints: `B站`, `tv.danmaku.bili`, `BiliDroid`, `libbili.so`, `appkey 1d8b6e7d45233436`</sub>
 - **Castle.io** — Generator + decoder for X-Castle-Request-Token / x-castle-client-id; end-to-end verified on DailyPay (see case).
-  <br><sub>routing hints: `io.castle.android`, `Highwind`, `X-Castle-Request-Token`, `x-castle-client-id`, `__cuid`</sub>
+  <br><sub>routing hints: `io.castle.android`, `Highwind`, `X-Castle-Request-Token`, `x-castle-client-id`, `__cuid`, `DailyPay`, `com.DailyPay.DailyPay`</sub>
 - **PerimeterX / HUMAN** — Pure-algorithm _px3/_px2 cookie generation (no browser); jsdom env-patching bridge as fallback.
   <br><sub>routing hints: `_px3`, `_px2`, `_pxN`, `px-cloud.net`, `sensor.grubhub.com`, `HUMAN Security`</sub>
 - **Ruishu / Rivers Security** — Pure-algorithm Cookie T derivation; JsRpc universal-bypass as the alternate route.

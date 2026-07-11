@@ -114,7 +114,7 @@ flowchart LR
     class W art;
 ```
 
-The brain advances through a 7-phase state machine; **artifacts are the only interface between phases**, so the run is interruptible and resumable:
+The brain advances through an 8-phase state machine (numbered 0-7); **artifacts are the only interface between phases**, so the run is interruptible and resumable:
 
 ```mermaid
 stateDiagram-v2

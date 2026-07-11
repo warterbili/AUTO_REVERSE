@@ -37,7 +37,7 @@ targets:
 
   - id: castle-io
     name: Castle.io
-    aliases: [io.castle.android, Highwind, X-Castle-Request-Token, x-castle-client-id, __cuid]
+    aliases: [io.castle.android, Highwind, X-Castle-Request-Token, x-castle-client-id, __cuid, DailyPay, com.DailyPay.DailyPay]
     domain: web
     protection: Castle anti-bot/device-fingerprint token — Android native v3.1.1 (hex-fp + 3-layer nibble-XOR + base64url) and web v11
     approach: pure-algorithm

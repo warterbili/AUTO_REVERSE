@@ -120,7 +120,7 @@ All notable changes to auto_reverse are documented here. The format is based on
 ## [0.1.0] — initial
 
 ### Added
-- **The brain** (`brain/`) — evidence-driven orchestrator with a 7-phase state machine
+- **The brain** (`brain/`) — evidence-driven orchestrator with an 8-phase state machine (numbered 0-7)
   (`fingerprint → plan → static → dynamic → native → synthesize → verify`),
   `decision-tree.md`, and framework playbooks.
 - **The catalog** (`catalog/`) — 730+ routed capability entries across `android`, `web`,

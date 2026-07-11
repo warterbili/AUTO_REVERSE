@@ -4,11 +4,11 @@ entries:
   - {id: cdp-browser, name: CDP Browser, type: skill, domain: web, bundled: true, status: active,
      capability: "Real Chrome + CDP control, no webdriver fingerprint, captures XHR/Fetch/WS + injects hooks",
      when_to_use: "Reversing sites with anti-bot (PerimeterX/Akamai/Cloudflare), capturing APIs, locating encryption functions",
-     source: ""}
+     source: "skills/web/cdp-browser"}
   - {id: web-api-analyzer, name: Web API Analyzer, type: skill, domain: web, bundled: true, status: active,
      capability: "Playwright API capture + crypto hook + HAR export",
      when_to_use: "Quickly exporting HAR on sites without strong anti-bot, hooking CryptoJS/MD5 to locate encryption",
-     source: ""}
+     source: "skills/web/web-api-analyzer"}
   - {id: js-trace-engine, name: JS Dynamic Trace Engine, type: skill, domain: web, bundled: true, status: active,
      capability: "Multi-layer dynamic instrumentation framework for obfuscated anti-bot JS (one kernel = probe injection, four layers): L1 Babel AST probes (fn enter/exit, assignments, member reads, return capture) + recursive re-instrumentation of runtime-generated code (eval/new Function/string setTimeout); L2 anti-detection prelude (clock-freeze defeats timing anti-debug, DebuggerStatement strip, Function.prototype.toString redirect defeating native-checks & self-defending integrity); L3a JSVMP/control-flow-flattening dispatch-loop tracer (locate the VM interpreter, instrument only the dispatch point -> opcode/state stream without breaking the VM, side-effect guarded); L3b patched-QuickJS engine opcode trace; L4 Frida native-memory Interceptor. Anti-debug defeat pass (strip debugger / Function('debugger'), defang self-defending catastrophic regex). LLM-lift (humanify-style but trace-augmented: feed runtime value evidence to an LLM for naming, apply via deterministic Babel scope-rename; provider-pluggable, default claude-sonnet-4-6). Auto-router fingerprints VM vs plain obfuscation. Run modes: offline Node harness (on env-supplement-proxy), live CDP hooks-only injection (Mode A), live full-instrumentation via CDP Fetch replace + SRI strip (Mode C). Shared aggregated trace (hot fns/vars, dynamic code-gen layers, VM opcode histogram, candidate sign outputs).",
      when_to_use: "You can already run obfuscated sign/cookie JS headless (via env-supplement-proxy/node-bridge) but need to see HOW it computes, not just its output; the real logic is delivered via eval(decrypt(...))/new Function and keeps disappearing statically; you want an execution trace to guide deep deobfuscation; defeat debugger/timing anti-debug while observing without single-stepping. The observation layer that stacks on env-supplement-proxy. Not for full reimplementation or JSVMP bytecode VMs (see references/adversarial-layer.md dispatch-loop note).",
@@ -16,7 +16,7 @@ entries:
   - {id: px-reverse, name: px-reverse (PerimeterX), type: skill, domain: web, bundled: true, status: active,
      capability: "End-to-end PerimeterX/HUMAN SDK reversing (payload/HMAC/OB/SID algorithm modules + generates _pxN cookies)",
      when_to_use: "When the target uses PerimeterX/HUMAN anti-bot and you need to reproduce _px3/_px2 cookies (dedicated asset)",
-     source: ""}
+     source: "skills/web/px-reverse"}
   - {id: ruishu-reverse, name: Ruishu (Rivers) Anti-bot Reverse, type: skill, domain: web, bundled: true, status: active,
      capability: "Pure-algorithm reversing of Ruishu / Rivers Security 412 protection: Cookie T generation + URL suffix (VM bytecode -> Huffman/XOR/AES-CBC/CRC32 chain)",
      when_to_use: "Target returns HTTP 412 with $_ts.cd / $_ts.nsd (Ruishu / Rivers Security); need to generate Cookie T purely in code",

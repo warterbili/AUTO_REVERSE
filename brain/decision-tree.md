@@ -37,6 +37,7 @@ Stacked protections (orthogonal to the above — add them on when hit):
 ## Web
 
 `skill:` = bundled skill under `skills/web/`; `catalog:` = fillable entry in `catalog/web.yaml` (fetched on demand). Match top-down, first hit wins.
+Primary playbook: `brain/playbooks/web-antibot.md`.
 
 ```
 Step 0 — Transport layer (whenever the client is non-browser):

@@ -21,7 +21,7 @@ entries:
   - {id: jni-env-patching, name: JNI Env Patching, type: skill, domain: native, bundled: true, status: active,
      capability: "Methodology for patching the JNI callback environment in unidbg",
      when_to_use: "When unidbg running a .so throws JNI unhandled / UnsupportedOperationException",
-     source: ""}
+     source: "skills/native/jni-env-patching"}
 
   # ── External, top-tier ──
   - {id: binary-ninja, name: Binary Ninja, type: tool, domain: native, bundled: false, status: commercial,

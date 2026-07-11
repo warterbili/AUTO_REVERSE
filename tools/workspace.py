@@ -5,6 +5,7 @@ a missing directory.
 
   python tools/workspace.py init com.myprizepicks.myprizepicks
   python tools/workspace.py init https://example.com --type web
+  python tools/workspace.py init app.apk --root tmp/smoke-workspaces
 
 Creates workspace/<slug>/{00-intake .. 07-verify}/ and a stub 00-intake/meta.json that
 conforms to brain/artifacts/meta.schema.json (fill in the timestamp/operator).
@@ -22,6 +23,8 @@ PHASES = ["00-intake", "01-fingerprint", "02-plan", "03-static",
 
 
 def slug(target):
+    if os.path.isfile(target):
+        target = os.path.basename(target)
     s = re.sub(r"^https?://", "", target).strip("/")
     s = re.sub(r"[^A-Za-z0-9._-]+", "-", s).strip("-").lower()
     return s or "target"
@@ -49,10 +52,12 @@ def main():
     p.add_argument("target", help="package id / URL / file name")
     p.add_argument("--type", choices=["android", "ios", "web", "windows", "native"])
     p.add_argument("--operator", default="auto-reverse")
+    p.add_argument("--root", help="workspace root directory (default: <repo>/workspace)")
     args = ap.parse_args()
 
     s = slug(args.target)
-    base = ROOT / "workspace" / s
+    workspace_root = Path(args.root).expanduser().resolve() if args.root else ROOT / "workspace"
+    base = workspace_root / s
     for ph in PHASES:
         (base / ph).mkdir(parents=True, exist_ok=True)
 
@@ -68,8 +73,8 @@ def main():
         }
         meta_path.write_text(json.dumps(meta, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
-    print(f"[workspace] ready: workspace/{s}/  ({len(PHASES)} phase dirs)")
-    print(f"[workspace]   meta: workspace/{s}/00-intake/meta.json")
+    print(f"[workspace] ready: {base}  ({len(PHASES)} phase dirs)")
+    print(f"[workspace]   meta: {meta_path}")
 
 
 if __name__ == "__main__":

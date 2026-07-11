@@ -10,6 +10,7 @@ skips phases whose artifacts already exist (use --force to redo).
   python tools/auto_reverse.py app.apk
   python tools/auto_reverse.py com.example.app --device 1125df3
   python tools/auto_reverse.py https://example.com --type web
+  python tools/auto_reverse.py app.apk --workspace-root tmp/smoke-workspaces
 
 Design: this automates the *verifiable, headless* spine (intake -> fingerprint -> plan
 -> static, plus native decompile when Ghidra is available). Phases that genuinely need a
@@ -60,6 +61,10 @@ def slug(target):
     return (s or "target")[:80]
 
 
+def target_slug(target):
+    return slug(os.path.basename(target) if os.path.isfile(target) else target)
+
+
 def infer_type(t):
     t = t.lower()
     if t.startswith(("http://", "https://")):
@@ -73,6 +78,60 @@ def infer_type(t):
     if t.endswith((".so", ".elf")):
         return "native"
     return "android"  # bare package id
+
+
+def covered_target_id(coverage):
+    m = re.search(r"COVERED by '([^']+)'", coverage or "")
+    return m.group(1) if m else None
+
+
+def load_target_route(target_id):
+    try:
+        import yaml
+        doc = yaml.safe_load(open(os.path.join(ROOT, "catalog", "targets.yaml"), encoding="utf-8")) or {}
+    except Exception:
+        return None
+    for item in doc.get("targets", []):
+        if item.get("id") != target_id:
+            continue
+        assets = item.get("assets", [])
+        skill = next((a for a in assets if a.get("kind") == "skill"), None)
+        pointer = next((a for a in assets if a.get("kind") == "pointer"), None)
+        primary = skill or pointer or (assets[0] if assets else {})
+        return {
+            "id": item.get("id"),
+            "name": item.get("name"),
+            "domain": item.get("domain"),
+            "status": item.get("status"),
+            "asset_kind": primary.get("kind"),
+            "asset_ref": primary.get("ref"),
+            "asset_path": primary.get("path"),
+            "asset_url": primary.get("url"),
+            "summary": item.get("summary"),
+        }
+    return None
+
+
+def match_target_route(text):
+    try:
+        import yaml
+        doc = yaml.safe_load(open(os.path.join(ROOT, "catalog", "targets.yaml"), encoding="utf-8")) or {}
+    except Exception:
+        return None
+    hay = (text or "").lower()
+    for item in doc.get("targets", []):
+        aliases = [item.get("name", "")] + item.get("aliases", [])
+        if any(str(alias).lower() in hay for alias in aliases if alias):
+            return load_target_route(item.get("id"))
+    return None
+
+
+ANTIBOT_ROUTES = [
+    ("Castle", "castle-reverse"),
+    ("PerimeterX", "px-reverse"),
+    ("Akamai", "akamai-reverse"),
+    ("DataDome", "datadome-generator"),
+]
 
 
 def _resolve(tool_id):
@@ -125,12 +184,14 @@ def resolve_ghidra_headless():
 
 
 class Run:
-    def __init__(self, target, ttype, device, force, auto_capture=False, flow=None):
+    def __init__(self, target, ttype, device, force, auto_capture=False, flow=None,
+                 workspace_root=None):
         self.target, self.device, self.force = target, device, force
         self.auto_capture, self.flow = auto_capture, flow
         self.type = ttype or infer_type(target)
-        self.slug = slug(os.path.basename(target) if os.path.isfile(target) else target)
-        self.base = os.path.join(WS, self.slug)
+        self.slug = target_slug(target)
+        self.workspace_root = os.path.abspath(workspace_root or WS)
+        self.base = os.path.join(self.workspace_root, self.slug)
         self.phases = []      # status records
         self.actions = []     # NEXT ACTIONS (needs device/human/tool)
 
@@ -141,6 +202,13 @@ class Run:
     def have(self, rel):
         return os.path.exists(self.d(rel)) and not self.force
 
+    def display_base(self):
+        try:
+            path = os.path.relpath(self.base, ROOT)
+        except ValueError:
+            path = self.base
+        return path.replace(os.sep, "/")
+
     def record(self, phase, status, notes, artifact=None):
         self.phases.append({"phase": phase, "status": status, "notes": notes, "artifact": artifact})
         print(f"  [{status:^11}] {phase}: {notes}")
@@ -148,9 +216,17 @@ class Run:
     def need(self, what, why, command):
         self.actions.append({"need": what, "why": why, "command": command})
 
+    def _first_intake_apk(self):
+        intake = self.d("00-intake")
+        if not os.path.isdir(intake):
+            return None
+        apks = [self.d("00-intake", f) for f in os.listdir(intake) if f.endswith(".apk")]
+        return next((a for a in apks if os.path.basename(a) == "base.apk"), None) or (apks[0] if apks else None)
+
     # ---- phases ----
     def init(self):
-        sh([PY, os.path.join(HERE, "workspace.py"), "init", self.target, "--type", self.type])
+        sh([PY, os.path.join(HERE, "workspace.py"), "init", self.target,
+            "--type", self.type, "--root", self.workspace_root])
 
     def intake(self):
         if self.have("00-intake/meta.json") and any(
@@ -209,7 +285,40 @@ class Run:
         out = self.d("02-plan", "plan.json")
         if self.have("02-plan/plan.json"):
             self.record("2-plan", "cached", "plan.json present"); return
-        fw = (self._fp().get("app_framework") or "").lower()
+        fp = self._fp()
+        covered = load_target_route(covered_target_id(fp.get("coverage_check"))) or match_target_route(self.target)
+        if covered:
+            asset = covered.get("asset_ref") or covered.get("asset_path") or covered.get("asset_url") or covered["id"]
+            plan = {"phase": "plan", "playbook": asset, "covered_target": covered, "tasks": [
+                {"question": f"Target is already covered: {covered.get('name') or covered['id']}",
+                 "use": asset, "expect": "route to the existing asset; do not re-reverse from scratch"},
+                {"question": "Verify the existing asset still applies to this exact version/session",
+                 "use": "asset-specific verify path + oracle when a replay request is synthesized",
+                 "expect": "verified report with desensitized evidence"},
+            ]}
+            os.makedirs(self.d("02-plan"), exist_ok=True)
+            json.dump(plan, open(out, "w", encoding="utf-8"), indent=2, ensure_ascii=False)
+            self.record("2-plan", "ok", f"covered target -> {asset}", out)
+            return
+
+        antibot_names = [str(x.get("name", "")) for x in fp.get("antibot_fingerprint_sdks", []) if isinstance(x, dict)]
+        sdk_route = next((skill for needle, skill in ANTIBOT_ROUTES
+                          if any(needle.lower() in name.lower() for name in antibot_names)), None)
+        if sdk_route:
+            plan = {"phase": "plan", "playbook": sdk_route, "tasks": [
+                {"question": f"Dedicated anti-bot SDK detected ({', '.join(antibot_names)})",
+                 "use": sdk_route, "expect": "SDK-specific static/dynamic workflow"},
+                {"question": "Capture real request shape and token fields",
+                 "use": "frida-mitm-capture", "expect": "04-dynamic findings (needs device)"},
+                {"question": "Replay the reproduced token/request",
+                 "use": "oracle.py", "expect": "07-verify result"},
+            ]}
+            os.makedirs(self.d("02-plan"), exist_ok=True)
+            json.dump(plan, open(out, "w", encoding="utf-8"), indent=2, ensure_ascii=False)
+            self.record("2-plan", "ok", f"anti-bot SDK -> {sdk_route}", out)
+            return
+
+        fw = (fp.get("app_framework") or "").lower()
         if "hermes" in fw:
             pb, t1 = "android-rn-hermes", {"question": "Where is API signing in the Hermes bundle?",
                                           "use": "hermes_strings.py + hermes-dec", "expect": "03-static findings"}
@@ -218,7 +327,7 @@ class Run:
         elif "unity" in fw:
             pb, t1 = "android-unity", {"question": "dump il2cpp", "use": "Il2CppDumper/frida-il2cpp-bridge", "expect": "metadata"}
         elif self.type == "web":
-            pb, t1 = "web", {"question": "which requests carry signatures?", "use": "cdp-browser", "expect": "signed request"}
+            pb, t1 = "web-antibot", {"question": "which requests carry signatures?", "use": "cdp-browser + web-api-analyzer", "expect": "signed request or endpoint inventory"}
         else:
             pb, t1 = "android-java-sign", {"question": "locate signing/crypto call sites", "use": "jadx", "expect": "native boundary"}
         plan = {"phase": "plan", "playbook": pb, "tasks": [
@@ -270,8 +379,10 @@ class Run:
         os.makedirs(self.d("03-static"), exist_ok=True)
         fw = (self._fp().get("app_framework") or "").lower()
         if "hermes" in fw:
-            base = next((self.d("00-intake", f) for f in os.listdir(self.d("00-intake"))
-                         if f == "base.apk" or f.endswith(".apk")), None)
+            base = self._first_intake_apk()
+            if not base:
+                self.record("3-static", "blocked", "no apk in 00-intake/ for Hermes string dump")
+                return
             sfile = self.d("03-static", "strings.txt")
             sh([PY, os.path.join(HERE, "hermes_strings.py"), base, "-o", sfile, "--unique"], timeout=600)
             grep = {}
@@ -291,9 +402,13 @@ class Run:
         else:
             jadx = ensure_tool("jadx") if self.type == "android" else None
             if jadx and self.type == "android":
+                apk = self._first_intake_apk()
+                if not apk:
+                    self.record("3-static", "blocked", "no apk in 00-intake/ for jadx")
+                    return
                 self.record("3-static", "needs_human", "jadx available — decompile + grep endpoints (not auto-parsed yet)")
                 self.need("static-parse", "jadx decompile output not auto-parsed",
-                          f"{jadx} -d {self.d('03-static','jadx')} {self.d('00-intake','base.apk')}")
+                          f"{jadx} -d {self.d('03-static','jadx')} {apk}")
             else:
                 self.record("3-static", "needs_tool", f"no headless static path wired for framework '{fw or self.type}'")
 
@@ -478,7 +593,7 @@ class Run:
         json.dump(status, open(self.d("status.json"), "w", encoding="utf-8"), indent=2, ensure_ascii=False)
         # report.md
         lines = [f"# auto_reverse report — `{self.target}`", "",
-                 f"- type: **{self.type}**  ·  workspace: `workspace/{self.slug}/`", "",
+                 f"- type: **{self.type}**  ·  workspace: `{self.display_base()}/`", "",
                  "## Phase status", "", "| phase | status | notes |", "|---|---|---|"]
         for p in self.phases:
             lines.append(f"| {p['phase']} | {p['status']} | {p['notes']} |")
@@ -489,12 +604,12 @@ class Run:
         lines += ["", "_Generated by tools/auto_reverse.py — the headless spine is automated; "
                   "items above are the honest hand-offs._", ""]
         open(self.d("report.md"), "w", encoding="utf-8").write("\n".join(lines))
-        print(f"\n→ workspace/{self.slug}/status.json + report.md written "
+        print(f"\n→ {self.display_base()}/status.json + report.md written "
               f"({sum(1 for p in self.phases if p['status'] in ('ok','cached'))}/{len(self.phases)} phases done, "
               f"{len(self.actions)} hand-offs)")
 
     def go(self):
-        print(f"[auto_reverse] target={self.target} type={self.type} → workspace/{self.slug}/")
+        print(f"[auto_reverse] target={self.target} type={self.type} → {self.display_base()}/")
         self.init(); self.intake(); self.fingerprint(); self.unpack(); self.plan()
         self.static(); self.native(); self.dynamic_and_verify(); self.finalize()
 
@@ -508,8 +623,11 @@ def main():
     ap.add_argument("--auto-capture", action="store_true",
                     help="hands-off dynamic capture: drive the UI via ui_exercise while capturing (needs device+frida)")
     ap.add_argument("--flow", help="flow.json for ui_exercise (deterministic taps); else generic exercise")
+    ap.add_argument("--workspace-root",
+                    help="workspace root directory (default: <repo>/workspace)")
     args = ap.parse_args()
-    Run(args.target, args.type, args.device, args.force, args.auto_capture, args.flow).go()
+    Run(args.target, args.type, args.device, args.force, args.auto_capture, args.flow,
+        args.workspace_root).go()
 
 
 if __name__ == "__main__":
